@@ -9,7 +9,8 @@ find_library(SDL2_GFX_LIBRARY NAMES SDL2_gfx)
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS} ${SDL2_GFX_INCLUDE_DIR})
 
-add_executable(Clash_of_Colosseum main.cpp Graphics.cpp)
+file(GLOB_RECURSE sourceCode src/*.cpp src/*.h)
+add_executable(Clash_of_Colosseum ${sourceCode})
 
 target_link_libraries(Clash_of_Colosseum ${SDL2_LIBRARIES} ${SDL2_GFX_LIBRARY})
 

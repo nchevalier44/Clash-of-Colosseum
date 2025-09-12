@@ -11,9 +11,13 @@ public:
 
     SDL_Renderer* getRenderer() { return renderer; } ;
     SDL_Window* getWindow() { return window; } ;
+    void update(bool* running);
+
 private:
     SDL_Window* window;
     SDL_Renderer* renderer;
+    short* circle;
+
 };
 
 #endif //CLASH_OF_COLOSSEUM_GRAPHICS_H
