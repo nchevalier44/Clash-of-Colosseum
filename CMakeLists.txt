@@ -13,11 +13,3 @@ file(GLOB_RECURSE sourceCode src/*.cpp src/*.h)
 add_executable(Clash_of_Colosseum ${sourceCode})
 
 target_link_libraries(Clash_of_Colosseum ${SDL2_LIBRARIES} ${SDL2_GFX_LIBRARY})
-
-
-
-
-
-# Chercher SDL2_gfx
-
-

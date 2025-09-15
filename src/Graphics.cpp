@@ -1,12 +1,11 @@
 #include "Graphics.h"
+#include <iostream>
 
 Graphics::Graphics(){
     SDL_CreateWindowAndRenderer(640, 480, 0, &window, &renderer);
     SDL_SetWindowTitle(window, "Clash of Colosseum");
-    circle = new short[3];
-    circle[0] = 200;
-    circle[1] = 200;
-    circle[2] = 50;
+    Entity* entity = new Entity(200, 200, 20, 100);
+    entities.push_back(entity);
 }
 
 Graphics::~Graphics() {
@@ -28,8 +27,9 @@ void Graphics::update(bool* running){
     SDL_SetRenderDrawColor(renderer, 230, 198, 34, 0);
     SDL_RenderClear(renderer);
 
-    filledCircleRGBA(renderer, circle[0], circle[1], circle[2], 255, 0, 0, 255);
-
+    Entity* e = entities[0];
+    e->drawHealthBar(renderer);
+    filledCircleRGBA(renderer, (short) e->getX(), (short) e->getY(), (short) e->getSize(), 255, 0, 0, 255);
     SDL_RenderPresent(renderer);
 
     while (SDL_PollEvent(&event)) {
@@ -40,19 +40,18 @@ void Graphics::update(bool* running){
         if(event.type == SDL_KEYDOWN){
             switch(event.key.keysym.scancode){
                 case SDL_SCANCODE_UP:
-                    circle[1] -= 5;
+                    e->setY(e->getY() - 5);
                     break;
                 case SDL_SCANCODE_DOWN:
-                    circle[1] += 5;
+                    e->setY(e->getY() + 5);
                     break;
                 case SDL_SCANCODE_RIGHT:
-                    circle[0] += 5;
+                    e->setX(e->getX() + 5);
                     break;
                 case SDL_SCANCODE_LEFT:
-                    circle[0] -= 5;
+                    e->setX(e->getX() - 5);
                     break;
             }
         }
-
     }
 }

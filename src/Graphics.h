@@ -3,6 +3,9 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
+#include <vector>
+#include "Entity.h"
+
 
 class Graphics {
 public:
@@ -17,7 +20,7 @@ private:
     SDL_Window* window;
     SDL_Renderer* renderer;
     short* circle;
-
+    std::vector<Entity*> entities;
 };
 
 #endif //CLASH_OF_COLOSSEUM_GRAPHICS_H

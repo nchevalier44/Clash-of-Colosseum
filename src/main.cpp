@@ -8,6 +8,7 @@ int main() {
 
     while (running) {
         graphics.update(&running);
+        SDL_Delay(16);
     }
 
     return 0;
