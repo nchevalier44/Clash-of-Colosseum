@@ -4,10 +4,11 @@
 
 class Weapon {
 public:
-    Weapon();
+    Weapon(int damage=1);
 
 private:
-    int damage = 1;
+    int damage;
+
 };
 
 

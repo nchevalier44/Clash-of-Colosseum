@@ -4,8 +4,15 @@
 Graphics::Graphics(){
     SDL_CreateWindowAndRenderer(640, 480, 0, &window, &renderer);
     SDL_SetWindowTitle(window, "Clash of Colosseum");
-    Entity* entity = new Entity(200, 200, 20, 100);
-    entities.push_back(entity);
+
+    //Générer 5 entités aléatoires
+    srand(time(NULL));
+    for(int i=0; i<5;i++){
+        int x = (rand() % 590) + 10;
+        int y = (rand() % 440) + 10;
+        Entity* entity = new Entity(x, y, 20, 100, 100);
+        entities.push_back(entity);
+    }
 }
 SDL_Renderer* Graphics::getRenderer() const { return renderer; }
 Graphics::~Graphics() {
@@ -27,16 +34,22 @@ void Graphics::update(bool* running){
     SDL_SetRenderDrawColor(renderer, 230, 198, 34, 0);
     SDL_RenderClear(renderer);
 
-    Entity* e = entities[0];
-    e->drawHealthBar(renderer);
-    filledCircleRGBA(renderer, (short) e->getX(), (short) e->getY(), (short) e->getSize(), 255, 0, 0, 255);
+    for(Entity* e : entities){
+        Entity* closest = e->findClosestEntity(entities);
+        if(closest != nullptr){
+            e->move(closest->getX(), closest->getY());
+        }
+        e->drawHealthBar(renderer);
+        filledCircleRGBA(renderer, (short) e->getX(), (short) e->getY(), (short) e->getSize(), 255, 0, 0, 255);
+    }
+
     SDL_RenderPresent(renderer);
 
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
             *running = false;
         }
-
+        Entity* e = entities[0];
         if(event.type == SDL_KEYDOWN){
             switch(event.key.keysym.scancode){
                 case SDL_SCANCODE_UP:
