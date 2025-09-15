@@ -8,7 +8,7 @@ Graphics::Graphics(){
     circle[1] = 200;
     circle[2] = 50;
 }
-
+SDL_Renderer* Graphics::getRenderer() const { return renderer; }
 Graphics::~Graphics() {
     if (renderer) {
         SDL_DestroyRenderer(renderer);

@@ -12,6 +12,8 @@ public:
     SDL_Renderer* getRenderer() { return renderer; } ;
     SDL_Window* getWindow() { return window; } ;
     void update(bool* running);
+    SDL_Renderer* getRenderer() const;
+
 
 private:
     SDL_Window* window;
