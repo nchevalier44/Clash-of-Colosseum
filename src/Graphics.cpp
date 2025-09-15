@@ -7,7 +7,7 @@ Graphics::Graphics(){
     Entity* entity = new Entity(200, 200, 20, 100);
     entities.push_back(entity);
 }
-
+SDL_Renderer* Graphics::getRenderer() const { return renderer; }
 Graphics::~Graphics() {
     if (renderer) {
         SDL_DestroyRenderer(renderer);
