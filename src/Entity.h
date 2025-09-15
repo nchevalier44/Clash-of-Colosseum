@@ -6,7 +6,7 @@
 
 class Entity {
 public:
-    Entity(int x, int y, int size=10, int hp=100);
+    Entity(int x, int y, int size=10, int hp=100, int max_hp=100);
 
     void setX(int new_x){ x = new_x; };
     void setY(int new_y){ y = new_y; };
@@ -21,6 +21,7 @@ public:
 
 private:
     int hp;
+    int max_hp;
     int size;
     int x;
     int y;

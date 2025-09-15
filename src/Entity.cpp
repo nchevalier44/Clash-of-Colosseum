@@ -1,7 +1,8 @@
 #include "Entity.h"
 
-Entity::Entity(int x, int y, int size, int hp) {
+Entity::Entity(int x, int y, int size, int hp, int max_hp) {
     this->hp = hp;
+    this->max_hp = max_hp;
     this->size = size;
     this->x = x;
     this->y = y;
@@ -9,7 +10,7 @@ Entity::Entity(int x, int y, int size, int hp) {
 
 void Entity::drawHealthBar(SDL_Renderer* renderer) {
     SDL_Rect border = {x-25, y-50, size*3, size};
-    SDL_Rect health = {x-25, y-50, (size*3)*hp/100, size};
+    SDL_Rect health = {x-25, y-50, (size*3)*hp/max_hp, size};
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderFillRect(renderer, &health);
 
