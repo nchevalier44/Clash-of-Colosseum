@@ -3,25 +3,34 @@
 
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <string>
 
 class Menu {
 public:
     Menu(SDL_Renderer* r);
     ~Menu();
-    void render();
-    void handleEvent(SDL_Event& event);  // Pour gérer le clavier
-    void configureParameters();           // Lance le menu et récupère les valeurs
 
+    void render();
+    void handleEvent(SDL_Event& event);
+    void configureParameters();
+
+    // Getters pour récupérer les valeurs choisies dans le menu
     int getNbGuerriers() const { return nbGuerriers; }
     int getPvBase() const { return pvBase; }
+    int getDureeCombat() const { return dureeCombat; }
+    std::string getTypeGuerriers() const { return typeGuerriers; }
 
 private:
     SDL_Renderer* renderer;
-    TTF_Font* font;
-    int nbGuerriers = 5;  // valeur par défaut
-    int pvBase = 100;     // valeur par défaut
+    TTF_Font* font = nullptr;
+    SDL_Texture* background = nullptr;
 
-    int selectedOption = 0;  // 0 = nbGuerriers, 1 = pvBase
+    int nbGuerriers = 5;       // valeur par défaut
+    int pvBase = 100;          // valeur par défaut
+    int dureeCombat = 120;     // valeur par défaut
+    std::string typeGuerriers = "Guerrier"; // type statique
+
+    int selectedOption = 0;    // 0 = nbGuerriers, 1 = pvBase, 2 = dureeCombat
 };
 
-#endif
+#endif // CLASH_OF_COLOSSEUM_CONFIG_H

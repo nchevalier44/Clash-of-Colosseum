@@ -28,10 +28,10 @@ Graphics::~Graphics() {
     SDL_Quit();
 }
 
-void Graphics::update(bool* running){
+void Graphics::update(bool* running) {
     SDL_Event event;
 
-    SDL_SetRenderDrawColor(renderer, 230, 198, 34, 0);
+    SDL_SetRenderDrawColor(renderer, 230, 198, 34, 255);
     SDL_RenderClear(renderer);
 
     for(Entity* e : entities){
@@ -50,21 +50,14 @@ void Graphics::update(bool* running){
         if (event.type == SDL_QUIT) {
             *running = false;
         }
-        Entity* e = entities[0];
-        if(event.type == SDL_KEYDOWN){
+
+        if(event.type == SDL_KEYDOWN && !entities.empty()) {
+            Entity* e = entities[0]; // on déplace seulement le premier pour test
             switch(event.key.keysym.scancode){
-                case SDL_SCANCODE_UP:
-                    e->setY(e->getY() - 5);
-                    break;
-                case SDL_SCANCODE_DOWN:
-                    e->setY(e->getY() + 5);
-                    break;
-                case SDL_SCANCODE_RIGHT:
-                    e->setX(e->getX() + 5);
-                    break;
-                case SDL_SCANCODE_LEFT:
-                    e->setX(e->getX() - 5);
-                    break;
+                case SDL_SCANCODE_UP: e->setY(e->getY() - 5); break;
+                case SDL_SCANCODE_DOWN: e->setY(e->getY() + 5); break;
+                case SDL_SCANCODE_RIGHT: e->setX(e->getX() + 5); break;
+                case SDL_SCANCODE_LEFT: e->setX(e->getX() - 5); break;
             }
         }
     }
