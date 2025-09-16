@@ -1,20 +1,15 @@
 #include "Graphics.h"
 #include <iostream>
 
-Graphics::Graphics(){
+Graphics::Graphics() {
     SDL_CreateWindowAndRenderer(640, 480, 0, &window, &renderer);
     SDL_SetWindowTitle(window, "Clash of Colosseum");
-
-    //Générer 5 entités aléatoires
-    srand(time(NULL));
-    for(int i=0; i<5;i++){
-        int x = (rand() % 590) + 10;
-        int y = (rand() % 440) + 10;
-        Entity* entity = new Entity(x, y, 20, 100, 100);
-        entities.push_back(entity);
-    }
 }
-SDL_Renderer* Graphics::getRenderer() const { return renderer; }
+
+SDL_Renderer* Graphics::getRenderer() const {
+    return renderer;
+}
+
 Graphics::~Graphics() {
     if (renderer) {
         SDL_DestroyRenderer(renderer);
@@ -26,6 +21,13 @@ Graphics::~Graphics() {
     }
 
     SDL_Quit();
+}
+
+void Graphics::setEntities(const std::vector<std::unique_ptr<Entity>>& ents) {
+    entities.clear();
+    for (auto& e : ents) {
+        entities.push_back(e.get());  // On stocke juste le pointeur brut
+    }
 }
 
 void Graphics::update(bool* running) {
@@ -49,8 +51,13 @@ void Graphics::update(bool* running) {
             }
         }
         e->drawHealthBar(renderer);
-        e->getWeapon()->draw(e->getX()+e->getSize(), e->getY(), renderer);
-        filledCircleRGBA(renderer, (short) e->getX(), (short) e->getY(), (short) e->getSize(), 255, 0, 0, 255);
+
+        if (e->getWeapon()) {
+            e->getWeapon()->draw(e->getX() + e->getSize(), e->getY(), renderer);
+        }
+
+        filledCircleRGBA(renderer, (short)e->getX(), (short)e->getY(),
+                         (short)e->getSize(), 255, 0, 0, 255);
     }
 
     //Projectiles
@@ -66,13 +73,14 @@ void Graphics::update(bool* running) {
             *running = false;
         }
 
-        if(event.type == SDL_KEYDOWN && !entities.empty()) {
+        if (event.type == SDL_KEYDOWN && !entities.empty()) {
             Entity* e = entities[0]; // on déplace seulement le premier pour test
-            switch(event.key.keysym.scancode){
-                case SDL_SCANCODE_UP: e->setY(e->getY() - 5); break;
-                case SDL_SCANCODE_DOWN: e->setY(e->getY() + 5); break;
+            switch (event.key.keysym.scancode) {
+                case SDL_SCANCODE_UP:    e->setY(e->getY() - 5); break;
+                case SDL_SCANCODE_DOWN:  e->setY(e->getY() + 5); break;
                 case SDL_SCANCODE_RIGHT: e->setX(e->getX() + 5); break;
-                case SDL_SCANCODE_LEFT: e->setX(e->getX() - 5); break;
+                case SDL_SCANCODE_LEFT:  e->setX(e->getX() - 5); break;
+                default: break;
             }
         }
     }

@@ -46,7 +46,6 @@ Entity* Entity::findClosestEntity(std::vector<Entity*> entities){
 
     return closest_entity;
 }
-
 void Entity::drawHealthBar(SDL_Renderer* renderer) {
     SDL_Rect border = {x-25, y-50, size*3, size};
     SDL_Rect health = {x-25, y-50, (size*3)*hp/max_hp, size};
@@ -84,4 +83,26 @@ void Entity::moveInDirection(int x, int y){
     } else if(y < this->y){
         this->y -= 1;
     }
+}
+Guerrier::Guerrier(int x, int y, int size, int max_hp)
+    : Entity(x, y, size, max_hp, max_hp) {
+    weapon = new Epee();
+}
+
+Archer::Archer(int x, int y, int size, int max_hp)
+    : Entity(x, y, size, max_hp, max_hp) {
+    weapon = new Arc();
+}
+
+Tank::Tank(int x, int y, int size, int max_hp)
+    : Entity(x, y, size, max_hp, max_hp) {
+    weapon = new Catapulte();
+}
+
+Mage::Mage(int x, int y, int size, int max_hp)
+    : Entity(x, y, size, max_hp, max_hp) {
+    weapon = new BouleDeFeu();
+}
+Entity::~Entity() {
+    // rien de spécial pour l’instant
 }

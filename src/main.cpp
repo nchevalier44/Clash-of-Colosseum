@@ -3,6 +3,8 @@
 #include <iostream>
 #include <SDL_image.h>
 #include <vector>
+#include <memory>   // pour std::unique_ptr
+
 int main() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         std::cerr << "Erreur SDL_Init: " << SDL_GetError() << std::endl;
@@ -14,6 +16,7 @@ int main() {
         SDL_Quit();
         return 1;
     }
+
     int imgFlags = IMG_INIT_PNG | IMG_INIT_JPG;
     if ((IMG_Init(imgFlags) & imgFlags) != imgFlags) {
         std::cerr << "Erreur IMG_Init: " << IMG_GetError() << std::endl;
@@ -30,36 +33,52 @@ int main() {
     int nbGuerriers = menu.getNbGuerriers();
     int pvBase = menu.getPvBase();
     int dureeCombat = menu.getDureeCombat();
-    std::string typeGuerrier = menu.getTypeGuerriers(); // toujours "Guerrier" pour l'instant
+    std::string typeGuerrier = menu.getTypeGuerriers();
 
-    // ----- Création dynamique des entités -----
-    std::vector<Entity*> guerriers;
+    std::cout << "---- Parametres choisis ----\n";
+    std::cout << "Nb Guerriers : " << nbGuerriers << "\n";
+    std::cout << "PV Guerriers : " << pvBase << "\n";
+    std::cout << "Duree combat : " << dureeCombat << "s\n";
+    std::cout << "Type Guerrier: " << typeGuerrier << "\n";
+
+    std::vector<std::unique_ptr<Entity>> entities;
     for (int i = 0; i < nbGuerriers; i++) {
-        int x = 50 + i * 50;  // écart horizontal entre guerriers
-        int y = 200;           // position verticale fixe
-        Entity* g = new Entity(x, y, 20, pvBase);
-        guerriers.push_back(g);
+        int x = 50 + i * 50;
+        int y = 200;
+        if (typeGuerrier == "Guerrier") {
+            entities.push_back(std::make_unique<Guerrier>(x, y, 20, pvBase));
+        }
+        else if (typeGuerrier == "Archer") {
+            entities.push_back(std::make_unique<Archer>(x, y, 20, pvBase));
+        }
+        else if (typeGuerrier == "Mage") {
+            entities.push_back(std::make_unique<Mage>(x, y, 20, pvBase));
+        }
+        else if (typeGuerrier == "Tank") {
+            entities.push_back(std::make_unique<Tank>(x, y, 30, pvBase * 2));
+        }
+        else {
+            entities.push_back(std::make_unique<Entity>(x, y, 20, pvBase));
+        }
     }
+    graphics.setEntities(entities);
     // ----- Boucle principale -----
     bool running = true;
-    Uint32 startTime = SDL_GetTicks(); // pour gérer la durée du combat
+    Uint32 startTime = SDL_GetTicks();
+
     while (running) {
-        // Si la durée du combat est dépassée, arrêter
         Uint32 elapsed = SDL_GetTicks() - startTime;
-        if (elapsed >= (Uint32)dureeCombat * 1000) running = false;
+        if (elapsed >= static_cast<Uint32>(dureeCombat) * 1000) {
+            std::cout << "\n⏳ Le combat est termine !\n";
+            running = false;
+        }
 
         graphics.update(&running);
         SDL_Delay(16); // ~60 FPS
     }
-    // ----- Nettoyage -----
-    for (Entity* e : guerriers) {
-        delete e;
-    }
-    guerriers.clear();
 
     IMG_Quit();
     TTF_Quit();
     SDL_Quit();
     return 0;
 }
-

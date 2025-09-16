@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <SDL_image.h>
+#include <vector>
 
 Menu::Menu(SDL_Renderer* r) : renderer(r) {
     font = TTF_OpenFont("../assets/arial.ttf", 24);
@@ -42,44 +43,51 @@ Menu::~Menu() {
 }
 
 void Menu::render() {
+    // Fond
     if (background) {
         SDL_RenderCopy(renderer, background, NULL, NULL);
     } else {
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // fallback noir
+        SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
         SDL_RenderClear(renderer);
     }
+    SDL_Color white = {220, 220, 220, 255};
+    SDL_Color red = {255, 0, 0, 255};
 
-    SDL_Color white = {255, 255, 255, 255};
-    SDL_Color yellow = {255, 255, 0, 255};
+    // Titre du menu
+    SDL_Surface* titleSurface = TTF_RenderText_Solid(font, "Clash of Colosseum", red);
+    SDL_Texture* titleTex = SDL_CreateTextureFromSurface(renderer, titleSurface);
+    SDL_Rect titleRect = {150, 20, titleSurface->w, titleSurface->h};
+    SDL_RenderCopy(renderer, titleTex, NULL, &titleRect);
+    SDL_FreeSurface(titleSurface);
+    SDL_DestroyTexture(titleTex);
 
-    std::string options[3] = {
+    // Liste des options
+    std::vector<std::string> options = {
         "Nb Guerriers: " + std::to_string(nbGuerriers),
         "PV Guerriers: " + std::to_string(pvBase),
-        "Duree combat: " + std::to_string(dureeCombat)
+        "Duree combat: " + std::to_string(dureeCombat),
+        "Type: " + typeGuerriers,
+        "Difficulte: " + difficulte,
+        std::string("Musique: ") + (musiqueOn ? "ON" : "OFF")
     };
 
-    for (int i = 0; i < 3; i++) {
-        SDL_Surface* surface = TTF_RenderText_Solid(
-            font,
-            options[i].c_str(),
-            i == selectedOption ? yellow : white
-        );
+    for (int i = 0; i < (int)options.size(); i++) {
+        SDL_Color color = (i == selectedOption ? red : white);
 
-        if (!surface) {
-            std::cerr << "Erreur TTF_RenderText_Solid: " << TTF_GetError() << std::endl;
-            continue;
-        }
-
+        SDL_Surface* surface = TTF_RenderText_Solid(font, options[i].c_str(), color);
         SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-        SDL_FreeSurface(surface);
 
-        if (!texture) {
-            std::cerr << "Erreur SDL_CreateTextureFromSurface: " << SDL_GetError() << std::endl;
-            continue;
+        // Rectangle highlight derrière l'option sélectionnée
+        if (i == selectedOption) {
+            SDL_SetRenderDrawColor(renderer, 80, 80, 80, 200);
+            SDL_Rect highlight = {40, 80 + i * 40, 400, surface->h + 10};
+            SDL_RenderFillRect(renderer, &highlight);
         }
 
-        SDL_Rect rect = {50, 50 + i * 50, surface->w, surface->h};
+        SDL_Rect rect = {50, 80 + i * 40, surface->w, surface->h};
         SDL_RenderCopy(renderer, texture, NULL, &rect);
+
+        SDL_FreeSurface(surface);
         SDL_DestroyTexture(texture);
     }
 
@@ -90,26 +98,52 @@ void Menu::handleEvent(SDL_Event& event) {
     if (event.type == SDL_KEYDOWN) {
         switch (event.key.keysym.scancode) {
             case SDL_SCANCODE_UP:
-                selectedOption = (selectedOption + 3 - 1) % 3; // remonte
+                selectedOption = (selectedOption + optionsCount - 1) % optionsCount;
                 break;
             case SDL_SCANCODE_DOWN:
-                selectedOption = (selectedOption + 1) % 3; // descend
+                selectedOption = (selectedOption + 1) % optionsCount;
                 break;
             case SDL_SCANCODE_RIGHT:
                 if (selectedOption == 0) nbGuerriers++;
                 else if (selectedOption == 1) pvBase += 10;
                 else if (selectedOption == 2) dureeCombat += 10;
+                else if (selectedOption == 3) { // Type guerrier
+                    if (typeGuerriers == "Guerrier") typeGuerriers = "Archer";
+                    else if (typeGuerriers == "Archer") typeGuerriers = "Mage";
+                    else if (typeGuerriers == "Mage") typeGuerriers = "Tank";
+                    else typeGuerriers = "Guerrier";
+                }
+                else if (selectedOption == 4) { // Difficulté
+                    if (difficulte == "Facile") difficulte = "Normal";
+                    else if (difficulte == "Normal") difficulte = "Difficile";
+                    else difficulte = "Facile";
+                }
+                else if (selectedOption == 5) { // Musique ON/OFF
+                    musiqueOn = !musiqueOn;
+                }
                 break;
             case SDL_SCANCODE_LEFT:
                 if (selectedOption == 0 && nbGuerriers > 1) nbGuerriers--;
                 else if (selectedOption == 1 && pvBase > 10) pvBase -= 10;
                 else if (selectedOption == 2 && dureeCombat > 10) dureeCombat -= 10;
+                // Gauche = inverse des cycles type/difficulte
+                else if (selectedOption == 3) {
+                    if (typeGuerriers == "Guerrier") typeGuerriers = "Tank";
+                    else if (typeGuerriers == "Tank") typeGuerriers = "Mage";
+                    else if (typeGuerriers == "Mage") typeGuerriers = "Archer";
+                    else typeGuerriers = "Guerrier";
+                }
+                else if (selectedOption == 4) {
+                    if (difficulte == "Facile") difficulte = "Difficile";
+                    else if (difficulte == "Normal") difficulte = "Facile";
+                    else difficulte = "Normal";
+                }
                 break;
-            default:
-                break;
+            default: break;
         }
     }
 }
+
 
 void Menu::configureParameters() {
     bool running = true;
