@@ -5,7 +5,7 @@
 
 class Bow : public Weapon {
 public:
-
+    Bow(int damage=5, int range=10);
 private:
 };
 

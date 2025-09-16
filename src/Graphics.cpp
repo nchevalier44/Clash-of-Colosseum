@@ -40,6 +40,7 @@ void Graphics::update(bool* running){
             e->move(closest->getX(), closest->getY());
         }
         e->drawHealthBar(renderer);
+        e->getWeapon()->draw(e->getX()+e->getSize(), e->getY(), renderer);
         filledCircleRGBA(renderer, (short) e->getX(), (short) e->getY(), (short) e->getSize(), 255, 0, 0, 255);
     }
 

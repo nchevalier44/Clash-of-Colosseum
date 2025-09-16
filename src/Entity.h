@@ -18,6 +18,7 @@ public:
     int getY() const { return y; };
     int getSize() const { return size; };
     int getHp() const { return hp; }
+    Weapon* getWeapon() { return weapon; }
 
     double distance(int x2, int y2);
     Entity* findClosestEntity(std::vector<Entity*> entities);
@@ -30,7 +31,7 @@ private:
     int size;
     int x;
     int y;
-    Weapon weapon;
+    Weapon* weapon;
 };
 
 
