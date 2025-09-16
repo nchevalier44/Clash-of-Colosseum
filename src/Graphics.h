@@ -16,6 +16,7 @@ public:
     SDL_Window* getWindow() { return window; } ;
     void update(bool* running);
     SDL_Renderer* getRenderer() const;
+    void setEntities(const std::vector<Entity*>& e) { entities = e; }
 
 
 private:
