@@ -28,7 +28,10 @@ private:
     int nbGuerriers = 5;       // valeur par défaut
     int pvBase = 100;          // valeur par défaut
     int dureeCombat = 120;     // valeur par défaut
-    std::string typeGuerriers = "Guerrier"; // type statique
+    std::string typeGuerriers = "Guerrier";
+    std::string difficulte = "Normal";
+    bool musiqueOn = true;
+    int optionsCount = 6; // nb total d'options
 
     int selectedOption = 0;    // 0 = nbGuerriers, 1 = pvBase, 2 = dureeCombat
 };
