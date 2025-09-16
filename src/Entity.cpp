@@ -11,7 +11,7 @@ Entity::Entity(int x, int y, int size, int hp, int max_hp) {
     this->y = y;
 
     //A Changer :
-    weapon = new Sword(10, 10);
+    //weapon = new Sword(10, 10);
 }
 
 bool Entity::canAttack(Entity* entity) {

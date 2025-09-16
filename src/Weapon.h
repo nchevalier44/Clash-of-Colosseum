@@ -15,8 +15,6 @@ public:
     int getDamage() const { return damage; };
 
     virtual void attack(Entity* entity);
-
-private:
     virtual void draw(int x, int y, SDL_Renderer* renderer) = 0;
 
 protected:
