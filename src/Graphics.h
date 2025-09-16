@@ -5,6 +5,7 @@
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include <vector>
 #include "Entity.h"
+#include "Projectile.h"
 
 
 class Graphics {
@@ -18,12 +19,15 @@ public:
     SDL_Renderer* getRenderer() const;
     void setEntities(const std::vector<Entity*>& e) { entities = e; }
 
+    void deleteEntity(Entity* entity);
+
 
 private:
     SDL_Window* window;
     SDL_Renderer* renderer;
     short* circle;
     std::vector<Entity*> entities;
+    std::vector<Projectile*> projectiles;
 };
 
 #endif //CLASH_OF_COLOSSEUM_GRAPHICS_H

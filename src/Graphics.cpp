@@ -34,15 +34,30 @@ void Graphics::update(bool* running) {
     SDL_SetRenderDrawColor(renderer, 230, 198, 34, 255);
     SDL_RenderClear(renderer);
 
+    //Move and attack entities
     for(Entity* e : entities){
         Entity* closest = e->findClosestEntity(entities);
         if(closest != nullptr){
-            e->move(closest->getX(), closest->getY());
+            if(e->canAttack(closest)){
+                e->getWeapon()->attack(closest);
+
+                if(closest->getHp() == 0 ){
+                    deleteEntity(closest);
+                }
+            } else{
+                e->moveInDirection(closest->getX(), closest->getY());
+            }
         }
         e->drawHealthBar(renderer);
         e->getWeapon()->draw(e->getX()+e->getSize(), e->getY(), renderer);
         filledCircleRGBA(renderer, (short) e->getX(), (short) e->getY(), (short) e->getSize(), 255, 0, 0, 255);
     }
+
+    //Projectiles
+    /*for(Projectile* p : projectiles){
+        p->move();
+        p->draw(renderer);
+    }*/
 
     SDL_RenderPresent(renderer);
 
@@ -59,6 +74,16 @@ void Graphics::update(bool* running) {
                 case SDL_SCANCODE_RIGHT: e->setX(e->getX() + 5); break;
                 case SDL_SCANCODE_LEFT: e->setX(e->getX() - 5); break;
             }
+        }
+    }
+}
+
+void Graphics::deleteEntity(Entity* entity){
+    for (auto it = entities.begin(); it != entities.end(); it++) {
+        if (*it == entity) {
+            delete *it;
+            entities.erase(it);
+            return;
         }
     }
 }

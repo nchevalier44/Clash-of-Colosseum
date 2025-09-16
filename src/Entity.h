@@ -2,9 +2,9 @@
 #define CLASH_OF_COLOSSEUM_ENTITY_H
 
 #include <SDL2/SDL.h>
-#include "Weapon.h"
 #include <vector>
 
+#include "Weapon.h"
 
 class Entity {
 public:
@@ -20,9 +20,11 @@ public:
     int getHp() const { return hp; }
     Weapon* getWeapon() { return weapon; }
 
+    bool canAttack(Entity* entity);
+
     double distance(int x2, int y2);
     Entity* findClosestEntity(std::vector<Entity*> entities);
-    void move(int x, int y);
+    void moveInDirection(int x, int y);
     void drawHealthBar(SDL_Renderer* renderer);
 
 private:

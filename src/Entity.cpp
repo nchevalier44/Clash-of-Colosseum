@@ -1,4 +1,6 @@
 #include "Entity.h"
+#include "Sword.h"
+#include "Bow.h"
 #include <iostream>
 
 Entity::Entity(int x, int y, int size, int hp, int max_hp) {
@@ -7,6 +9,13 @@ Entity::Entity(int x, int y, int size, int hp, int max_hp) {
     this->size = size;
     this->x = x;
     this->y = y;
+
+    //A Changer :
+    weapon = new Sword(10, 10);
+}
+
+bool Entity::canAttack(Entity* entity) {
+    return this->distance(entity->getX(), entity->getY()) < entity->getWeapon()->getRange();
 }
 
 double Entity::distance(int x2, int y2){
@@ -14,9 +23,13 @@ double Entity::distance(int x2, int y2){
 }
 
 Entity* Entity::findClosestEntity(std::vector<Entity*> entities){
-    //a faire : modif entities[0]
-    Entity* closest_entity = entities[0];
-    double dist = distance(entities[0]->getX(), entities[0]->getY());
+    if (entities.size() <= 1) {
+        return nullptr;
+    }
+
+    Entity* closest_entity = (entities[0] == this ? entities[1] : entities[0]);
+    double dist = distance(closest_entity->getX(), closest_entity->getY());
+
     for(Entity* e : entities){
         if(e != this){
             double d = distance(e->getX(), e->getY());
@@ -26,9 +39,11 @@ Entity* Entity::findClosestEntity(std::vector<Entity*> entities){
             }
         }
     }
+
     if(closest_entity == this){
         return nullptr;
     }
+
     return closest_entity;
 }
 
@@ -50,14 +65,14 @@ void Entity::setSize(int new_size) {
     }
 }
 void Entity::setHp(int new_hp){
-    if(new_hp >=0){
+    if(new_hp > 0){
         hp = new_hp;
     }  else{
         hp = 0;
     }
 }
 
-void Entity::move(int x, int y){
+void Entity::moveInDirection(int x, int y){
     if(x > this->x){
         this->x += 1;
     } else if(x < this->x){
