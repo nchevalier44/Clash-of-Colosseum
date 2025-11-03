@@ -28,7 +28,6 @@ Menu::Menu(SDL_Renderer* r) : renderer(r) {
     // Initialisation des options
     nbGuerriers = 5;
     pvBase = 100;
-    dureeCombat = 60;
     selectedOption = 0;
     typeGuerriers = "Guerrier";  // type statique
 }
@@ -38,8 +37,15 @@ Menu::~Menu() {
         SDL_DestroyTexture(background);
         background = nullptr;
     }
-    if (font) TTF_CloseFont(font);
-    TTF_Quit();
+    if (font != nullptr) {
+        if (TTF_WasInit() == 0) {
+            std::cerr << "ERREUR: TTF déjà quittée avant destruction du Menu !" << std::endl;
+            return;
+        }
+
+        TTF_CloseFont(font);
+        font = nullptr;
+    }
 }
 
 void Menu::render() {
@@ -65,7 +71,6 @@ void Menu::render() {
     std::vector<std::string> options = {
         "Nb Guerriers: " + std::to_string(nbGuerriers),
         "PV Guerriers: " + std::to_string(pvBase),
-        "Duree combat: " + std::to_string(dureeCombat),
         "Type: " + typeGuerriers,
         "Difficulte: " + difficulte,
         std::string("Musique: ") + (musiqueOn ? "ON" : "OFF")
@@ -106,7 +111,6 @@ void Menu::handleEvent(SDL_Event& event) {
             case SDL_SCANCODE_RIGHT:
                 if (selectedOption == 0) nbGuerriers++;
                 else if (selectedOption == 1) pvBase += 10;
-                else if (selectedOption == 2) dureeCombat += 10;
                 else if (selectedOption == 3) { // Type guerrier
                     if (typeGuerriers == "Guerrier") typeGuerriers = "Archer";
                     else if (typeGuerriers == "Archer") typeGuerriers = "Mage";
@@ -125,7 +129,6 @@ void Menu::handleEvent(SDL_Event& event) {
             case SDL_SCANCODE_LEFT:
                 if (selectedOption == 0 && nbGuerriers > 1) nbGuerriers--;
                 else if (selectedOption == 1 && pvBase > 10) pvBase -= 10;
-                else if (selectedOption == 2 && dureeCombat > 10) dureeCombat -= 10;
                 // Gauche = inverse des cycles type/difficulte
                 else if (selectedOption == 3) {
                     if (typeGuerriers == "Guerrier") typeGuerriers = "Tank";

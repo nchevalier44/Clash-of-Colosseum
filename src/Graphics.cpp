@@ -11,6 +11,7 @@ SDL_Renderer* Graphics::getRenderer() const {
 }
 
 Graphics::~Graphics() {
+
     if (renderer) {
         SDL_DestroyRenderer(renderer);
         this->renderer = nullptr;
@@ -82,6 +83,11 @@ void Graphics::update(bool* running) {
                 case SDL_SCANCODE_LEFT:  e->setX(e->getX() - 5); break;
                 default: break;
             }
+        }
+        if (entities.size() <= 1)
+        {
+            std::cout << "Le combat est terminé !" << std::endl;
+            *running = false;
         }
     }
 }

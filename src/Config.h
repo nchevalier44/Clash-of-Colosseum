@@ -17,7 +17,6 @@ public:
     // Getters pour récupérer les valeurs choisies dans le menu
     int getNbGuerriers() const { return nbGuerriers; }
     int getPvBase() const { return pvBase; }
-    int getDureeCombat() const { return dureeCombat; }
     std::string getTypeGuerriers() const { return typeGuerriers; }
 
 private:
@@ -27,7 +26,6 @@ private:
 
     int nbGuerriers = 5;       // valeur par défaut
     int pvBase = 100;          // valeur par défaut
-    int dureeCombat = 120;     // valeur par défaut
     std::string typeGuerriers = "Guerrier";
     std::string difficulte = "Normal";
     bool musiqueOn = true;

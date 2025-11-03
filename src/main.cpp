@@ -32,13 +32,11 @@ int main() {
 
     int nbGuerriers = menu.getNbGuerriers();
     int pvBase = menu.getPvBase();
-    int dureeCombat = menu.getDureeCombat();
     std::string typeGuerrier = menu.getTypeGuerriers();
 
     std::cout << "---- Parametres choisis ----\n";
     std::cout << "Nb Guerriers : " << nbGuerriers << "\n";
     std::cout << "PV Guerriers : " << pvBase << "\n";
-    std::cout << "Duree combat : " << dureeCombat << "s\n";
     std::cout << "Type Guerrier: " << typeGuerrier << "\n";
 
     std::vector<std::unique_ptr<Entity>> entities;
@@ -64,15 +62,7 @@ int main() {
     graphics.setEntities(entities);
     // ----- Boucle principale -----
     bool running = true;
-    Uint32 startTime = SDL_GetTicks();
-
     while (running) {
-        Uint32 elapsed = SDL_GetTicks() - startTime;
-        if (elapsed >= static_cast<Uint32>(dureeCombat) * 1000) {
-            std::cout << "\n⏳ Le combat est termine !\n";
-            running = false;
-        }
-
         graphics.update(&running);
         SDL_Delay(16); // ~60 FPS
     }
