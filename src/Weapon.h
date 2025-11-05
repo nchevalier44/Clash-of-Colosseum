@@ -16,8 +16,8 @@ public:
     int getRange() const { return range; };
     int getDamage() const { return damage; };
 
-    virtual void attack(Entity* entity);
-    virtual void attack(Entity* entity, std::vector<Projectile*>* projectiles, int origin_x, int origin_y){};
+    virtual void attack(Entity* target);
+    virtual void attack(Entity* target, Entity* owner, std::vector<Projectile*>* projectiles, int origin_x, int origin_y){};
     virtual void draw(int x, int y, SDL_Renderer* renderer) = 0;
     virtual std::string type() { return "Weapon"; }
 

@@ -41,6 +41,8 @@ void Graphics::setEntities(const std::vector<Entity*>& ents) {
 }
 
 void Graphics::update(bool* running) {
+    static int frameCount = 0;
+    std::cout << "Frame " << ++frameCount << std::endl;
     SDL_Event event;
 
     SDL_SetRenderDrawColor(renderer, 230, 198, 34, 255);
@@ -52,7 +54,7 @@ void Graphics::update(bool* running) {
         if(closest != nullptr){
             if(e->canAttack(closest)){
                 if(e->getWeapon()->type() == "Bow"){
-                    e->getWeapon()->attack(closest, &projectiles, e->getX(), e->getY());
+                    e->getWeapon()->attack(closest, e, &projectiles, e->getX(), e->getY());
                 } else{
 
                     e->getWeapon()->attack(closest);
@@ -77,24 +79,6 @@ void Graphics::update(bool* running) {
                          (short)e->getSize(), 255, 0, 0, 255);
     }
 
-    //Projectiles
-    for(Projectile* p : projectiles){
-        p->move();
-        p->draw(renderer);
-
-        for(Entity* e : entities){
-            float dx = e->getX() - p->getX();
-            float dy = e->getY() - p->getY();
-            float distance = std::sqrt(dx * dx + dy * dy);
-
-            float sumRadius = e->getSize() + 5;
-
-            if(distance <= sumRadius){
-                e->setHp(e->getHp() - p->getDamage()); //Attack
-            }
-        }
-    }
-
     for (auto p = projectiles.begin(); p != projectiles.end(); ) {
         Projectile* proj = *p;
         proj->move();
@@ -103,18 +87,20 @@ void Graphics::update(bool* running) {
         bool hit = false;
 
         for (Entity* e : entities) {
-            float dx = e->getX() - proj->getX();
-            float dy = e->getY() - proj->getY();
-            float distance = std::sqrt(dx * dx + dy * dy);
+            if(e != proj->getOwner()){
+                //Collision
+                float dx = e->getX() - proj->getX();
+                float dy = e->getY() - proj->getY();
+                float distance = std::sqrt(dx * dx + dy * dy);
+                float sumRadius = e->getSize() + 10;
 
-            float sumRadius = e->getSize() + 5;
-
-            if (distance <= sumRadius) {
-                e->setHp(e->getHp() - proj->getDamage()); // inflige les dégâts
-                hit = true;
-                delete proj;
-                p = projectiles.erase(p);
-                break;
+                if (distance <= sumRadius) {
+                    e->setHp(e->getHp() - proj->getDamage()); // inflige les dégâts
+                    hit = true;
+                    delete proj;
+                    p = projectiles.erase(p);
+                    break;
+                }
             }
         }
         if(!hit){

@@ -5,14 +5,14 @@
 
 class Projectile {
 public:
-    Projectile(int damage, float speed, int x, int y, int dest_x, int dest_y);
+    Projectile(Entity* owner, int damage, float speed, int x, int y, int dest_x, int dest_y);
     void move();
     void draw(SDL_Renderer* renderer);
     int getX() const { return x; };
     int getY() const { return y; };
     int getDamage() const { return damage; };
-
-    bool canMove();
+    Entity* getOwner() const { return owner; };
+    void setLastMove(Uint32 ms) { last_move_time = ms; }
 
 private:
     float x;
@@ -20,8 +20,9 @@ private:
     float dx;
     float dy;
     int damage;
-    Uint32 last_move;
-    Uint32 move_cooldown;
+    Uint32 last_move_time;
+    Uint32 move_cooldown = 1000;
+    Entity* owner = nullptr;
 };
 
 

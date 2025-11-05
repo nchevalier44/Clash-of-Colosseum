@@ -2,7 +2,7 @@
 #include "Projectile.h"
 #include <iostream>
 
-Projectile::Projectile(int damage, float speed, int x, int y, int dest_x, int dest_y) : damage(damage), x(x), y(y){
+Projectile::Projectile(Entity* owner, int damage, float speed, int x, int y, int dest_x, int dest_y) : owner(owner), damage(damage), x(x), y(y){
     float dx_total = dest_x - x;
     float dy_total = dest_y - y;
     float length = std::sqrt(dx_total * dx_total + dy_total * dy_total);
@@ -24,7 +24,7 @@ void Projectile::move(){
 }
 
 void Projectile::draw(SDL_Renderer* renderer){
-    SDL_Rect rect = {x, y, 5, 5};
+    SDL_Rect rect = {int(this->x), int(this->y), 10, 10};
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderFillRect(renderer, &rect);
 }
