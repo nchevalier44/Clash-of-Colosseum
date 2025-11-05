@@ -112,18 +112,18 @@ void Menu::handleEvent(SDL_Event& event) {
             case SDL_SCANCODE_RIGHT:
                 if (selectedOption == 0) nbGuerriers++;
                 else if (selectedOption == 1) pvBase += 10;
-                else if (selectedOption == 3) { // Type guerrier
+                else if (selectedOption == 2) { // Type guerrier
                     if (typeGuerriers == "Guerrier") typeGuerriers = "Archer";
                     else if (typeGuerriers == "Archer") typeGuerriers = "Mage";
                     else if (typeGuerriers == "Mage") typeGuerriers = "Tank";
                     else typeGuerriers = "Guerrier";
                 }
-                else if (selectedOption == 4) { // Difficulté
+                else if (selectedOption == 3) { // Difficulté
                     if (difficulte == "Facile") difficulte = "Normal";
                     else if (difficulte == "Normal") difficulte = "Difficile";
                     else difficulte = "Facile";
                 }
-                else if (selectedOption == 5) { // Musique ON/OFF
+                else if (selectedOption == 4) { // Musique ON/OFF
                     musiqueOn = !musiqueOn;
                     if (musiqueOn) {
                         Mix_PlayMusic(menuMusic, -1);
@@ -131,7 +131,6 @@ void Menu::handleEvent(SDL_Event& event) {
                         Mix_HaltMusic();
                     }
                 }
-
                 break;
             case SDL_SCANCODE_LEFT:
                 if (selectedOption == 0 && nbGuerriers > 1) nbGuerriers--;
