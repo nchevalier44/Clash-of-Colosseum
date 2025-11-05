@@ -28,7 +28,6 @@ private:
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
 
-    // On ne stocke que des pointeurs bruts vers les entités créées dans main
     std::vector<Entity*> entities;
     std::vector<Projectile*> projectiles;
 };

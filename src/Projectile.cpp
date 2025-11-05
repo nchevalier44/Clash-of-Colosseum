@@ -1,17 +1,21 @@
+#include <iostream>
 #include "Projectile.h"
+#include <iostream>
 
-Projectile::Projectile(int damage, int speed, int x, int y, int dest_x, int dest_y) : damage(damage), speed(speed), x(x), y(y){
-    if(dest_x > x){
-        dx = speed;
-    } else{
-        dx = -speed;
-    }
+Projectile::Projectile(int damage, float speed, int x, int y, int dest_x, int dest_y) : damage(damage), x(x), y(y){
+    float dx_total = dest_x - x;
+    float dy_total = dest_y - y;
+    float length = std::sqrt(dx_total * dx_total + dy_total * dy_total);
 
-    if(dest_y > y){
-        dy = speed;
-    } else{
-        dy = -speed;
+    if (length != 0.0f) {
+        dx = dx_total / length * speed ;
+        dy = dy_total / length * speed ;
+    } else {
+        dx = 0;
+        dy = 0;
     }
+    std::cout << "DX : " << dx << std::endl;
+    std::cout << "DY : " << dy << std::endl;
 }
 
 void Projectile::move(){

@@ -9,14 +9,18 @@ Entity::Entity(int x, int y, int size, int hp, int max_hp) {
     this->size = size;
     this->x = x;
     this->y = y;
-
-    //A Changer :
-    //weapon = new Sword(10, 10);
 }
 
 bool Entity::canAttack(Entity* entity) {
+    Uint32 current_time = SDL_GetTicks();
+
+    if (current_time - last_attack_time < attack_cooldown){
+        return false;
+    }
+
     return this->distance(entity->getX(), entity->getY()) < entity->getWeapon()->getRange();
 }
+
 
 double Entity::distance(int x2, int y2){
     return sqrt(pow(x2-x, 2)+pow(y2-y, 2));
@@ -86,12 +90,12 @@ void Entity::moveInDirection(int x, int y){
 }
 Guerrier::Guerrier(int x, int y, int size, int max_hp)
     : Entity(x, y, size, max_hp, max_hp) {
-    weapon = new Epee();
+    weapon = new Sword();
 }
 
 Archer::Archer(int x, int y, int size, int max_hp)
     : Entity(x, y, size, max_hp, max_hp) {
-    weapon = new Arc();
+    weapon = new Bow();
 }
 
 Tank::Tank(int x, int y, int size, int max_hp)

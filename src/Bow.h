@@ -1,13 +1,21 @@
 #ifndef CLASH_OF_COLOSSEUM_BOW_H
 #define CLASH_OF_COLOSSEUM_BOW_H
 
+#include <vector>
 #include "Weapon.h"
+
+class Projectile;
 
 class Bow : public Weapon {
 public:
-    Bow(int damage=5, int range=10);
+    Bow(int damage=5, int range=150);
 
-    void attack(Entity* entity) override;
+    void attack(Entity* entity, std::vector<Projectile*>* projectiles, int origin_x, int origin_y);
+    void draw(int x, int y, SDL_Renderer* renderer) override;
+    std::string type() override { return "Bow"; };
+
+private:
+    Projectile* projectiles;
 };
 
 

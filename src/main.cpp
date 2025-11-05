@@ -43,8 +43,8 @@ int main() {
 
     std::vector<std::unique_ptr<Entity>> entities;
     for (int i = 0; i < nbGuerriers; i++) {
-        int x = 50 + i * 50;
-        int y = 200;
+        int x = 100 + i * 100;
+        int y = 300;
         if (typeGuerrier == "Guerrier") {
             entities.push_back(std::make_unique<Guerrier>(x, y, 20, pvBase));
         }

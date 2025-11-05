@@ -3,7 +3,9 @@
 
 #include <SDL2/SDL.h>
 #include <string>
+#include <vector>
 
+class Projectile;
 class Entity;
 
 class Weapon {
@@ -15,24 +17,13 @@ public:
     int getDamage() const { return damage; };
 
     virtual void attack(Entity* entity);
+    virtual void attack(Entity* entity, std::vector<Projectile*>* projectiles, int origin_x, int origin_y){};
     virtual void draw(int x, int y, SDL_Renderer* renderer) = 0;
+    virtual std::string type() { return "Weapon"; }
 
 protected:
     int damage;
     int range;
-};
-
-// --- Armes spécifiques ---
-class Epee : public Weapon {
-public:
-    Epee() : Weapon(10, 30) {}
-    void draw(int x, int y, SDL_Renderer* renderer) override;
-};
-
-class Arc : public Weapon {
-public:
-    Arc() : Weapon(7, 150) {}
-    void draw(int x, int y, SDL_Renderer* renderer) override;
 };
 
 class Catapulte : public Weapon {

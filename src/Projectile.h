@@ -5,16 +5,23 @@
 
 class Projectile {
 public:
-    Projectile(int damage, int speed, int x, int y, int dest_x, int dest_y);
+    Projectile(int damage, float speed, int x, int y, int dest_x, int dest_y);
     void move();
     void draw(SDL_Renderer* renderer);
+    int getX() const { return x; };
+    int getY() const { return y; };
+    int getDamage() const { return damage; };
+
+    bool canMove();
+
 private:
-    int x;
-    int y;
-    int dx;
-    int dy;
-    int speed;
+    float x;
+    float y;
+    float dx;
+    float dy;
     int damage;
+    Uint32 last_move;
+    Uint32 move_cooldown;
 };
 
 

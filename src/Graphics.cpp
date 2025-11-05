@@ -26,7 +26,7 @@ Graphics::~Graphics() {
 void Graphics::setEntities(const std::vector<std::unique_ptr<Entity>>& ents) {
     entities.clear();
     for (auto& e : ents) {
-        entities.push_back(e.get());  // On stocke juste le pointeur brut
+        entities.push_back(e.get());
     }
 }
 
@@ -41,7 +41,14 @@ void Graphics::update(bool* running) {
         Entity* closest = e->findClosestEntity(entities);
         if(closest != nullptr){
             if(e->canAttack(closest)){
-                e->getWeapon()->attack(closest);
+                if(e->getWeapon()->type() == "Bow"){
+                    e->getWeapon()->attack(closest, &projectiles, e->getX(), e->getY());
+                } else{
+
+                    e->getWeapon()->attack(closest);
+                }
+
+                e->setLastAttack(SDL_GetTicks());
 
                 if(closest->getHp() == 0 ){
                     deleteEntity(closest);
@@ -61,10 +68,49 @@ void Graphics::update(bool* running) {
     }
 
     //Projectiles
-    /*for(Projectile* p : projectiles){
+    for(Projectile* p : projectiles){
         p->move();
         p->draw(renderer);
-    }*/
+
+        for(Entity* e : entities){
+            float dx = e->getX() - p->getX();
+            float dy = e->getY() - p->getY();
+            float distance = std::sqrt(dx * dx + dy * dy);
+
+            float sumRadius = e->getSize() + 5;
+
+            if(distance <= sumRadius){
+                e->setHp(e->getHp() - p->getDamage()); //Attack
+            }
+        }
+    }
+
+    for (auto p = projectiles.begin(); p != projectiles.end(); ) {
+        Projectile* proj = *p;
+        proj->move();
+        proj->draw(renderer);
+
+        bool hit = false;
+
+        for (Entity* e : entities) {
+            float dx = e->getX() - proj->getX();
+            float dy = e->getY() - proj->getY();
+            float distance = std::sqrt(dx * dx + dy * dy);
+
+            float sumRadius = e->getSize() + 5;
+
+            if (distance <= sumRadius) {
+                e->setHp(e->getHp() - proj->getDamage()); // inflige les dégâts
+                hit = true;
+                delete proj;
+                p = projectiles.erase(p);
+                break;
+            }
+        }
+        if(!hit){
+            p++;
+        }
+    }
 
     SDL_RenderPresent(renderer);
 

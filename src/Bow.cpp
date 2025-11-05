@@ -1,10 +1,19 @@
 #include "Bow.h"
 #include "Projectile.h"
+#include "Entity.h"
 
 Bow::Bow(int damage, int range) : Weapon(damage, range){
 }
 
-void Bow::attack(Entity* entity) {
+void Bow::attack(Entity* entity, std::vector<Projectile*>* projectiles, int origin_x, int origin_y) {
     //launch a projectile in direction of the entity
-    //Projectile* projectile = new Projectile();
+    Projectile* projectile = new Projectile(this->damage, 1, origin_x, origin_y, entity->getX(), entity->getY());
+    projectiles->push_back(projectile);
+    projectile->move();
+}
+
+void Bow::draw(int x, int y, SDL_Renderer* renderer) {
+    SDL_SetRenderDrawColor(renderer, 139, 69, 19, 255); // marron bois
+    SDL_Rect rect = {x, y, 20, 5};
+    SDL_RenderFillRect(renderer, &rect);
 }

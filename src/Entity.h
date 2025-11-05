@@ -19,6 +19,8 @@ public:
     int getY() const { return y; };
     int getSize() const { return size; };
     int getHp() const { return hp; }
+    void setAttackCooldown(Uint32 ms) { attack_cooldown = ms; }
+    void setLastAttack(Uint32 ms) { last_attack_time = ms; }
     Weapon* getWeapon() { return weapon; }
 
     bool canAttack(Entity* entity);
@@ -28,6 +30,7 @@ public:
     void moveInDirection(int x, int y);
     void drawHealthBar(SDL_Renderer* renderer);
 
+
 protected:
     int hp;
     int max_hp;
@@ -35,6 +38,8 @@ protected:
     int x;
     int y;
     Weapon* weapon;
+    Uint32 last_attack_time = 0;
+    Uint32 attack_cooldown = 1000;
 };
 
 class Guerrier : public Entity {
