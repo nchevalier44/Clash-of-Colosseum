@@ -4,7 +4,7 @@
 Graphics::Graphics() {
     SDL_CreateWindowAndRenderer(640, 480, 0, &window, &renderer);
     SDL_SetWindowTitle(window, "Clash of Colosseum");
-    gameMusic = Mix_LoadMUS("../assets/game_music.mp3");
+    gameMusic = Mix_LoadMUS("../assets/mp3");
     if (!gameMusic) {
         std::cerr << "Erreur chargement musique jeu: " << Mix_GetError() << std::endl;
     }
