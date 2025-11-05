@@ -4,6 +4,11 @@
 Graphics::Graphics() {
     SDL_CreateWindowAndRenderer(640, 480, 0, &window, &renderer);
     SDL_SetWindowTitle(window, "Clash of Colosseum");
+    gameMusic = Mix_LoadMUS("../assets/game_music.mp3");
+    if (!gameMusic) {
+        std::cerr << "Erreur chargement musique jeu: " << Mix_GetError() << std::endl;
+    }
+
 }
 
 SDL_Renderer* Graphics::getRenderer() const {
@@ -20,15 +25,19 @@ Graphics::~Graphics() {
         SDL_DestroyWindow(window);
         window = nullptr;
     }
+    if (!entities.empty()) {
+        entities.clear();
+    }
+    if (gameMusic) {
+        Mix_HaltMusic();
+        Mix_FreeMusic(gameMusic);
+        gameMusic = nullptr;
+    }
 
-    SDL_Quit();
 }
 
-void Graphics::setEntities(const std::vector<std::unique_ptr<Entity>>& ents) {
-    entities.clear();
-    for (auto& e : ents) {
-        entities.push_back(e.get());  // On stocke juste le pointeur brut
-    }
+void Graphics::setEntities(const std::vector<Entity*>& ents) {
+    entities = ents;
 }
 
 void Graphics::update(bool* running) {
