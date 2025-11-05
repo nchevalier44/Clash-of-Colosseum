@@ -4,6 +4,7 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <string>
+#include <SDL_mixer.h>
 
 class Menu {
 public:
@@ -17,20 +18,19 @@ public:
     // Getters pour récupérer les valeurs choisies dans le menu
     int getNbGuerriers() const { return nbGuerriers; }
     int getPvBase() const { return pvBase; }
-    int getDureeCombat() const { return dureeCombat; }
     std::string getTypeGuerriers() const { return typeGuerriers; }
 
 private:
     SDL_Renderer* renderer;
     TTF_Font* font = nullptr;
+    Mix_Music* menuMusic = nullptr;
+    bool musiqueOn = true; // si tu veux pouvoir la désactiver
     SDL_Texture* background = nullptr;
 
     int nbGuerriers = 5;       // valeur par défaut
     int pvBase = 100;          // valeur par défaut
-    int dureeCombat = 120;     // valeur par défaut
     std::string typeGuerriers = "Guerrier";
     std::string difficulte = "Normal";
-    bool musiqueOn = true;
     int optionsCount = 6; // nb total d'options
 
     int selectedOption = 0;    // 0 = nbGuerriers, 1 = pvBase, 2 = dureeCombat

@@ -10,6 +10,10 @@ find_package(SDL2 REQUIRED)
 find_path(SDL2_GFX_INCLUDE_DIR SDL2/SDL2_gfxPrimitives.h)
 find_library(SDL2_GFX_LIBRARIES NAMES SDL2_gfx)
 
+# --- SDL2_mixer ---
+find_path(SDL2_MIXER_INCLUDE_DIR SDL2/SDL_mixer.h)
+find_library(SDL2_MIXER_LIBRARIES NAMES SDL2_mixer)
+
 # SDL2_image
 find_path(SDL2_IMAGE_INCLUDE_DIR SDL2/SDL_image.h)
 find_library(SDL2_IMAGE_LIBRARIES NAMES SDL2_image)
@@ -38,4 +42,5 @@ target_link_libraries(Clash_of_Colosseum
         ${SDL2_GFX_LIBRARIES}
         ${SDL2_IMAGE_LIBRARIES}
         ${SDL2_TTF_LIBRARIES}
+        ${SDL2_MIXER_LIBRARIES}
 )

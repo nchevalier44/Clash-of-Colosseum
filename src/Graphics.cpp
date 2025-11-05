@@ -4,6 +4,11 @@
 Graphics::Graphics() {
     SDL_CreateWindowAndRenderer(640, 480, 0, &window, &renderer);
     SDL_SetWindowTitle(window, "Clash of Colosseum");
+    gameMusic = Mix_LoadMUS("../assets/mp3");
+    if (!gameMusic) {
+        std::cerr << "Erreur chargement musique jeu: " << Mix_GetError() << std::endl;
+    }
+
 }
 
 SDL_Renderer* Graphics::getRenderer() const {
@@ -11,6 +16,7 @@ SDL_Renderer* Graphics::getRenderer() const {
 }
 
 Graphics::~Graphics() {
+
     if (renderer) {
         SDL_DestroyRenderer(renderer);
         this->renderer = nullptr;
@@ -19,15 +25,19 @@ Graphics::~Graphics() {
         SDL_DestroyWindow(window);
         window = nullptr;
     }
+    if (!entities.empty()) {
+        entities.clear();
+    }
+    if (gameMusic) {
+        Mix_HaltMusic();
+        Mix_FreeMusic(gameMusic);
+        gameMusic = nullptr;
+    }
 
-    SDL_Quit();
 }
 
-void Graphics::setEntities(const std::vector<std::unique_ptr<Entity>>& ents) {
-    entities.clear();
-    for (auto& e : ents) {
-        entities.push_back(e.get());
-    }
+void Graphics::setEntities(const std::vector<Entity*>& ents) {
+    entities = ents;
 }
 
 void Graphics::update(bool* running) {
@@ -128,6 +138,11 @@ void Graphics::update(bool* running) {
                 case SDL_SCANCODE_LEFT:  e->setX(e->getX() - 5); break;
                 default: break;
             }
+        }
+        if (entities.size() <= 1)
+        {
+            std::cout << "Le combat est terminé !" << std::endl;
+            *running = false;
         }
     }
 }

@@ -10,7 +10,12 @@ Menu::Menu(SDL_Renderer* r) : renderer(r) {
     if (!font) {
         std::cerr << "Erreur chargement police: " << TTF_GetError() << std::endl;
     }
-
+    menuMusic = Mix_LoadMUS("../assets/musiqueJeu.mp3");
+    if (!menuMusic) {
+        std::cerr << "Erreur chargement musique menu: " << Mix_GetError() << std::endl;
+    } else if (musiqueOn) {
+        Mix_PlayMusic(menuMusic, -1); // -1 = boucle infinie
+    }
     // Charger le fond une seule fois
     SDL_Surface* fondSurface = IMG_Load("../assets/menufond.png");
     if (!fondSurface) {
@@ -28,7 +33,6 @@ Menu::Menu(SDL_Renderer* r) : renderer(r) {
     // Initialisation des options
     nbGuerriers = 5;
     pvBase = 100;
-    dureeCombat = 60;
     selectedOption = 0;
     typeGuerriers = "Guerrier";  // type statique
 }
@@ -38,8 +42,11 @@ Menu::~Menu() {
         SDL_DestroyTexture(background);
         background = nullptr;
     }
-    if (font) TTF_CloseFont(font);
-    TTF_Quit();
+    if (menuMusic) {
+        Mix_HaltMusic(); // stoppe la musique
+        Mix_FreeMusic(menuMusic);
+        menuMusic = nullptr;
+    }
 }
 
 void Menu::render() {
@@ -65,7 +72,6 @@ void Menu::render() {
     std::vector<std::string> options = {
         "Nb Guerriers: " + std::to_string(nbGuerriers),
         "PV Guerriers: " + std::to_string(pvBase),
-        "Duree combat: " + std::to_string(dureeCombat),
         "Type: " + typeGuerriers,
         "Difficulte: " + difficulte,
         std::string("Musique: ") + (musiqueOn ? "ON" : "OFF")
@@ -106,7 +112,6 @@ void Menu::handleEvent(SDL_Event& event) {
             case SDL_SCANCODE_RIGHT:
                 if (selectedOption == 0) nbGuerriers++;
                 else if (selectedOption == 1) pvBase += 10;
-                else if (selectedOption == 2) dureeCombat += 10;
                 else if (selectedOption == 3) { // Type guerrier
                     if (typeGuerriers == "Guerrier") typeGuerriers = "Archer";
                     else if (typeGuerriers == "Archer") typeGuerriers = "Mage";
@@ -120,12 +125,17 @@ void Menu::handleEvent(SDL_Event& event) {
                 }
                 else if (selectedOption == 5) { // Musique ON/OFF
                     musiqueOn = !musiqueOn;
+                    if (musiqueOn) {
+                        Mix_PlayMusic(menuMusic, -1);
+                    } else {
+                        Mix_HaltMusic();
+                    }
                 }
+
                 break;
             case SDL_SCANCODE_LEFT:
                 if (selectedOption == 0 && nbGuerriers > 1) nbGuerriers--;
                 else if (selectedOption == 1 && pvBase > 10) pvBase -= 10;
-                else if (selectedOption == 2 && dureeCombat > 10) dureeCombat -= 10;
                 // Gauche = inverse des cycles type/difficulte
                 else if (selectedOption == 3) {
                     if (typeGuerriers == "Guerrier") typeGuerriers = "Tank";
