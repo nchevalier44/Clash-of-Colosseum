@@ -52,18 +52,19 @@ void Graphics::update(bool* running) {
     for(Entity* e : entities){
         Entity* closest = e->findClosestEntity(entities);
         if(closest != nullptr){
-            if(e->canAttack(closest)){
-                if(e->getWeapon()->type() == "Bow"){
-                    e->getWeapon()->attack(closest, e, &projectiles, e->getX(), e->getY());
-                } else{
+            if(e->canAttackDistance(closest)){
+                if(e->canAttackTime()){
+                    if(e->getWeapon()->type() == "Bow"){
+                        e->getWeapon()->attack(closest, e, &projectiles, e->getX(), e->getY());
+                    } else{
+                        e->getWeapon()->attack(closest);
+                    }
 
-                    e->getWeapon()->attack(closest);
-                }
+                    e->setLastAttack(SDL_GetTicks());
 
-                e->setLastAttack(SDL_GetTicks());
-
-                if(closest->getHp() == 0 ){
-                    deleteEntity(closest);
+                    if(closest->getHp() == 0 ){
+                        deleteEntity(closest);
+                    }
                 }
             } else{
                 e->moveInDirection(closest->getX(), closest->getY());

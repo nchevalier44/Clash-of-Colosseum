@@ -22,7 +22,8 @@ public:
     void setLastAttack(Uint32 ms) { last_attack_time = ms; }
     Weapon* getWeapon() { return weapon; }
 
-    bool canAttack(Entity* entity);
+    bool canAttackDistance(Entity* entity);
+    bool canAttackTime();
 
     double distance(int x2, int y2);
     Entity* findClosestEntity(std::vector<Entity*> entities);

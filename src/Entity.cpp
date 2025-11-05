@@ -11,14 +11,12 @@ Entity::Entity(int x, int y, int size, int hp, int max_hp) {
     this->y = y;
 }
 
-bool Entity::canAttack(Entity* entity) {
-    Uint32 current_time = SDL_GetTicks();
-
-    if (current_time - last_attack_time < attack_cooldown){
-        return false;
-    }
-
+bool Entity::canAttackDistance(Entity* entity) {
     return this->distance(entity->getX(), entity->getY()) < entity->getWeapon()->getRange();
+}
+
+bool Entity::canAttackTime(){
+    return !(SDL_GetTicks() - last_attack_time < attack_cooldown);
 }
 
 
