@@ -12,6 +12,7 @@ public:
     int getY() const { return y; };
     int getDamage() const { return damage; };
     Entity* getOwner() const { return owner; };
+    Uint32 getEndTime() const { return end_time; }
 
 private:
     float x;
@@ -21,6 +22,7 @@ private:
     int damage;
     Entity* owner = nullptr;
     int size=10;
+    Uint32 end_time;
 };
 
 

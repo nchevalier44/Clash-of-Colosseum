@@ -12,6 +12,7 @@ Projectile::Projectile(Entity* owner, int damage, float speed, int size, int x, 
         dx = 0;
         dy = 0;
     }
+    end_time = SDL_GetTicks() + 10 * 1000; //Destroy it-self in 10s
 }
 
 void Projectile::move(){

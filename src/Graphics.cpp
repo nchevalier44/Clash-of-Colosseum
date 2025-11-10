@@ -81,6 +81,11 @@ void Graphics::update(bool* running) {
 
     for (auto p = projectiles.begin(); p != projectiles.end(); ) {
         Projectile* proj = *p;
+        if(SDL_GetTicks() >= proj->getEndTime()){
+            delete proj;
+            p = projectiles.erase(p);
+            continue;
+        }
         proj->move();
         proj->draw(renderer);
 
