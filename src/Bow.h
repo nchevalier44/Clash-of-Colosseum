@@ -8,7 +8,7 @@ class Projectile;
 
 class Bow : public Weapon {
 public:
-    Bow(int damage=5, int range=150);
+    Bow(int damage=25, int range=150);
 
     void attack(Entity* target, Entity* owner, std::vector<Projectile*>* projectiles, int origin_x, int origin_y);
     void draw(int x, int y, SDL_Renderer* renderer) override;

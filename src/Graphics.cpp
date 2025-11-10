@@ -42,7 +42,6 @@ void Graphics::setEntities(const std::vector<Entity*>& ents) {
 
 void Graphics::update(bool* running) {
     static int frameCount = 0;
-    std::cout << "Frame " << ++frameCount << std::endl;
     SDL_Event event;
 
     SDL_SetRenderDrawColor(renderer, 230, 198, 34, 255);
