@@ -5,7 +5,7 @@
 
 class Projectile {
 public:
-    Projectile(Entity* owner, int damage, float speed, int x, int y, int dest_x, int dest_y);
+    Projectile(Entity* owner, int damage, float speed, int size, int x, int y, int dest_x, int dest_y);
     void move();
     void draw(SDL_Renderer* renderer);
     int getX() const { return x; };
@@ -20,6 +20,7 @@ private:
     float dy;
     int damage;
     Entity* owner = nullptr;
+    int size=10;
 };
 
 
