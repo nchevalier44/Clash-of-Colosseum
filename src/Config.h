@@ -17,7 +17,6 @@ public:
 
     // Getters pour récupérer les valeurs choisies dans le menu
     int getNbGuerriers() const { return nbGuerriers; }
-    int getPvBase() const { return pvBase; }
     std::string getTypeGuerriers() const { return typeGuerriers; }
 
 private:
@@ -28,7 +27,6 @@ private:
     SDL_Texture* background = nullptr;
 
     int nbGuerriers = 5;       // valeur par défaut
-    int pvBase = 100;          // valeur par défaut
     std::string typeGuerriers = "Guerrier";
     std::string difficulte = "Normal";
     int optionsCount = 6; // nb total d'options

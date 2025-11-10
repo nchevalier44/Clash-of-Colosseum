@@ -3,12 +3,13 @@
 
 #include <SDL2/SDL.h>
 #include <vector>
-
+#include <SDL2/SDL_image.h>
 #include "Weapon.h"
 
+using namespace std;
 class Entity {
 public:
-    Entity(int x, int y, int size=10, int hp=100, int max_hp=100);
+    Entity(int x, int y, SDL_Renderer* renderer);
     virtual ~Entity();
 
     void setX(int new_x){ x = new_x; };
@@ -26,40 +27,57 @@ public:
     bool canAttack(Entity* entity);
 
     double distance(int x2, int y2);
-    Entity* findClosestEntity(std::vector<Entity*> entities);
-    void moveInDirection(int x, int y);
+    Entity* findClosestEntity(vector<Entity*> entities);
+    virtual void moveInDirection(int x, int y);
     void drawHealthBar(SDL_Renderer* renderer);
 
+    //Sprites
+    virtual void loadSprites(SDL_Renderer* renderer); // à redéfinir
+    virtual void draw(SDL_Renderer* renderer);
+    void setState(const string& new_state); // "idle", "run", "attack"
+    void setDirection(const string& new_dir); // "left" ou "right"
 
 protected:
     int hp;
     int max_hp;
     int size;
+    double sprite_scale; // échelle d’affichage du sprite
     int x;
     int y;
     Weapon* weapon;
     Uint32 last_attack_time = 0;
     Uint32 attack_cooldown = 1000;
+
+    vector<SDL_Texture*> frames;
+    string state = "idle";
+    string direction = "right";
+    int current_frame = 0;
+    Uint32 last_frame_time = 0;
+    Uint32 frame_delay = 120;
+    SDL_Renderer* current_renderer = nullptr;
+
 };
 
 class Guerrier : public Entity {
 public:
-    Guerrier(int x, int y, int size=15, int max_hp=120);
+    Guerrier(int x, int y, SDL_Renderer* renderer);
+    void loadSprites(SDL_Renderer* renderer);
+    void moveInDirection(int x, int y);
 };
 
 class Archer : public Entity {
 public:
-    Archer(int x, int y, int size=12, int max_hp=80);
+    Archer(int x, int y, SDL_Renderer* renderer);
 };
 
 class Tank : public Entity {
 public:
-    Tank(int x, int y, int size=25, int max_hp=200);
+    Tank(int x, int y, SDL_Renderer* renderer);
 };
 
 class Mage : public Entity {
 public:
-    Mage(int x, int y, int size=14, int max_hp=90);
+    Mage(int x, int y, SDL_Renderer* renderer);
 };
 
 

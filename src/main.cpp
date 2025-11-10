@@ -36,12 +36,10 @@ int main() {
     menu.configureParameters();
 
     int nbGuerriers = menu.getNbGuerriers();
-    int pvBase = menu.getPvBase();
     std::string typeGuerrier = menu.getTypeGuerriers();
 
     std::cout << "---- Parametres choisis ----\n";
     std::cout << "Nb Guerriers : " << nbGuerriers << "\n";
-    std::cout << "PV Guerriers : " << pvBase << "\n";
     std::cout << "Type Guerrier: " << typeGuerrier << "\n";
 
     std::vector<Entity*> entities;
@@ -49,20 +47,21 @@ int main() {
         int x = 100 + i * 100;
         int y = 300;
         if (typeGuerrier == "Guerrier") {
-            entities.push_back(new Guerrier(x, y, 20, pvBase));
+            entities.push_back(new Guerrier(x, y, graphics.getRenderer()));
         }
         else if (typeGuerrier == "Archer") {
-            entities.push_back(new Archer(x, y, 20, pvBase));
+            entities.push_back(new Archer(x, y, graphics.getRenderer()));
         }
         else if (typeGuerrier == "Mage") {
-            entities.push_back(new Mage(x, y, 20, pvBase));
+            entities.push_back(new Mage(x, y, graphics.getRenderer()));
         }
         else if (typeGuerrier == "Tank") {
-            entities.push_back(new Tank(x, y, 30, pvBase * 2));
+            entities.push_back(new Tank(x, y, graphics.getRenderer()));
         }
         else {
-            entities.push_back(new Entity(x, y, 20, pvBase));
+            entities.push_back(new Entity(x, y, graphics.getRenderer()));
         }
+
     }
     graphics.setEntities(entities);
     // ----- Boucle principale -----
