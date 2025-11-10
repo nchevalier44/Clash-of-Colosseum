@@ -116,7 +116,8 @@ void Menu::handleEvent(SDL_Event& event) {
                     if (typeGuerriers == "Guerrier") typeGuerriers = "Archer";
                     else if (typeGuerriers == "Archer") typeGuerriers = "Mage";
                     else if (typeGuerriers == "Mage") typeGuerriers = "Tank";
-                    else typeGuerriers = "Guerrier";
+                    else if (typeGuerriers == "Tank") typeGuerriers = "Random";
+                    else typeGuerriers = "Random";
                 }
                 else if (selectedOption == 3) { // Difficulté
                     if (difficulte == "Facile") difficulte = "Normal";
