@@ -41,6 +41,7 @@ void Graphics::setEntities(const std::vector<Entity*>& ents) {
 }
 
 void Graphics::update(bool* running) {
+    static int frameCount = 0;
     SDL_Event event;
 
     SDL_SetRenderDrawColor(renderer, 230, 198, 34, 255);
@@ -49,19 +50,23 @@ void Graphics::update(bool* running) {
     //Move and attack entities
     for (Entity* e : entities) {
         Entity* closest = e->findClosestEntity(entities);
-        if (closest != nullptr) {
-            if (e->canAttack(closest)) {
-                e->setState("attack");
-                if (e->getWeapon()->type() == "Bow") {
-                    e->getWeapon()->attack(closest, &projectiles, e->getX(), e->getY());
-                } else {
-                    e->getWeapon()->attack(closest);
+        if(closest != nullptr){
+            if(e->canAttackDistance(closest)){
+                if(e->canAttackTime()){
+                    e->setState("attack");
+                    if(e->getWeapon()->type() == "Bow"){
+                        e->getWeapon()->attack(closest, e, &projectiles, e->getX(), e->getY());
+                    } else{
+                        e->getWeapon()->attack(closest);
+                    }
+
+                    e->setLastAttack(SDL_GetTicks());
+
+                    if(closest->getHp() == 0 ){
+                        deleteEntity(closest);
+                    }
                 }
-                e->setLastAttack(SDL_GetTicks());
-                if (closest->getHp() == 0) {
-                    deleteEntity(closest);
-                }
-            } else {
+            } else{
                 e->setState("run");
                 e->moveInDirection(closest->getX(), closest->getY());
             }
@@ -75,45 +80,33 @@ void Graphics::update(bool* running) {
         }
     }
 
-
-    //Projectiles
-    for(Projectile* p : projectiles){
-        p->move();
-        p->draw(renderer);
-
-        for(Entity* e : entities){
-            float dx = e->getX() - p->getX();
-            float dy = e->getY() - p->getY();
-            float distance = std::sqrt(dx * dx + dy * dy);
-
-            float sumRadius = e->getSize() + 5;
-
-            if(distance <= sumRadius){
-                e->setHp(e->getHp() - p->getDamage()); //Attack
-            }
-        }
-    }
-
     for (auto p = projectiles.begin(); p != projectiles.end(); ) {
         Projectile* proj = *p;
+        if(SDL_GetTicks() >= proj->getEndTime()){
+            delete proj;
+            p = projectiles.erase(p);
+            continue;
+        }
         proj->move();
         proj->draw(renderer);
 
         bool hit = false;
 
         for (Entity* e : entities) {
-            float dx = e->getX() - proj->getX();
-            float dy = e->getY() - proj->getY();
-            float distance = std::sqrt(dx * dx + dy * dy);
+            if(e != proj->getOwner()){
+                //Collision
+                float dx = e->getX() - proj->getX();
+                float dy = e->getY() - proj->getY();
+                float distance = std::sqrt(dx * dx + dy * dy);
+                float sumRadius = e->getSize() + 10;
 
-            float sumRadius = e->getSize() + 5;
-
-            if (distance <= sumRadius) {
-                e->setHp(e->getHp() - proj->getDamage()); // inflige les dégâts
-                hit = true;
-                delete proj;
-                p = projectiles.erase(p);
-                break;
+                if (distance <= sumRadius) {
+                    e->setHp(e->getHp() - proj->getDamage()); // inflige les dégâts
+                    hit = true;
+                    delete proj;
+                    p = projectiles.erase(p);
+                    break;
+                }
             }
         }
         if(!hit){

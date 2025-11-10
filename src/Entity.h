@@ -20,11 +20,11 @@ public:
     int getY() const { return y; };
     int getSize() const { return size; };
     int getHp() const { return hp; }
-    void setAttackCooldown(Uint32 ms) { attack_cooldown = ms; }
     void setLastAttack(Uint32 ms) { last_attack_time = ms; }
     Weapon* getWeapon() { return weapon; }
 
-    bool canAttack(Entity* entity);
+    bool canAttackDistance(Entity* entity);
+    bool canAttackTime();
 
     double distance(int x2, int y2);
     Entity* findClosestEntity(vector<Entity*> entities);
