@@ -19,9 +19,3 @@ void Catapulte::draw(int x, int y, SDL_Renderer* renderer) {
     SDL_Rect rect = {x, y, 25, 25}; // gros bloc
     SDL_RenderFillRect(renderer, &rect);
 }
-
-void BouleDeFeu::draw(int x, int y, SDL_Renderer* renderer) {
-    SDL_SetRenderDrawColor(renderer, 255, 69, 0, 255); // rouge/orange feu
-    SDL_Rect rect = {x, y, 15, 15}; // boule
-    SDL_RenderFillRect(renderer, &rect);
-}

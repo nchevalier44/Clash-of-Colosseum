@@ -13,10 +13,6 @@ public:
     void attack(Entity* target, Entity* owner, std::vector<Projectile*>* projectiles, int origin_x, int origin_y);
     void draw(int x, int y, SDL_Renderer* renderer) override;
     std::string type() override { return "Bow"; };
-
-private:
-    Projectile* projectiles;
-
 };
 
 

@@ -117,6 +117,7 @@ void Menu::handleEvent(SDL_Event& event) {
                     else if (typeGuerriers == "Archer") typeGuerriers = "Mage";
                     else if (typeGuerriers == "Mage") typeGuerriers = "Tank";
                     else if (typeGuerriers == "Tank") typeGuerriers = "Random";
+                    else if (typeGuerriers == "Random") typeGuerriers = "Guerrier";
                     else typeGuerriers = "Random";
                 }
                 else if (selectedOption == 3) { // Difficulté
@@ -138,10 +139,12 @@ void Menu::handleEvent(SDL_Event& event) {
                 else if (selectedOption == 1 && pvBase > 10) pvBase -= 10;
                 // Gauche = inverse des cycles type/difficulte
                 else if (selectedOption == 3) {
-                    if (typeGuerriers == "Guerrier") typeGuerriers = "Tank";
+                    if (typeGuerriers == "Guerrier") typeGuerriers = "Random";
+                    else if(typeGuerriers == "Random") typeGuerriers = "Tank";
                     else if (typeGuerriers == "Tank") typeGuerriers = "Mage";
                     else if (typeGuerriers == "Mage") typeGuerriers = "Archer";
-                    else typeGuerriers = "Guerrier";
+                    else if(typeGuerriers == "Archer") typeGuerriers = "Guerrier";
+                    else typeGuerriers = "Random";
                 }
                 else if (selectedOption == 4) {
                     if (difficulte == "Facile") difficulte = "Difficile";

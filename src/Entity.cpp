@@ -1,6 +1,7 @@
 #include "Entity.h"
 #include "Sword.h"
 #include "Bow.h"
+#include "Fireball.h"
 #include <iostream>
 
 Entity::Entity(int x, int y, int size, int hp, int max_hp) {
@@ -103,7 +104,7 @@ Tank::Tank(int x, int y, int size, int max_hp)
 
 Mage::Mage(int x, int y, int size, int max_hp)
     : Entity(x, y, size, max_hp, max_hp) {
-    weapon = new BouleDeFeu();
+    weapon = new Fireball();
 }
 Entity::~Entity() {
     // rien de spécial pour l’instant

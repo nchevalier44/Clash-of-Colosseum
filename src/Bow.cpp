@@ -7,8 +7,8 @@ Bow::Bow(int damage, int range) : Weapon(damage, range){
 
 void Bow::attack(Entity* entity, Entity* owner, std::vector<Projectile*>* projectiles, int origin_x, int origin_y) {
     //launch a projectile in direction of the entity
-    float speed = 1.5f;
-    int size = 10;
+    float speed = 1.75f;
+    int size = 5;
     Projectile* projectile = new Projectile(owner, this->damage, speed, size, origin_x, origin_y, entity->getX(), entity->getY());
     projectiles->push_back(projectile);
 }
