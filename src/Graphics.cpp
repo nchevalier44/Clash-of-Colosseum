@@ -48,11 +48,12 @@ void Graphics::update(bool* running) {
     SDL_RenderClear(renderer);
 
     //Move and attack entities
-    for(Entity* e : entities){
+    for (Entity* e : entities) {
         Entity* closest = e->findClosestEntity(entities);
         if(closest != nullptr){
             if(e->canAttackDistance(closest)){
                 if(e->canAttackTime()){
+                    e->setState("attack");
                     if(e->getWeapon()->type() == "Bow"){
                         e->getWeapon()->attack(closest, e, &projectiles, e->getX(), e->getY());
                     } else{
@@ -66,17 +67,17 @@ void Graphics::update(bool* running) {
                     }
                 }
             } else{
+                e->setState("run");
                 e->moveInDirection(closest->getX(), closest->getY());
             }
         }
+
+        e->draw(renderer);
         e->drawHealthBar(renderer);
 
         if (e->getWeapon()) {
             e->getWeapon()->draw(e->getX() + e->getSize(), e->getY(), renderer);
         }
-
-        filledCircleRGBA(renderer, (short)e->getX(), (short)e->getY(),
-                         (short)e->getSize(), 255, 0, 0, 255);
     }
 
     for (auto p = projectiles.begin(); p != projectiles.end(); ) {

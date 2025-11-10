@@ -32,7 +32,6 @@ Menu::Menu(SDL_Renderer* r) : renderer(r) {
 
     // Initialisation des options
     nbGuerriers = 5;
-    pvBase = 100;
     selectedOption = 0;
     typeGuerriers = "Guerrier";  // type statique
 }
@@ -71,7 +70,6 @@ void Menu::render() {
     // Liste des options
     std::vector<std::string> options = {
         "Nb Guerriers: " + std::to_string(nbGuerriers),
-        "PV Guerriers: " + std::to_string(pvBase),
         "Type: " + typeGuerriers,
         "Difficulte: " + difficulte,
         std::string("Musique: ") + (musiqueOn ? "ON" : "OFF")
@@ -111,8 +109,7 @@ void Menu::handleEvent(SDL_Event& event) {
                 break;
             case SDL_SCANCODE_RIGHT:
                 if (selectedOption == 0) nbGuerriers++;
-                else if (selectedOption == 1) pvBase += 10;
-                else if (selectedOption == 2) { // Type guerrier
+                else if (selectedOption == 1) { // Type guerrier
                     if (typeGuerriers == "Guerrier") typeGuerriers = "Archer";
                     else if (typeGuerriers == "Archer") typeGuerriers = "Mage";
                     else if (typeGuerriers == "Mage") typeGuerriers = "Tank";
@@ -120,12 +117,12 @@ void Menu::handleEvent(SDL_Event& event) {
                     else if (typeGuerriers == "Random") typeGuerriers = "Guerrier";
                     else typeGuerriers = "Random";
                 }
-                else if (selectedOption == 3) { // Difficulté
+                else if (selectedOption == 2) { // Difficulté
                     if (difficulte == "Facile") difficulte = "Normal";
                     else if (difficulte == "Normal") difficulte = "Difficile";
                     else difficulte = "Facile";
                 }
-                else if (selectedOption == 4) { // Musique ON/OFF
+                else if (selectedOption == 3) { // Musique ON/OFF
                     musiqueOn = !musiqueOn;
                     if (musiqueOn) {
                         Mix_PlayMusic(menuMusic, -1);
@@ -136,7 +133,6 @@ void Menu::handleEvent(SDL_Event& event) {
                 break;
             case SDL_SCANCODE_LEFT:
                 if (selectedOption == 0 && nbGuerriers > 1) nbGuerriers--;
-                else if (selectedOption == 1 && pvBase > 10) pvBase -= 10;
                 // Gauche = inverse des cycles type/difficulte
                 else if (selectedOption == 3) {
                     if (typeGuerriers == "Guerrier") typeGuerriers = "Random";
@@ -146,7 +142,7 @@ void Menu::handleEvent(SDL_Event& event) {
                     else if(typeGuerriers == "Archer") typeGuerriers = "Guerrier";
                     else typeGuerriers = "Random";
                 }
-                else if (selectedOption == 4) {
+                else if (selectedOption == 2) {
                     if (difficulte == "Facile") difficulte = "Difficile";
                     else if (difficulte == "Normal") difficulte = "Facile";
                     else difficulte = "Normal";
