@@ -33,7 +33,6 @@ Menu::Menu(SDL_Renderer* r) : renderer(r) {
     // Initialisation des options
     nbGuerriers = 5;
     selectedOption = 0;
-    typeGuerriers = "Guerrier";  // type statique
 }
 
 Menu::~Menu() {
@@ -70,7 +69,6 @@ void Menu::render() {
     // Liste des options
     std::vector<std::string> options = {
         "Nb Guerriers: " + std::to_string(nbGuerriers),
-        "Type: " + typeGuerriers,
         "Difficulte: " + difficulte,
         std::string("Musique: ") + (musiqueOn ? "ON" : "OFF")
     };
@@ -109,14 +107,6 @@ void Menu::handleEvent(SDL_Event& event) {
                 break;
             case SDL_SCANCODE_RIGHT:
                 if (selectedOption == 0) nbGuerriers++;
-                else if (selectedOption == 1) { // Type guerrier
-                    if (typeGuerriers == "Guerrier") typeGuerriers = "Archer";
-                    else if (typeGuerriers == "Archer") typeGuerriers = "Mage";
-                    else if (typeGuerriers == "Mage") typeGuerriers = "Tank";
-                    else if (typeGuerriers == "Tank") typeGuerriers = "Random";
-                    else if (typeGuerriers == "Random") typeGuerriers = "Guerrier";
-                    else typeGuerriers = "Random";
-                }
                 else if (selectedOption == 2) { // Difficulté
                     if (difficulte == "Facile") difficulte = "Normal";
                     else if (difficulte == "Normal") difficulte = "Difficile";
@@ -134,14 +124,6 @@ void Menu::handleEvent(SDL_Event& event) {
             case SDL_SCANCODE_LEFT:
                 if (selectedOption == 0 && nbGuerriers > 1) nbGuerriers--;
                 // Gauche = inverse des cycles type/difficulte
-                else if (selectedOption == 3) {
-                    if (typeGuerriers == "Guerrier") typeGuerriers = "Random";
-                    else if(typeGuerriers == "Random") typeGuerriers = "Tank";
-                    else if (typeGuerriers == "Tank") typeGuerriers = "Mage";
-                    else if (typeGuerriers == "Mage") typeGuerriers = "Archer";
-                    else if(typeGuerriers == "Archer") typeGuerriers = "Guerrier";
-                    else typeGuerriers = "Random";
-                }
                 else if (selectedOption == 2) {
                     if (difficulte == "Facile") difficulte = "Difficile";
                     else if (difficulte == "Normal") difficulte = "Facile";

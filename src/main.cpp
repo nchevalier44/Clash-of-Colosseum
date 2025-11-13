@@ -44,7 +44,6 @@ int main() {
 
     std::cout << "---- Parametres choisis ----\n";
     std::cout << "Nb Guerriers : " << nbGuerriers << "\n";
-    std::cout << "Type Guerrier: " << typeGuerrier << "\n";
 
     std::vector<Entity*> entities;
     std::array<std::string, 4> types = {"Guerrier", "Archer", "Mage", "Tank"};
@@ -55,28 +54,27 @@ int main() {
         SDL_GetWindowSize(graphics.getWindow(), &width, &height);
         int x = std::rand() % (width-50) + 50; // entre 50 et width-50
         int y = std::rand() % (height-50) + 50; // entre 50 et height-50
+        int index_type = std::rand() % (types.size()-1);
 
-        if(typeGuerrier == "Random"){
-            int index_type = std::rand() % (types.size()-1);
-            entity_type = types[index_type];
-        }
-
-        if (typeGuerrier == "Guerrier" || entity_type == "Guerrier") {
-            entities.push_back(new Guerrier(x, y, graphics.getRenderer()));
-        }
-        else if (typeGuerrier == "Archer" || entity_type == "Archer") {
-            entities.push_back(new Archer(x, y, graphics.getRenderer()));
-        }
-        else if (typeGuerrier == "Mage" || entity_type == "Mage") {
-            entities.push_back(new Mage(x, y, graphics.getRenderer()));
-        }
-        else if (typeGuerrier == "Tank" || entity_type == "Tank") {
-            entities.push_back(new Tank(x, y, graphics.getRenderer()));
-        }
-        else {
-            entities.push_back(new Entity(x, y, graphics.getRenderer()));
+        switch (index_type) {
+            case 0: // Guerrier
+                entities.push_back(new Guerrier(x, y, graphics.getRenderer()));
+                break;
+            case 1: // Archer
+                entities.push_back(new Archer(x, y, graphics.getRenderer()));
+                break;
+            case 2: // Mage
+                entities.push_back(new Mage(x, y, graphics.getRenderer()));
+                break;
+            case 3: // Tank
+                entities.push_back(new Tank(x, y, graphics.getRenderer()));
+                break;
+            default:
+                entities.push_back(new Entity(x, y, graphics.getRenderer()));
+                break;
         }
     }
+    
     graphics.setEntities(entities);
     // ----- Boucle principale -----
     // Stop musique du menu (au cas où elle tourne encore)
