@@ -179,7 +179,7 @@ Mage::Mage(int x, int y, SDL_Renderer* renderer)
     loadSprites(renderer);
 }
 
-Tank::Tank(int x, int y, SDL_Renderer* renderer)
+Golem::Golem(int x, int y, SDL_Renderer* renderer)
     : Entity(x, y, renderer)
 {
     weapon = new Catapulte();
@@ -310,7 +310,82 @@ void Mage::moveInDirection(int target_x, int target_y) {
         y -= 1;
     }
 }
+void Golem::loadSprites(SDL_Renderer* renderer) {
+    // Nettoyage des anciens sprites
+    for (auto tex : frames)
+        SDL_DestroyTexture(tex);
+    frames.clear();
 
+    std::string base_path = "../assets/Golem/";
+    std::string file_path;
+    int frame_count = 0;
+
+    if (state == "idle") {
+        frame_count = 8;
+        file_path = base_path + "Golem_1_idle_" + direction + ".png";
+    }
+    else if (state == "run") {
+        frame_count = 10;
+        file_path = base_path + "Golem_1_walk_" + direction + ".png";
+    }
+    else if (state == "attack") {
+        frame_count = 11;
+        file_path = base_path + "Golem_1_attack_" + direction + ".png";
+    }
+    else {
+        // Par défaut, idle
+        frame_count = 8;
+        file_path = base_path + "Golem_1_idle_" + direction + ".png";
+    }
+
+    SDL_Surface* sheet = IMG_Load(file_path.c_str());
+    if (!sheet) {
+        cerr << "Erreur chargement sprite Golem: " << file_path
+             << " - " << IMG_GetError() << endl;
+        return;
+    }
+
+    // Chaque frame est sur une ligne
+    int frame_width = sheet->w / frame_count;
+    int frame_height = sheet->h;
+
+    for (int i = 0; i < frame_count; ++i) {
+        SDL_Rect srcRect = { i * frame_width, 0, frame_width, frame_height };
+
+        SDL_Surface* frameSurface = SDL_CreateRGBSurface(SDL_SWSURFACE, frame_width, frame_height, 32,
+                                                         0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+        SDL_BlitSurface(sheet, &srcRect, frameSurface, nullptr);
+
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, frameSurface);
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+
+        SDL_FreeSurface(frameSurface);
+        frames.push_back(texture);
+    }
+
+    SDL_FreeSurface(sheet);
+    current_frame = 0;
+    last_frame_time = SDL_GetTicks();
+}
+void Golem::moveInDirection(int target_x, int target_y) {
+    setState("run");
+
+    if (target_x > x) {
+        x += 1;
+        setDirection("right");
+    }
+    else if (target_x < x) {
+        x -= 1;
+        setDirection("left");
+    }
+
+    if (target_y > y) {
+        y += 1;
+    }
+    else if (target_y < y) {
+        y -= 1;
+    }
+}
 Entity::~Entity() {
     // rien de spécial pour l’instant
     for (auto tex : frames)
