@@ -1,7 +1,8 @@
 #include "Entity.h"
-#include "Sword.h"
+#include "Spear.h"
 #include "Bow.h"
 #include "Fireball.h"
+#include "Fist.h"
 #include <iostream>
 #include <random>
 
@@ -145,7 +146,7 @@ void Entity::draw(SDL_Renderer* renderer) {
 Guerrier::Guerrier(int x, int y, SDL_Renderer* renderer)
     : Entity(x, y, renderer)
 {
-    weapon = new Sword();
+    weapon = new Spear();
 
     // Taille random (hitbox)
     this->size = randomRange(18, 26);
@@ -186,7 +187,7 @@ Mage::Mage(int x, int y, SDL_Renderer* renderer)
 Golem::Golem(int x, int y, SDL_Renderer* renderer)
     : Entity(x, y, renderer)
 {
-    weapon = new Catapulte();
+    weapon = new Fist();
     this->size = randomRange(30, 35);
     this->sprite_scale = this->size / 20.0f * 3.0f;
     this->hp = this->max_hp = randomRange(150, 200);

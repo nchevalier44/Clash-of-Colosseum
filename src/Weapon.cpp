@@ -13,9 +13,3 @@ void Weapon::draw(int x, int y, SDL_Renderer* renderer){
 void Weapon::attack(Entity* entity){
     entity->setHp(entity->getHp() - this->damage);
 }
-
-void Catapulte::draw(int x, int y, SDL_Renderer* renderer) {
-    SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255); // gris pierre
-    SDL_Rect rect = {x, y, 25, 25}; // gros bloc
-    SDL_RenderFillRect(renderer, &rect);
-}
