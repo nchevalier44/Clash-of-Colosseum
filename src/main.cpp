@@ -54,8 +54,8 @@ int main() {
         SDL_GetWindowSize(graphics.getWindow(), &width, &height);
         int x = std::rand() % (width-50) + 50; // entre 50 et width-50
         int y = std::rand() % (height-50) + 50; // entre 50 et height-50
-        int index_type = std::rand() % (types.size()-1);
-        index_type = 3;
+        int index_type = std::rand() % (types.size());
+
         switch (index_type) {
             case 0: // Guerrier
                 entities.push_back(new Guerrier(x, y, graphics.getRenderer()));

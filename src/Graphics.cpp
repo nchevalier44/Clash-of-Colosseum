@@ -65,7 +65,7 @@ void Graphics::update(bool* running) {
                 e->setLastAttack(SDL_GetTicks());
 
                 if (closest->getHp() == 0) {
-                    toDelete.push_back(closest); // ✅ suppression différée
+                    toDelete.push_back(closest); // suppression différée
                 }
             }
         } else {
@@ -141,19 +141,26 @@ void Graphics::update(bool* running) {
     }
     if (entities.size() <= 5){
         std::cout << "Le combat est terminé !" << std::endl;
-        SDL_Delay(3000);
+        SDL_Delay(1000);
+
+        std::vector<Entity*> new_entities; //Temporary vector
 
         for(int i = 0; i+1<entities.size(); i+= 2){
-
-            Entity* new_entity = this->createNewEntityFromTwo(entities[i], entities[i+1]);
-            entities.push_back(new_entity);
-
+            //We have now 2 parents
+            int number_of_children = std::rand() % 5 + 1;
+            //The 2 parents make between 1 and 5 children
+            for(int j = 0; j<number_of_children; j++){
+                Entity* new_entity = this->createNewEntityFromParents(entities[i], entities[i+1]);
+                new_entities.push_back(new_entity);
+            }
         }
+        //Add all new entities to the real vector
+        entities.insert(entities.end(), new_entities.begin(), new_entities.end());
         std::cout << "Le combat recommence !" << std::endl;
     }
 }
 
-Entity* Graphics::createNewEntityFromTwo(Entity* e1, Entity* e2){
+Entity* Graphics::createNewEntityFromParents(Entity* e1, Entity* e2){
     Entity* new_entity = nullptr;
     e1->setHp(e1->getMaxHp());
     e2->setHp(e2->getMaxHp());

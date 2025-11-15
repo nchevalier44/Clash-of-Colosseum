@@ -20,7 +20,7 @@ public:
     void update(bool* running);
     SDL_Renderer* getRenderer() const;
 
-    Entity* createNewEntityFromTwo(Entity* e1, Entity* e2);
+    Entity* createNewEntityFromParents(Entity* e1, Entity* e2);
 
     void deleteEntity(Entity* entity);
 
