@@ -27,6 +27,7 @@ Entity::Entity(int x, int y, SDL_Renderer* renderer) {
 void Entity::loadSprites(SDL_Renderer* renderer) {
     // par défaut : rien, redéfini dans les classes enfants
 }
+
 bool Entity::canAttackDistance(Entity* entity) {
     return this->distance(entity->getX(), entity->getY()) < entity->getWeapon()->getRange();
 }
@@ -139,7 +140,6 @@ void Entity::draw(SDL_Renderer* renderer) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
     SDL_Rect hitbox = { x - size, y - size, size * 2, size * 2 };
     SDL_RenderDrawRect(renderer, &hitbox);
-
 }
 
 Guerrier::Guerrier(int x, int y, SDL_Renderer* renderer)
@@ -156,6 +156,8 @@ Guerrier::Guerrier(int x, int y, SDL_Renderer* renderer)
     // PV random (entre 85 et 115)
     this->hp = this->max_hp = randomRange(85, 115);
 
+    type = "Guerrier";
+
     loadSprites(renderer);
 }
 
@@ -166,6 +168,7 @@ Archer::Archer(int x, int y, SDL_Renderer* renderer)
     this->size = randomRange(16, 24);
     this->sprite_scale = this->size / 20.0f * 2.0f;
     this->hp = this->max_hp = randomRange(75, 100);
+    type = "Archer";
     loadSprites(renderer);
 }
 
@@ -176,6 +179,7 @@ Mage::Mage(int x, int y, SDL_Renderer* renderer)
     this->size = randomRange(15, 22);
     this->sprite_scale = this->size / 20.0f * 1.8f;
     this->hp = this->max_hp = randomRange(65, 90);
+    type = "Mage";
     loadSprites(renderer);
 }
 
@@ -186,6 +190,7 @@ Tank::Tank(int x, int y, SDL_Renderer* renderer)
     this->size = randomRange(25, 35);
     this->sprite_scale = this->size / 20.0f * 3.0f;
     this->hp = this->max_hp = randomRange(150, 200);
+    type = "Tank";
     loadSprites(renderer);
 }
 

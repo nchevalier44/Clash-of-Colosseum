@@ -20,6 +20,8 @@ public:
     void update(bool* running);
     SDL_Renderer* getRenderer() const;
 
+    Entity* createNewEntityFromTwo(Entity* e1, Entity* e2);
+
     void deleteEntity(Entity* entity);
 
     // Ajout de la méthode pour injecter les entités depuis le main

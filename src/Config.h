@@ -26,7 +26,7 @@ private:
     bool musiqueOn = true; // si tu veux pouvoir la désactiver
     SDL_Texture* background = nullptr;
 
-    int nbGuerriers = 5;       // valeur par défaut
+    int nbGuerriers = 10;       // valeur par défaut
     std::string typeGuerriers = "Guerrier";
     std::string difficulte = "Normal";
     int optionsCount = 6; // nb total d'options

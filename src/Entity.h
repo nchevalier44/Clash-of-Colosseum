@@ -15,11 +15,13 @@ public:
     void setX(int new_x){ x = new_x; };
     void setY(int new_y){ y = new_y; };
     void setHp(int new_hp);
+    void setMaxHp(int new_max_hp) { max_hp = new_max_hp; }
     void setSize(int new_size);
     int getX() const { return x; };
     int getY() const { return y; };
     int getSize() const { return size; };
     int getHp() const { return hp; }
+    int getMaxHp() const { return max_hp; }
     void setLastAttack(Uint32 ms) { last_attack_time = ms; }
     Weapon* getWeapon() { return weapon; }
 
@@ -36,6 +38,9 @@ public:
     virtual void draw(SDL_Renderer* renderer);
     void setState(const string& new_state); // "idle", "run", "attack"
     void setDirection(const string& new_dir); // "left" ou "right"
+
+    std::string getType() const { return type; };
+
 
 protected:
     int hp;
@@ -55,6 +60,8 @@ protected:
     Uint32 last_frame_time = 0;
     Uint32 frame_delay = 120;
     SDL_Renderer* current_renderer = nullptr;
+
+    string type = "Entity";
 
 };
 

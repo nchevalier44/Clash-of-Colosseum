@@ -41,7 +41,6 @@ void Graphics::setEntities(const std::vector<Entity*>& ents) {
 }
 
 void Graphics::update(bool* running) {
-    static int frameCount = 0;
     SDL_Event event;
 
     SDL_SetRenderDrawColor(renderer, 230, 198, 34, 255);
@@ -93,7 +92,7 @@ void Graphics::update(bool* running) {
         bool hit = false;
 
         for (Entity* e : entities) {
-            if(e != proj->getOwner()){
+            if(proj->getOwner() != nullptr && e != proj->getOwner()){
                 //Collision
                 float dx = e->getX() - proj->getX();
                 float dy = e->getY() - proj->getY();
@@ -131,12 +130,55 @@ void Graphics::update(bool* running) {
                 default: break;
             }
         }
-        if (entities.size() <= 1)
-        {
-            std::cout << "Le combat est terminé !" << std::endl;
-            *running = false;
-        }
     }
+    if (entities.size() <= 5){
+        std::cout << "Le combat est terminé !" << std::endl;
+        *running = false;
+        /*if(entities.size() == 1) *running = false;
+        SDL_Delay(3000);
+
+        for(int i = 0; i+1<entities.size(); i+= 2){
+
+            Entity* new_entity = this->createNewEntityFromTwo(entities[i], entities[i+1]);
+            entities.push_back(new_entity);
+
+        }
+        std::cout << "Le combat recommence !" << std::endl;*/
+    }
+}
+
+Entity* Graphics::createNewEntityFromTwo(Entity* e1, Entity* e2){
+    Entity* new_entity = nullptr;
+    e1->setHp(e1->getMaxHp());
+    e2->setHp(e2->getMaxHp());
+
+    //Random position
+    int width, height;
+    SDL_GetWindowSize(getWindow(), &width, &height);
+    int x = std::rand() % (width-50) + 50; // entre 50 et width-50
+    int y = std::rand() % (height-50) + 50; // entre 50 et height-50
+
+    Entity* e_temp = nullptr;
+    //Choose the type of entity (e1 or e2)
+    (std::rand() % 2) ? e_temp = e1: e_temp = e2;
+
+    if(e_temp->getType() == "Guerrier"){
+        new_entity = new Guerrier(x, y, renderer);
+    } else if(e_temp->getType() == "Archer"){
+        new_entity = new Archer(x, y, renderer);
+    } else if(e_temp->getType() == "Mage"){
+        new_entity = new Mage(x, y, renderer);
+    } else if(e_temp->getType() == "Tank"){
+        new_entity = new Tank(x, y, renderer);
+    } else{
+        new_entity = new Entity(x, y, renderer);
+    }
+
+    int hp_random = (std::rand() % e1->getHp() + e2->getHp()); //random hp between e1 and e2 hp
+    new_entity->setHp(hp_random);
+    new_entity->setMaxHp(hp_random);
+
+    return new_entity;
 }
 
 void Graphics::deleteEntity(Entity* entity){
