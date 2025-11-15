@@ -139,8 +139,6 @@ void Graphics::update(bool* running) {
     }
     if (entities.size() <= 5){
         std::cout << "Le combat est terminé !" << std::endl;
-        *running = false;
-        /*if(entities.size() == 1) *running = false;
         SDL_Delay(3000);
 
         for(int i = 0; i+1<entities.size(); i+= 2){
@@ -149,7 +147,7 @@ void Graphics::update(bool* running) {
             entities.push_back(new_entity);
 
         }
-        std::cout << "Le combat recommence !" << std::endl;*/
+        std::cout << "Le combat recommence !" << std::endl;
     }
 }
 

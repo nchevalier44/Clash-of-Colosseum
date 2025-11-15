@@ -31,7 +31,7 @@ Menu::Menu(SDL_Renderer* r) : renderer(r) {
     }
 
     // Initialisation des options
-    nbGuerriers = 5;
+    nbGuerriers = 10;
     selectedOption = 0;
 }
 
