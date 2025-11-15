@@ -11,7 +11,6 @@ public:
     Fireball(SDL_Renderer* renderer, int damage=25, int range=150);
     ~Fireball();
     void attack(Entity* target, Entity* owner, std::vector<Projectile*>* projectiles, int origin_x, int origin_y);
-    void draw(int x, int y, SDL_Renderer* renderer) override;
     std::string type() override { return "Fireball"; };
 private:
     std::vector<SDL_Texture*> frames;

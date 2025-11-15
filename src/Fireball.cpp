@@ -37,15 +37,10 @@ void Fireball::attack(Entity* entity, Entity* owner, std::vector<Projectile*>* p
     Projectile* projectile = new Projectile(owner, this->damage, speed, size,
                                             origin_x, origin_y,
                                             entity->getX(), entity->getY(),
-                                            15000, this->frames); // ✅ on donne les frames
+                                            15000, this->frames);
     projectiles->push_back(projectile);
 }
 
-
-
-void Fireball::draw(int x, int y, SDL_Renderer* renderer) {
-
-}
 Fireball::~Fireball() {
     for (auto tex : frames)
         SDL_DestroyTexture(tex);

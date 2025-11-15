@@ -1,4 +1,5 @@
 #include "Graphics.h"
+#include "Bow.h"
 #include <iostream>
 
 Graphics::Graphics() {
@@ -75,8 +76,9 @@ void Graphics::update(bool* running) {
         e->draw(renderer);
         e->drawHealthBar(renderer);
 
-        if (e->getWeapon()) {
-            e->getWeapon()->draw(e->getX() + e->getSize(), e->getY(), renderer);
+        if (e->getType() == "Archer") {
+            Bow* bow = dynamic_cast<Bow *>(e->getWeapon());
+            bow->draw(e->getX() + e->getSize(), e->getY(), renderer);
         }
     }
 
