@@ -77,14 +77,19 @@ public:
     Archer(int x, int y, SDL_Renderer* renderer);
 };
 
-class Tank : public Entity {
+class Golem : public Entity {
 public:
-    Tank(int x, int y, SDL_Renderer* renderer);
+    Golem(int x, int y, SDL_Renderer* renderer);
+    void loadSprites(SDL_Renderer* renderer) override;
+    void moveInDirection(int target_x, int target_y) override;
 };
+
 
 class Mage : public Entity {
 public:
     Mage(int x, int y, SDL_Renderer* renderer);
+    void loadSprites(SDL_Renderer* renderer);
+    void moveInDirection(int target_x, int target_y);
 };
 
 

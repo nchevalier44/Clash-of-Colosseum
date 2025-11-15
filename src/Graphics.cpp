@@ -46,29 +46,30 @@ void Graphics::update(bool* running) {
     SDL_SetRenderDrawColor(renderer, 230, 198, 34, 255);
     SDL_RenderClear(renderer);
 
-    //Move and attack entities
+    std::vector<Entity*> toDelete;
+
     for (Entity* e : entities) {
         Entity* closest = e->findClosestEntity(entities);
-        if(closest != nullptr){
-            if(e->canAttackDistance(closest)){
-                if(e->canAttackTime()){
-                    e->setState("attack");
-                    if(e->getWeapon()->type() == "Bow"){
-                        e->getWeapon()->attack(closest, e, &projectiles, e->getX(), e->getY());
-                    } else{
-                        e->getWeapon()->attack(closest);
-                    }
+        if (!closest) continue;
 
-                    e->setLastAttack(SDL_GetTicks());
-
-                    if(closest->getHp() == 0 ){
-                        deleteEntity(closest);
-                    }
+        if (e->canAttackDistance(closest)) {
+            if (e->canAttackTime()) {
+                e->setState("attack");
+                if (e->getWeapon()->type() == "Bow" || e->getWeapon()->type() == "Fireball") {
+                    e->getWeapon()->attack(closest, e, &projectiles, e->getX(), e->getY());
+                } else {
+                    e->getWeapon()->attack(closest);
                 }
-            } else{
-                e->setState("run");
-                e->moveInDirection(closest->getX(), closest->getY());
+
+                e->setLastAttack(SDL_GetTicks());
+
+                if (closest->getHp() == 0) {
+                    toDelete.push_back(closest); // ✅ suppression différée
+                }
             }
+        } else {
+            e->setState("run");
+            e->moveInDirection(closest->getX(), closest->getY());
         }
 
         e->draw(renderer);
@@ -78,6 +79,11 @@ void Graphics::update(bool* running) {
             e->getWeapon()->draw(e->getX() + e->getSize(), e->getY(), renderer);
         }
     }
+
+    for (Entity* d : toDelete) {
+        deleteEntity(d);
+    }
+
 
     for (auto p = projectiles.begin(); p != projectiles.end(); ) {
         Projectile* proj = *p;

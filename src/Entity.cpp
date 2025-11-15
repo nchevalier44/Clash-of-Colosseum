@@ -166,7 +166,7 @@ Archer::Archer(int x, int y, SDL_Renderer* renderer)
 {
     weapon = new Bow();
     this->size = randomRange(16, 24);
-    this->sprite_scale = this->size / 20.0f * 2.0f;
+    this->sprite_scale = this->size / 10.0f * 2.0f;
     this->hp = this->max_hp = randomRange(75, 100);
     type = "Archer";
     loadSprites(renderer);
@@ -175,19 +175,19 @@ Archer::Archer(int x, int y, SDL_Renderer* renderer)
 Mage::Mage(int x, int y, SDL_Renderer* renderer)
     : Entity(x, y, renderer)
 {
-    weapon = new Fireball();
+    weapon = new Fireball(renderer);
     this->size = randomRange(15, 22);
-    this->sprite_scale = this->size / 20.0f * 1.8f;
+    this->sprite_scale = this->size/2;
     this->hp = this->max_hp = randomRange(65, 90);
     type = "Mage";
     loadSprites(renderer);
 }
 
-Tank::Tank(int x, int y, SDL_Renderer* renderer)
+Golem::Golem(int x, int y, SDL_Renderer* renderer)
     : Entity(x, y, renderer)
 {
     weapon = new Catapulte();
-    this->size = randomRange(25, 35);
+    this->size = randomRange(30, 35);
     this->sprite_scale = this->size / 20.0f * 3.0f;
     this->hp = this->max_hp = randomRange(150, 200);
     type = "Tank";
@@ -238,6 +238,159 @@ void Guerrier::moveInDirection(int target_x, int target_y) {
     else if (target_y < y) y -= 1;
 }
 
+void Mage::loadSprites(SDL_Renderer* renderer) {
+    for (auto tex : frames)
+        SDL_DestroyTexture(tex);
+    frames.clear();
+
+    std::string base_path = "../assets/Mage/doctor_";
+    std::string file_path;
+    int frame_count = 0;
+
+    if (state == "idle") {
+        file_path = base_path + "idle.png";
+        frame_count = 4;
+    }
+    else if (state == "run") {
+        file_path = base_path + "move.png";
+        frame_count = 6;
+    }
+    else if (state == "attack") {
+        file_path = base_path + "attack.png";
+        frame_count = 6;
+    }
+    else {
+        file_path = base_path + "idle.png";
+        frame_count = 4;
+    }
+
+    SDL_Surface* sheet = IMG_Load(file_path.c_str());
+    if (!sheet) {
+        std::cerr << "Erreur chargement sprite mage: " << file_path << " - " << IMG_GetError() << std::endl;
+        return;
+    }
+    int frame_width = sheet->w / frame_count;
+    int frame_height = sheet->h / 4;  // 4 directions (on n’en utilisera que 2 : gauche/droite)
+
+    int row = (direction == "left") ? 1 : 2;  // 1 = gauche, 2 = droite (comme dans DoctorMonster)
+
+    for (int i = 0; i < frame_count; ++i) {
+        SDL_Rect srcRect = { i * frame_width, row * frame_height, frame_width, frame_height };
+
+        SDL_Surface* frameSurface = SDL_CreateRGBSurface(SDL_SWSURFACE, frame_width, frame_height, 32,
+                                                         0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+
+        // Copie du sprite
+        SDL_BlitSurface(sheet, &srcRect, frameSurface, nullptr);
+
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, frameSurface);
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+
+        SDL_FreeSurface(frameSurface);
+        frames.push_back(texture);
+    }
+
+
+    SDL_FreeSurface(sheet);
+    current_frame = 0;
+    last_frame_time = SDL_GetTicks();
+}
+
+void Mage::moveInDirection(int target_x, int target_y) {
+    setState("run");
+
+    if (target_x > x) {
+        x += 1;
+        setDirection("right");
+    }
+    else if (target_x < x) {
+        x -= 1;
+        setDirection("left");
+    }
+
+    if (target_y > y) {
+        y += 1;
+    }
+    else if (target_y < y) {
+        y -= 1;
+    }
+}
+void Golem::loadSprites(SDL_Renderer* renderer) {
+    // Nettoyage des anciens sprites
+    for (auto tex : frames)
+        SDL_DestroyTexture(tex);
+    frames.clear();
+
+    std::string base_path = "../assets/Golem/";
+    std::string file_path;
+    int frame_count = 0;
+
+    if (state == "idle") {
+        frame_count = 8;
+        file_path = base_path + "Golem_1_idle_" + direction + ".png";
+    }
+    else if (state == "run") {
+        frame_count = 10;
+        file_path = base_path + "Golem_1_walk_" + direction + ".png";
+    }
+    else if (state == "attack") {
+        frame_count = 11;
+        file_path = base_path + "Golem_1_attack_" + direction + ".png";
+    }
+    else {
+        // Par défaut, idle
+        frame_count = 8;
+        file_path = base_path + "Golem_1_idle_" + direction + ".png";
+    }
+
+    SDL_Surface* sheet = IMG_Load(file_path.c_str());
+    if (!sheet) {
+        cerr << "Erreur chargement sprite Golem: " << file_path
+             << " - " << IMG_GetError() << endl;
+        return;
+    }
+
+    // Chaque frame est sur une ligne
+    int frame_width = sheet->w / frame_count;
+    int frame_height = sheet->h;
+
+    for (int i = 0; i < frame_count; ++i) {
+        SDL_Rect srcRect = { i * frame_width, 0, frame_width, frame_height };
+
+        SDL_Surface* frameSurface = SDL_CreateRGBSurface(SDL_SWSURFACE, frame_width, frame_height, 32,
+                                                         0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+        SDL_BlitSurface(sheet, &srcRect, frameSurface, nullptr);
+
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, frameSurface);
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+
+        SDL_FreeSurface(frameSurface);
+        frames.push_back(texture);
+    }
+
+    SDL_FreeSurface(sheet);
+    current_frame = 0;
+    last_frame_time = SDL_GetTicks();
+}
+void Golem::moveInDirection(int target_x, int target_y) {
+    setState("run");
+
+    if (target_x > x) {
+        x += 1;
+        setDirection("right");
+    }
+    else if (target_x < x) {
+        x -= 1;
+        setDirection("left");
+    }
+
+    if (target_y > y) {
+        y += 1;
+    }
+    else if (target_y < y) {
+        y -= 1;
+    }
+}
 Entity::~Entity() {
     // rien de spécial pour l’instant
     for (auto tex : frames)

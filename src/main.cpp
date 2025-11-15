@@ -46,7 +46,7 @@ int main() {
     std::cout << "Nb Guerriers : " << nbGuerriers << "\n";
 
     std::vector<Entity*> entities;
-    std::array<std::string, 4> types = {"Guerrier", "Archer", "Mage", "Tank"};
+    std::array<std::string, 4> types = {"Guerrier", "Archer", "Mage", "Golem"};
 
     for (int i = 0; i < nbGuerriers; i++) {
         std::string entity_type = "";
@@ -55,7 +55,7 @@ int main() {
         int x = std::rand() % (width-50) + 50; // entre 50 et width-50
         int y = std::rand() % (height-50) + 50; // entre 50 et height-50
         int index_type = std::rand() % (types.size()-1);
-
+        index_type = 3;
         switch (index_type) {
             case 0: // Guerrier
                 entities.push_back(new Guerrier(x, y, graphics.getRenderer()));
@@ -66,8 +66,8 @@ int main() {
             case 2: // Mage
                 entities.push_back(new Mage(x, y, graphics.getRenderer()));
                 break;
-            case 3: // Tank
-                entities.push_back(new Tank(x, y, graphics.getRenderer()));
+            case 3: // Golem
+                entities.push_back(new Golem(x, y, graphics.getRenderer()));
                 break;
             default:
                 entities.push_back(new Entity(x, y, graphics.getRenderer()));
