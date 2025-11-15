@@ -175,7 +175,7 @@ Entity* Graphics::createNewEntityFromTwo(Entity* e1, Entity* e2){
     } else if(e_temp->getType() == "Mage"){
         new_entity = new Mage(x, y, renderer);
     } else if(e_temp->getType() == "Tank"){
-        new_entity = new Tank(x, y, renderer);
+        new_entity = new Golem(x, y, renderer);
     } else{
         new_entity = new Entity(x, y, renderer);
     }
