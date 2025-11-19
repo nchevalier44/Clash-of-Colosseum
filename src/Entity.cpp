@@ -75,8 +75,8 @@ Entity* Entity::findClosestEntity(vector<Entity*> entities){
     return closest_entity;
 }
 void Entity::drawHealthBar(SDL_Renderer* renderer) {
-    SDL_Rect border = {x-25, y-50, size*3, size};
-    SDL_Rect health = {x-25, y-50, (size*3)*hp/max_hp, size};
+    SDL_Rect border = {x-25, y-30, 50, 7};
+    SDL_Rect health = {x-25, y-30, 50*hp/max_hp, 7};
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderFillRect(renderer, &health);
 
@@ -226,7 +226,6 @@ void Guerrier::loadSprites(SDL_Renderer* renderer) {
     frames.clear();
 
     string base_path = "../assets/Shieldmaiden/" + direction + "/" + state + "_";
-    std::cout << "path : " << base_path << "\n";
     int frame_count = 0;
 
     if (state == "idle") frame_count = 4;
