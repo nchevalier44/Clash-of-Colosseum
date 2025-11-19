@@ -201,7 +201,6 @@ void Guerrier::loadSprites(SDL_Renderer* renderer) {
     frames.clear();
 
     string base_path = "../assets/Shieldmaiden/" + direction + "/" + state + "_";
-    std::cout << "path : " << base_path << "\n";
     int frame_count = 0;
 
     if (state == "idle") frame_count = 4;

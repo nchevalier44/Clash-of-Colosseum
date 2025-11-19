@@ -19,6 +19,7 @@ public:
     SDL_Window* getWindow() { return window; } ;
     void update(bool* running);
     SDL_Renderer* getRenderer() const;
+    void deleteAllProjectiles();
 
     Entity* createNewEntityFromParents(Entity* e1, Entity* e2);
 

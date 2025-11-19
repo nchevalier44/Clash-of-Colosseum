@@ -142,6 +142,7 @@ void Graphics::update(bool* running) {
     if (entities.size() <= 5){
         std::cout << "Le combat est terminé !" << std::endl;
         SDL_Delay(1000);
+        deleteAllProjectiles();
 
         std::vector<Entity*> new_entities; //Temporary vector
 
@@ -187,9 +188,23 @@ Entity* Graphics::createNewEntityFromParents(Entity* e1, Entity* e2){
         new_entity = new Entity(x, y, renderer);
     }
 
-    int hp_random = (std::rand() % e1->getHp() + e2->getHp()); //random hp between e1 and e2 hp
-    new_entity->setHp(hp_random);
-    new_entity->setMaxHp(hp_random);
+    float X = (std::rand() % 101) / 100.0f;
+    int new_max_hp = (e1->getMaxHp() * X) + (e2->getMaxHp() * (1.0f - X)); // X hp de e1 et 1-X hp de e2
+
+    // 15% de chance de muter
+    if ((std::rand() % 100) <= 15){
+        float variation = std::rand() % 21 / 100.0f; // Donne un nombre 0% ou 0.1%
+
+        if (std::rand() % 2 == 0) variation = -variation; // Si on a 0, on transforme 0.08 en -0.08 ; si on a 1, on fait rien
+
+        float mutation_factor = 1.0f + variation; // Donne 0.92 (si -0.08) ou 1.08 (si +0.08)
+        std::cout << "Mutation : " << mutation_factor << std::endl;
+        new_max_hp *= mutation_factor;
+    }
+    new_entity->setHp(new_max_hp);
+    new_entity->setMaxHp(new_max_hp);
+
+    std::cout << new_max_hp << std::endl;
 
     return new_entity;
 }
@@ -202,4 +217,13 @@ void Graphics::deleteEntity(Entity* entity){
             return;
         }
     }
+}
+
+void Graphics::deleteAllProjectiles(){
+    for (Projectile* p : projectiles) {
+        delete p;
+        p = nullptr;
+    }
+
+    projectiles.clear();
 }
