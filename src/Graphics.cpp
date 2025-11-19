@@ -199,6 +199,7 @@ Entity* Graphics::createNewEntityFromParents(Entity* e1, Entity* e2){
 
         float mutation_factor = 1.0f + variation; // Donne 0.92 (si -0.08) ou 1.08 (si +0.08)
         std::cout << "Mutation : " << mutation_factor << std::endl;
+        std::cout << "Mutation : " << mutation_factor << std::endl;
         new_max_hp *= mutation_factor;
     }
     new_entity->setHp(new_max_hp);
