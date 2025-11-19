@@ -17,7 +17,6 @@ int main() {
         std::cerr << "Erreur Mix_OpenAudio: " << Mix_GetError() << std::endl;
     }
 
-
     if (TTF_Init() != 0) {
         std::cerr << "Erreur TTF_Init: " << TTF_GetError() << std::endl;
         SDL_Quit();

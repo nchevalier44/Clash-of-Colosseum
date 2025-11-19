@@ -23,6 +23,7 @@ public:
     int getHp() const { return hp; }
     int getMaxHp() const { return max_hp; }
     void setLastAttack(Uint32 ms) { last_attack_time = ms; }
+    void setRandomSize(int minSize, int maxSize, float baseSpriteSize);
     Weapon* getWeapon() { return weapon; }
 
     bool canAttackDistance(Entity* entity);
@@ -46,6 +47,7 @@ protected:
     int hp;
     int max_hp;
     int size;
+    int foot_offset = 10;  // ajuste entre 5 et 20 selon ton sprite
     double sprite_scale; // échelle d’affichage du sprite
     int x;
     int y;

@@ -10,7 +10,7 @@ class Entity;
 
 class Weapon {
 public:
-    Weapon(int damage=1, int range=10);
+    Weapon(int damage=1, int range=40);
     ~Weapon() = default;
 
     int getRange() const { return range; };
