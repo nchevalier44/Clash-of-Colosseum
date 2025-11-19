@@ -8,7 +8,7 @@ class Projectile;
 
 class Fireball : public Weapon {
 public:
-    Fireball(SDL_Renderer* renderer, int damage=25, int range=150);
+    Fireball(SDL_Renderer* renderer, int damage=25, int range=300);
     ~Fireball();
     void attack(Entity* target, Entity* owner, std::vector<Projectile*>* projectiles, int origin_x, int origin_y);
     std::string type() override { return "Fireball"; };

@@ -14,6 +14,14 @@ int randomRange(int min, int max) {
     std::uniform_int_distribution<> distrib(min, max);
     return distrib(gen);
 }
+void Entity::setRandomSize(int minSize, int maxSize, float baseSpriteSize)
+{
+    // Taille (hitbox)
+    this->size = randomRange(minSize, maxSize);
+
+    // Échelle du sprite (pour qu'il corresponde visuellement à la hitbox)
+    this->sprite_scale = this->size / baseSpriteSize;
+}
 
 Entity::Entity(int x, int y, SDL_Renderer* renderer) {
     this->hp = 100;
@@ -134,26 +142,36 @@ void Entity::draw(SDL_Renderer* renderer) {
         }
     }
 
-    int w = size * sprite_scale;
-    int h = size * sprite_scale;
-    SDL_Rect dest = { x - w / 2, y - h / 2, w, h };
+    int w = size * sprite_scale;   // largeur du sprite
+    int h = size * sprite_scale;   // hauteur du sprite
+
+    SDL_Rect dest = {
+        x - w / 2,   // centrer horizontalement
+        y - h + foot_offset,       // sprite au-dessus de la hitbox
+        w,
+        h
+    };
+
     SDL_RenderCopy(renderer, frames[current_frame], nullptr, &dest);
+
     SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-    SDL_Rect hitbox = { x - size, y - size, size * 2, size * 2 };
+    SDL_Rect hitbox = {
+        x - size / 2,
+        y - size / 2,
+        size,
+        size
+    };
     SDL_RenderDrawRect(renderer, &hitbox);
 }
+
 
 Guerrier::Guerrier(int x, int y, SDL_Renderer* renderer)
     : Entity(x, y, renderer)
 {
     weapon = new Spear();
 
-    // Taille random (hitbox)
-    this->size = randomRange(18, 26);
-
-    // Taille du sprite cohérente (un peu plus grande)
-    this->sprite_scale = this->size / 20.0f * 2.2f;  // environ 2.0–2.8
-
+    setRandomSize(25, 30, 9.0f);
+    foot_offset = 10;
     // PV random (entre 85 et 115)
     this->hp = this->max_hp = randomRange(85, 115);
 
@@ -166,21 +184,26 @@ Archer::Archer(int x, int y, SDL_Renderer* renderer)
     : Entity(x, y, renderer)
 {
     weapon = new Bow();
-    this->size = randomRange(16, 24);
-    this->sprite_scale = this->size / 10.0f * 2.0f;
+
+    setRandomSize(38, 50, 10.0f);
+
     this->hp = this->max_hp = randomRange(75, 100);
     type = "Archer";
+
     loadSprites(renderer);
 }
+
 
 Mage::Mage(int x, int y, SDL_Renderer* renderer)
     : Entity(x, y, renderer)
 {
     weapon = new Fireball(renderer);
-    this->size = randomRange(15, 22);
-    this->sprite_scale = this->size/2;
-    this->hp = this->max_hp = randomRange(65, 90);
+    foot_offset = 100;
+    setRandomSize(30, 35, 5.0f);
+
+    this->hp = this->max_hp = randomRange(75, 80);
     type = "Mage";
+
     loadSprites(renderer);
 }
 
@@ -188,10 +211,12 @@ Golem::Golem(int x, int y, SDL_Renderer* renderer)
     : Entity(x, y, renderer)
 {
     weapon = new Fist();
-    this->size = randomRange(30, 35);
-    this->sprite_scale = this->size / 20.0f * 3.0f;
-    this->hp = this->max_hp = randomRange(150, 200);
+    foot_offset = 10;
+    setRandomSize(45, 50, 10.0f);
+
+    this->hp = this->max_hp = randomRange(150, 155);
     type = "Tank";
+
     loadSprites(renderer);
 }
 
