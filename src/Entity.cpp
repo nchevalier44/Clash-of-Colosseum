@@ -191,7 +191,7 @@ Archer::Archer(int x, int y, SDL_Renderer* renderer)
 {
     weapon = new Bow(25, 200);
 
-    setRandomSize(38, 50, 10.0f);
+    setRandomSize(30, 35, 10.0f);
 
     this->hp = this->max_hp = randomRange(70, 90);
     type = "Archer";
@@ -199,42 +199,51 @@ Archer::Archer(int x, int y, SDL_Renderer* renderer)
     loadSprites(renderer);
 }
 void Archer::loadSprites(SDL_Renderer* renderer) {
-    // Clear previous textures
+    // Nettoyer les anciens sprites
     for (auto tex : frames)
         SDL_DestroyTexture(tex);
     frames.clear();
 
     std::string file_path = "../assets/Archer/archer.png";
-    int frame_count = 0;
-    int row = 0;
-
-    // Déterminer le nombre de frames selon l'état
-    if (state == "idle")
-        frame_count = 5;
-    else if (state == "run")
-        frame_count = 8;
-    else if (state == "attack")
-        frame_count = 5;
-
-    // Déterminer la ligne dans le sprite sheet
-    if (state == "idle")
-        row = (direction == "left") ? 0 : 1;
-    else if (state == "run")
-        row = (direction == "left") ? 2 : 3;
-    else if (state == "attack")
-        row = (direction == "left") ? 4 : 5;
 
     SDL_Surface* sheet = IMG_Load(file_path.c_str());
     if (!sheet) {
-        std::cerr << "Erreur chargement sprite archer: " << file_path << " - " << IMG_GetError() << std::endl;
+        std::cerr << "Erreur chargement sprite archer: "
+                  << file_path << " - " << IMG_GetError() << std::endl;
         return;
     }
 
-    // Ton sprite sheet a en réalité 8 lignes
-    int total_rows_in_sheet = 8;
+    // Définir le nombre de frames selon l'état
+    int frame_count = 0;
+    int row = 0;
 
+    if (state == "idle") {
+        frame_count = 5;
+        row = (direction == "left") ? 0 : 1;
+    }
+    else if (state == "run") {
+        frame_count = 8;
+        row = (direction == "left") ? 2 : 3;
+    }
+    else if (state == "attack") {
+        frame_count = 5;
+        row = (direction == "left") ? 4 : 5;
+    }
+    else if (state == "death") {
+        frame_count = 6;
+        row = (direction == "left") ? 6 : 7;
+    }
+    else {
+        // Sécurité → défaut = idle
+        frame_count = 5;
+        row = (direction == "left") ? 0 : 1;
+    }
+
+    int total_rows = 8; // ton spritesheet a 8 lignes
+
+    // Taille d'une frame
     int frame_width = sheet->w / frame_count;
-    int frame_height = sheet->h / total_rows_in_sheet;
+    int frame_height = sheet->h / total_rows;
 
     for (int i = 0; i < frame_count; ++i) {
         SDL_Rect srcRect = { i * frame_width, row * frame_height, frame_width, frame_height };
@@ -255,8 +264,8 @@ void Archer::loadSprites(SDL_Renderer* renderer) {
     SDL_FreeSurface(sheet);
 
     current_frame = 0;
-    last_frame_time = SDL_GetTicks();
 }
+
 
 void Archer::moveInDirection(int target_x, int target_y) {
     setState("run");

@@ -148,7 +148,6 @@ void Graphics::update(bool* running) {
                     new_entities.push_back(new_entity);
                 }
             }
-            //Add all new entities to the real vector
             entities.insert(entities.end(), new_entities.begin(), new_entities.end());
 
         }

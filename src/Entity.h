@@ -81,7 +81,6 @@ public:
     Archer(int x, int y, SDL_Renderer* renderer);
     void moveInDirection(int target_x, int target_y);
     void loadSprites(SDL_Renderer* renderer);
-
 };
 
 class Golem : public Entity {
