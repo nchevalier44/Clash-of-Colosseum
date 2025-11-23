@@ -42,7 +42,7 @@ bool Entity::canAttackDistance(Entity* entity) {
 }
 
 bool Entity::canAttackTime(){
-    return !(SDL_GetTicks() - last_attack_time < attack_cooldown);
+    return attack_timer > attack_cooldown;
 }
 
 
@@ -117,7 +117,7 @@ void Entity::setState(const string& new_state) {
     if (state != new_state) {
         state = new_state;
         current_frame = 0;
-        last_frame_time = SDL_GetTicks();
+        anim_timer = 0;
         loadSprites(current_renderer);
     }
 }
@@ -129,18 +129,24 @@ void Entity::setDirection(const string& new_dir) {
     }
 }
 
-void Entity::draw(SDL_Renderer* renderer) {
+void Entity::updateAnimation(){
     if (frames.empty()) return;
 
+    anim_timer += 16; // On simule qu'une frame de jeu (16ms) vient de passer
+
     Uint32 current_time = SDL_GetTicks();
-    if (current_time - last_frame_time > frame_delay) {
+    if (anim_timer >= frame_delay) {
+        anim_timer -= frame_delay;
         current_frame = (current_frame + 1) % frames.size();
-        last_frame_time = current_time;
 
         if (state == "attack" && current_frame == frames.size() - 1) {
             setState("idle");
         }
     }
+}
+
+void Entity::draw(SDL_Renderer* renderer, int time_speed) {
+    if (frames.empty()) return;
 
     int w = size * sprite_scale;   // largeur du sprite
     int h = size * sprite_scale;   // hauteur du sprite
@@ -245,7 +251,6 @@ void Guerrier::loadSprites(SDL_Renderer* renderer) {
     }
 
     current_frame = 0;
-    last_frame_time = SDL_GetTicks();
 }
 
 void Guerrier::moveInDirection(int target_x, int target_y) {
@@ -318,7 +323,6 @@ void Mage::loadSprites(SDL_Renderer* renderer) {
 
     SDL_FreeSurface(sheet);
     current_frame = 0;
-    last_frame_time = SDL_GetTicks();
 }
 
 void Mage::moveInDirection(int target_x, int target_y) {
@@ -395,7 +399,6 @@ void Golem::loadSprites(SDL_Renderer* renderer) {
 
     SDL_FreeSurface(sheet);
     current_frame = 0;
-    last_frame_time = SDL_GetTicks();
 }
 void Golem::moveInDirection(int target_x, int target_y) {
     setState("run");

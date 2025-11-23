@@ -13,7 +13,7 @@ public:
                std::vector<SDL_Texture*> frames = {});
 
     void move();
-    void draw(SDL_Renderer* renderer);
+    void draw(SDL_Renderer* renderer, int time_speed);
     int getX() const { return x; };
     int getY() const { return y; };
     int getDamage() const { return damage; };

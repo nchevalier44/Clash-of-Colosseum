@@ -1,5 +1,6 @@
 #include "Graphics.h"
 #include "Config.h"
+#include "GameMenu.h"
 #include <iostream>
 #include <SDL_image.h>
 #include <vector>
@@ -54,7 +55,7 @@ int main() {
         int x = std::rand() % (width-50) + 50; // entre 50 et width-50
         int y = std::rand() % (height-50) + 50; // entre 50 et height-50
         int index_type = std::rand() % (types.size());
-
+        index_type = 0;
         switch (index_type) {
             case 0: // Guerrier
                 entities.push_back(new Guerrier(x, y, graphics.getRenderer()));

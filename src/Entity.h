@@ -22,9 +22,10 @@ public:
     int getSize() const { return size; };
     int getHp() const { return hp; }
     int getMaxHp() const { return max_hp; }
-    void setLastAttack(Uint32 ms) { last_attack_time = ms; }
     void setRandomSize(int minSize, int maxSize, float baseSpriteSize);
     Weapon* getWeapon() { return weapon; }
+    void resetAttackTimer(){ attack_timer -= attack_cooldown; }
+    void addAttackTimer(){ attack_timer += 16; }
 
     bool canAttackDistance(Entity* entity);
     bool canAttackTime();
@@ -36,7 +37,8 @@ public:
 
     //Sprites
     virtual void loadSprites(SDL_Renderer* renderer); // à redéfinir
-    virtual void draw(SDL_Renderer* renderer);
+    virtual void updateAnimation();
+    virtual void draw(SDL_Renderer* renderer, int time_speed);
     void setState(const string& new_state); // "idle", "run", "attack"
     void setDirection(const string& new_dir); // "left" ou "right"
 
@@ -52,15 +54,15 @@ protected:
     int x;
     int y;
     Weapon* weapon;
-    Uint32 last_attack_time = 0;
-    Uint32 attack_cooldown = 1000;
+    float attack_timer = 0.0f; // Compteur interne
+    float attack_cooldown = 1000.0f;
 
     vector<SDL_Texture*> frames;
     string state = "idle";
     string direction = "right";
     int current_frame = 0;
-    Uint32 last_frame_time = 0;
     Uint32 frame_delay = 120;
+    float anim_timer = 0;
     SDL_Renderer* current_renderer = nullptr;
 
     string type = "Entity";
