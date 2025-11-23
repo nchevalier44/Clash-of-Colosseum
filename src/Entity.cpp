@@ -192,6 +192,86 @@ Archer::Archer(int x, int y, SDL_Renderer* renderer)
 
     loadSprites(renderer);
 }
+void Archer::loadSprites(SDL_Renderer* renderer) {
+    // Clear previous textures
+    for (auto tex : frames)
+        SDL_DestroyTexture(tex);
+    frames.clear();
+
+    std::string file_path = "../assets/Archer/archer.png";
+    int frame_count = 0;
+    int row = 0;
+
+    // Déterminer le nombre de frames selon l'état
+    if (state == "idle")
+        frame_count = 5;
+    else if (state == "run")
+        frame_count = 8;
+    else if (state == "attack")
+        frame_count = 5;
+
+    // Déterminer la ligne dans le sprite sheet
+    if (state == "idle")
+        row = (direction == "left") ? 0 : 1;
+    else if (state == "run")
+        row = (direction == "left") ? 2 : 3;
+    else if (state == "attack")
+        row = (direction == "left") ? 4 : 5;
+
+    SDL_Surface* sheet = IMG_Load(file_path.c_str());
+    if (!sheet) {
+        std::cerr << "Erreur chargement sprite archer: " << file_path << " - " << IMG_GetError() << std::endl;
+        return;
+    }
+
+    // Ton sprite sheet a en réalité 8 lignes
+    int total_rows_in_sheet = 8;
+
+    int frame_width = sheet->w / frame_count;
+    int frame_height = sheet->h / total_rows_in_sheet;
+
+    for (int i = 0; i < frame_count; ++i) {
+        SDL_Rect srcRect = { i * frame_width, row * frame_height, frame_width, frame_height };
+
+        SDL_Surface* frameSurface = SDL_CreateRGBSurface(
+            SDL_SWSURFACE, frame_width, frame_height, 32,
+            0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000
+        );
+
+        SDL_BlitSurface(sheet, &srcRect, frameSurface, nullptr);
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, frameSurface);
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+
+        SDL_FreeSurface(frameSurface);
+        frames.push_back(texture);
+    }
+
+    SDL_FreeSurface(sheet);
+
+    current_frame = 0;
+    last_frame_time = SDL_GetTicks();
+}
+
+void Archer::moveInDirection(int target_x, int target_y) {
+    setState("run");
+
+    if (target_x > x) {
+        x += 1;
+        setDirection("right");
+    }
+    else if (target_x < x) {
+        x -= 1;
+        setDirection("left");
+    }
+
+    if (target_y > y) {
+        y += 1;
+    }
+    else if (target_y < y) {
+        y -= 1;
+    }
+}
+
 
 
 Mage::Mage(int x, int y, SDL_Renderer* renderer)
