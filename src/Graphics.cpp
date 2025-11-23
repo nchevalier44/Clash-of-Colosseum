@@ -1,15 +1,17 @@
 #include "Graphics.h"
 #include "Bow.h"
+#include "GameMenu.h"
 #include <iostream>
 
 Graphics::Graphics() {
     SDL_CreateWindowAndRenderer(640, 480, 0, &window, &renderer);
     SDL_SetWindowTitle(window, "Clash of Colosseum");
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     gameMusic = Mix_LoadMUS("../assets/musiqueCombat.mp3");
     if (!gameMusic) {
         std::cerr << "Erreur chargement musique jeu: " << Mix_GetError() << std::endl;
     }
-
+    game_menu = new GameMenu(renderer, window);
 }
 
 SDL_Renderer* Graphics::getRenderer() const {
@@ -41,12 +43,7 @@ void Graphics::setEntities(const std::vector<Entity*>& ents) {
     entities = ents;
 }
 
-void Graphics::update(bool* running) {
-    SDL_Event event;
-
-    SDL_SetRenderDrawColor(renderer, 230, 198, 34, 255);
-    SDL_RenderClear(renderer);
-
+void Graphics::updateEntities(bool draw){
     std::vector<Entity*> toDelete;
 
     for (Entity* e : entities) {
@@ -62,7 +59,7 @@ void Graphics::update(bool* running) {
                     e->getWeapon()->attack(closest);
                 }
 
-                e->setLastAttack(SDL_GetTicks());
+                e->resetAttackTimer();
 
                 if (closest->getHp() == 0) {
                     toDelete.push_back(closest); // suppression différée
@@ -73,20 +70,24 @@ void Graphics::update(bool* running) {
             e->moveInDirection(closest->getX(), closest->getY());
         }
 
-        e->draw(renderer);
-        e->drawHealthBar(renderer);
+        e->updateAnimation();
+        e->addAttackTimer();
+
+        if(draw) e->draw(renderer, game_menu->getTimeSpeed());
+        if(draw) e->drawHealthBar(renderer);
 
         if (e->getType() == "Archer") {
             Bow* bow = dynamic_cast<Bow *>(e->getWeapon());
-            bow->draw(e->getX() + e->getSize(), e->getY(), renderer);
+            if(draw) bow->draw(e->getX() + e->getSize(), e->getY(), renderer);
         }
     }
 
     for (Entity* d : toDelete) {
         deleteEntity(d);
     }
+}
 
-
+void Graphics::updateProjectiles(bool draw){
     for (auto p = projectiles.begin(); p != projectiles.end(); ) {
         Projectile* proj = *p;
         if(SDL_GetTicks() >= proj->getEndTime()){
@@ -95,7 +96,7 @@ void Graphics::update(bool* running) {
             continue;
         }
         proj->move();
-        proj->draw(renderer);
+        if(draw) proj->draw(renderer, game_menu->getTimeSpeed());
 
         bool hit = false;
 
@@ -120,44 +121,58 @@ void Graphics::update(bool* running) {
             p++;
         }
     }
+}
 
+void Graphics::update(bool* running) {
+    handleEvent(running);
+
+    SDL_SetRenderDrawColor(renderer, 230, 198, 34, 255);
+    SDL_RenderClear(renderer);
+
+    for(int i = 0; i<game_menu->getTimeSpeed(); i++) { // On répète l'action plusieurs fois si le temps est plus rapide
+        bool draw = i == game_menu->getTimeSpeed()-1; //On dessine que si c'est la dernière update de la boucle
+        updateEntities(draw);
+        updateProjectiles(draw);
+
+        if (entities.size() <= 5){
+            deleteAllProjectiles();
+
+            std::vector<Entity*> new_entities; //Temporary vector
+
+            for(int i = 0; i+1<entities.size(); i+= 2){
+                //We have now 2 parents
+                int number_of_children = std::rand() % 5 + 1;
+                //The 2 parents make between 1 and 5 children
+                for(int j = 0; j<number_of_children; j++){
+                    Entity* new_entity = this->createNewEntityFromParents(entities[i], entities[i+1]);
+                    new_entities.push_back(new_entity);
+                }
+            }
+            //Add all new entities to the real vector
+            entities.insert(entities.end(), new_entities.begin(), new_entities.end());
+
+        }
+    }
+
+    if(game_menu) game_menu->draw();
     SDL_RenderPresent(renderer);
+}
+
+void Graphics::handleEvent(bool* running){
+    SDL_Event event;
 
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
             *running = false;
         }
 
-        if (event.type == SDL_KEYDOWN && !entities.empty()) {
-            Entity* e = entities[0]; // on déplace seulement le premier pour test
+        if (event.type == SDL_KEYDOWN) {
             switch (event.key.keysym.scancode) {
-                case SDL_SCANCODE_UP:    e->setY(e->getY() - 5); break;
-                case SDL_SCANCODE_DOWN:  e->setY(e->getY() + 5); break;
-                case SDL_SCANCODE_RIGHT: e->setX(e->getX() + 5); break;
-                case SDL_SCANCODE_LEFT:  e->setX(e->getX() - 5); break;
+                case SDL_SCANCODE_RIGHT: game_menu->faster(); break;
+                case SDL_SCANCODE_LEFT:  game_menu->lower(); break;
                 default: break;
             }
         }
-    }
-    if (entities.size() <= 5){
-        std::cout << "Le combat est terminé !" << std::endl;
-        SDL_Delay(1000);
-        deleteAllProjectiles();
-
-        std::vector<Entity*> new_entities; //Temporary vector
-
-        for(int i = 0; i+1<entities.size(); i+= 2){
-            //We have now 2 parents
-            int number_of_children = std::rand() % 5 + 1;
-            //The 2 parents make between 1 and 5 children
-            for(int j = 0; j<number_of_children; j++){
-                Entity* new_entity = this->createNewEntityFromParents(entities[i], entities[i+1]);
-                new_entities.push_back(new_entity);
-            }
-        }
-        //Add all new entities to the real vector
-        entities.insert(entities.end(), new_entities.begin(), new_entities.end());
-        std::cout << "Le combat recommence !" << std::endl;
     }
 }
 
@@ -198,14 +213,10 @@ Entity* Graphics::createNewEntityFromParents(Entity* e1, Entity* e2){
         if (std::rand() % 2 == 0) variation = -variation; // Si on a 0, on transforme 0.08 en -0.08 ; si on a 1, on fait rien
 
         float mutation_factor = 1.0f + variation; // Donne 0.92 (si -0.08) ou 1.08 (si +0.08)
-        std::cout << "Mutation : " << mutation_factor << std::endl;
-        std::cout << "Mutation : " << mutation_factor << std::endl;
         new_max_hp *= mutation_factor;
     }
     new_entity->setHp(new_max_hp);
     new_entity->setMaxHp(new_max_hp);
-
-    std::cout << new_max_hp << std::endl;
 
     return new_entity;
 }

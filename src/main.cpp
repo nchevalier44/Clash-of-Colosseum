@@ -1,5 +1,6 @@
 #include "Graphics.h"
 #include "Config.h"
+#include "GameMenu.h"
 #include <iostream>
 #include <SDL_image.h>
 #include <vector>

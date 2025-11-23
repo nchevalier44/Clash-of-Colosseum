@@ -42,7 +42,7 @@ bool Entity::canAttackDistance(Entity* entity) {
 }
 
 bool Entity::canAttackTime(){
-    return !(SDL_GetTicks() - last_attack_time < attack_cooldown);
+    return attack_timer > attack_cooldown;
 }
 
 
@@ -117,7 +117,7 @@ void Entity::setState(const string& new_state) {
     if (state != new_state) {
         state = new_state;
         current_frame = 0;
-        last_frame_time = SDL_GetTicks();
+        anim_timer = 0;
         loadSprites(current_renderer);
     }
 }
@@ -129,18 +129,24 @@ void Entity::setDirection(const string& new_dir) {
     }
 }
 
-void Entity::draw(SDL_Renderer* renderer) {
+void Entity::updateAnimation(){
     if (frames.empty()) return;
 
+    anim_timer += 16; // On simule qu'une frame de jeu (16ms) vient de passer
+
     Uint32 current_time = SDL_GetTicks();
-    if (current_time - last_frame_time > frame_delay) {
+    if (anim_timer >= frame_delay) {
+        anim_timer -= frame_delay;
         current_frame = (current_frame + 1) % frames.size();
-        last_frame_time = current_time;
 
         if (state == "attack" && current_frame == frames.size() - 1) {
             setState("idle");
         }
     }
+}
+
+void Entity::draw(SDL_Renderer* renderer, int time_speed) {
+    if (frames.empty()) return;
 
     int w = size * sprite_scale;   // largeur du sprite
     int h = size * sprite_scale;   // hauteur du sprite
@@ -168,12 +174,12 @@ void Entity::draw(SDL_Renderer* renderer) {
 Guerrier::Guerrier(int x, int y, SDL_Renderer* renderer)
     : Entity(x, y, renderer)
 {
-    weapon = new Spear();
+    weapon = new Spear(40, 15);
 
     setRandomSize(25, 30, 9.0f);
     foot_offset = 10;
     // PV random (entre 85 et 115)
-    this->hp = this->max_hp = randomRange(85, 115);
+    this->hp = this->max_hp = randomRange(130, 160);
 
     type = "Guerrier";
 
@@ -183,11 +189,11 @@ Guerrier::Guerrier(int x, int y, SDL_Renderer* renderer)
 Archer::Archer(int x, int y, SDL_Renderer* renderer)
     : Entity(x, y, renderer)
 {
-    weapon = new Bow();
+    weapon = new Bow(25, 200);
 
     setRandomSize(38, 50, 10.0f);
 
-    this->hp = this->max_hp = randomRange(75, 100);
+    this->hp = this->max_hp = randomRange(70, 90);
     type = "Archer";
 
     loadSprites(renderer);
@@ -277,11 +283,11 @@ void Archer::moveInDirection(int target_x, int target_y) {
 Mage::Mage(int x, int y, SDL_Renderer* renderer)
     : Entity(x, y, renderer)
 {
-    weapon = new Fireball(renderer);
+    weapon = new Fireball(renderer, 35, 140);
     foot_offset = 100;
     setRandomSize(30, 35, 5.0f);
 
-    this->hp = this->max_hp = randomRange(75, 80);
+    this->hp = this->max_hp = randomRange(50, 70);
     type = "Mage";
 
     loadSprites(renderer);
@@ -290,11 +296,11 @@ Mage::Mage(int x, int y, SDL_Renderer* renderer)
 Golem::Golem(int x, int y, SDL_Renderer* renderer)
     : Entity(x, y, renderer)
 {
-    weapon = new Fist();
+    weapon = new Fist(20, 15);
     foot_offset = 10;
     setRandomSize(45, 50, 10.0f);
 
-    this->hp = this->max_hp = randomRange(150, 155);
+    this->hp = this->max_hp = randomRange(280, 350);
     type = "Tank";
 
     loadSprites(renderer);
@@ -325,7 +331,6 @@ void Guerrier::loadSprites(SDL_Renderer* renderer) {
     }
 
     current_frame = 0;
-    last_frame_time = SDL_GetTicks();
 }
 
 void Guerrier::moveInDirection(int target_x, int target_y) {
@@ -398,7 +403,6 @@ void Mage::loadSprites(SDL_Renderer* renderer) {
 
     SDL_FreeSurface(sheet);
     current_frame = 0;
-    last_frame_time = SDL_GetTicks();
 }
 
 void Mage::moveInDirection(int target_x, int target_y) {
@@ -475,7 +479,6 @@ void Golem::loadSprites(SDL_Renderer* renderer) {
 
     SDL_FreeSurface(sheet);
     current_frame = 0;
-    last_frame_time = SDL_GetTicks();
 }
 void Golem::moveInDirection(int target_x, int target_y) {
     setState("run");

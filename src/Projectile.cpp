@@ -27,10 +27,10 @@ void Projectile::move(){
     y += dy;
 }
 
-void Projectile::draw(SDL_Renderer* renderer) {
+void Projectile::draw(SDL_Renderer* renderer, int time_speed) {
     if (!frames.empty()) {
         Uint32 now = SDL_GetTicks();
-        if (now - last_frame_time > frame_delay) {
+        if (now - last_frame_time > frame_delay / time_speed) {
             current_frame = (current_frame + 1) % frames.size();
             last_frame_time = now;
         }

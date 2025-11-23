@@ -7,6 +7,7 @@
 #include <memory>
 #include "Entity.h"
 #include "Projectile.h"
+#include "GameMenu.h"
 #include <SDL_mixer.h>
 
 
@@ -20,6 +21,9 @@ public:
     void update(bool* running);
     SDL_Renderer* getRenderer() const;
     void deleteAllProjectiles();
+    void handleEvent(bool* running);
+    void updateEntities(bool draw);
+    void updateProjectiles(bool draw);
 
     Entity* createNewEntityFromParents(Entity* e1, Entity* e2);
 
@@ -35,6 +39,7 @@ private:
     std::vector<Entity*> entities;
     std::vector<Projectile*> projectiles;
     Mix_Music* gameMusic = nullptr;
+    GameMenu* game_menu = nullptr;
 
 };
 
