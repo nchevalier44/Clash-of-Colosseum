@@ -55,6 +55,15 @@ void Graphics::updateEntities(bool draw){
         if (!closest) continue;
 
         if (e->canAttackDistance(closest)) {
+            // --- AJOUT : ORIENTATION AUTOMATIQUE ---
+            // On force l'entité à regarder sa cible avant d'attaquer
+            if (closest->getX() < e->getX()) {
+                e->setDirection("left");
+            } else {
+                e->setDirection("right");
+            }
+            // ---------------------------------------
+
             if (e->canAttackTime()) {
                 e->setState("attack");
                 if (e->getWeapon()->type() == "Bow" || e->getWeapon()->type() == "Fireball") {

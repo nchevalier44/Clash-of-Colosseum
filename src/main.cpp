@@ -61,7 +61,7 @@ int main() {
                 entities.push_back(new Guerrier(x, y, graphics.getRenderer()));
                 break;
             case 1: // Archer
-                entities.push_back(new Guerrier(x, y, graphics.getRenderer()));
+                entities.push_back(new Archer(x, y, graphics.getRenderer()));
                 break;
             case 2: // Mage
                 entities.push_back(new Mage(x, y, graphics.getRenderer()));

@@ -189,7 +189,8 @@ Guerrier::Guerrier(int x, int y, SDL_Renderer* renderer)
 Archer::Archer(int x, int y, SDL_Renderer* renderer)
     : Entity(x, y, renderer)
 {
-    weapon = new Bow(25, 200);
+    // MODIFICATION: On passe le renderer au Bow pour charger la flèche
+    weapon = new Bow(renderer, 25, 200);
 
     setRandomSize(30, 35, 10.0f);
 
@@ -198,55 +199,72 @@ Archer::Archer(int x, int y, SDL_Renderer* renderer)
 
     loadSprites(renderer);
 }
+
 void Archer::loadSprites(SDL_Renderer* renderer) {
-    // Nettoyer les anciens sprites
-    for (auto tex : frames)
-        SDL_DestroyTexture(tex);
+    // Nettoyage
+    for (auto tex : frames) SDL_DestroyTexture(tex);
     frames.clear();
 
-    std::string file_path = "../assets/Archer/archer.png";
-
+    std::string file_path = "../assets/Archer/archer_" + direction + ".png";
     SDL_Surface* sheet = IMG_Load(file_path.c_str());
     if (!sheet) {
-        std::cerr << "Erreur chargement sprite archer: "
-                  << file_path << " - " << IMG_GetError() << std::endl;
-        return;
+        // Fallback si le fichier left n'existe pas encore
+        sheet = IMG_Load("../assets/Archer/archer_right.png");
+        if (!sheet) return;
     }
 
-    // Définir le nombre de frames selon l'état
     int frame_count = 0;
-    int row = 0;
+    int row_index = 0;
 
+    // Configuration
     if (state == "idle") {
+        row_index = 0;
         frame_count = 5;
-        row = (direction == "left") ? 0 : 1;
-    }
-    else if (state == "run") {
-        frame_count = 8;
-        row = (direction == "left") ? 2 : 3;
     }
     else if (state == "attack") {
-        frame_count = 5;
-        row = (direction == "left") ? 4 : 5;
+        row_index = 1;
+        // Si ça clignote, c'est que tu n'as pas vraiment 11 frames pleines.
+        // Essayons 10 frames pour voir si ça règle le souci.
+        frame_count = 11;
+    }
+    else if (state == "run") {
+        row_index = 2;
+        frame_count = 8;
     }
     else if (state == "death") {
+        row_index = 4;
         frame_count = 6;
-        row = (direction == "left") ? 6 : 7;
     }
     else {
-        // Sécurité → défaut = idle
+        row_index = 0;
         frame_count = 5;
-        row = (direction == "left") ? 0 : 1;
     }
 
-    int total_rows = 8; // ton spritesheet a 8 lignes
+    // --- CALCUL MAGIQUE DU DÉCALAGE ---
+    int max_cols = 11; // La largeur de ta grille (basée sur la ligne Attack)
+    int start_column = 0;
 
-    // Taille d'une frame
-    int frame_width = sheet->w / frame_count;
+    // Si on regarde à gauche, les cases vides sont au DÉBUT de la ligne.
+    // On doit donc sauter ces cases vides.
+    if (direction == "left") {
+        // Ex: Pour Run (8 frames) sur 11 colonnes : 11 - 8 = 3 cases vides au début
+        start_column = max_cols - frame_count;
+    }
+
+    int total_rows = 5;
+    int frame_width = sheet->w / max_cols;
     int frame_height = sheet->h / total_rows;
 
     for (int i = 0; i < frame_count; ++i) {
-        SDL_Rect srcRect = { i * frame_width, row * frame_height, frame_width, frame_height };
+        // On applique le décalage calculé
+        int current_col = i + start_column;
+
+        SDL_Rect srcRect = {
+            current_col * frame_width,
+            row_index * frame_height,
+            frame_width,
+            frame_height
+        };
 
         SDL_Surface* frameSurface = SDL_CreateRGBSurface(
             SDL_SWSURFACE, frame_width, frame_height, 32,
@@ -256,14 +274,15 @@ void Archer::loadSprites(SDL_Renderer* renderer) {
         SDL_BlitSurface(sheet, &srcRect, frameSurface, nullptr);
         SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, frameSurface);
         SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-
         SDL_FreeSurface(frameSurface);
         frames.push_back(texture);
     }
 
     SDL_FreeSurface(sheet);
 
-    current_frame = 0;
+    // Important : reset l'animation seulement si on change d'état
+    // (J'ai retiré current_frame = 0 ici car s'il est appelé en boucle ça reset l'anim)
+    // Assure-toi que current_frame = 0 est fait dans setState ou setDirection uniquement.
 }
 
 
