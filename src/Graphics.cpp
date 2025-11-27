@@ -7,9 +7,13 @@ Graphics::Graphics() {
     SDL_CreateWindowAndRenderer(640, 480, 0, &window, &renderer);
     SDL_SetWindowTitle(window, "Clash of Colosseum");
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    gameMusic = Mix_LoadMUS("../assets/musiqueCombat.mp3");
+    gameMusic = Mix_LoadMUS("../assets/gamemusic.mp3");
     if (!gameMusic) {
         std::cerr << "Erreur chargement musique jeu: " << Mix_GetError() << std::endl;
+    }
+    backgroundTexture = IMG_LoadTexture(renderer, "../assets/bgimg.png");
+    if (!backgroundTexture) {
+        std::cerr << "Erreur chargement background: " << IMG_GetError() << std::endl;
     }
     game_menu = new GameMenu(renderer, window);
 }
@@ -126,8 +130,18 @@ void Graphics::updateProjectiles(bool draw){
 void Graphics::update(bool* running) {
     handleEvent(running);
 
-    SDL_SetRenderDrawColor(renderer, 230, 198, 34, 255);
+    // On nettoie d'abord l'écran (noir par défaut)
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
+
+    // On dessine l'image de fond. Le NULL, NULL signifie "toute l'image" sur "toute la fenêtre"
+    if (backgroundTexture) {
+        SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
+    } else {
+        // Si l'image n'a pas chargé, on garde ton ancienne couleur jaune 'sable' en fallback
+        SDL_SetRenderDrawColor(renderer, 230, 198, 34, 255);
+        SDL_RenderClear(renderer);
+    }
 
     for(int i = 0; i<game_menu->getTimeSpeed(); i++) { // On répète l'action plusieurs fois si le temps est plus rapide
         bool draw = i == game_menu->getTimeSpeed()-1; //On dessine que si c'est la dernière update de la boucle

@@ -10,7 +10,7 @@ Menu::Menu(SDL_Renderer* r) : renderer(r) {
     if (!font) {
         std::cerr << "Erreur chargement police: " << TTF_GetError() << std::endl;
     }
-    menuMusic = Mix_LoadMUS("../assets/musiqueJeu.mp3");
+    menuMusic = Mix_LoadMUS("../assets/menumusic.mp3");
     if (!menuMusic) {
         std::cerr << "Erreur chargement musique menu: " << Mix_GetError() << std::endl;
     } else if (musiqueOn) {
