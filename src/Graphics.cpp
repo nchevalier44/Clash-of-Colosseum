@@ -230,7 +230,7 @@ Entity* Graphics::createNewEntityFromParents(Entity* e1, Entity* e2){
 
     // 15% de chance de muter
     if ((std::rand() % 100) <= 15){
-        float variation = std::rand() % 21 / 100.0f; // Donne un nombre 0% ou 0.1%
+        float variation = std::rand() % 21 / 100.0f; // Donne un nombre entre 0% ou 20%
 
         if (std::rand() % 2 == 0) variation = -variation; // Si on a 0, on transforme 0.08 en -0.08 ; si on a 1, on fait rien
 
