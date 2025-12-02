@@ -19,9 +19,7 @@ void Entity::setRandomSize(int minSize, int maxSize){
     this->size = randomRange(minSize, maxSize);
 
     // Échelle du sprite (pour qu'il corresponde visuellement à la hitbox)
-    std::cout << "Size : " << this->size << " | BaseSpriteSize : " << this->baseSpriteSize << std::endl;
     this->sprite_scale = this->size / this->baseSpriteSize;
-    std::cout << "Sprite scale : " << this->sprite_scale << std::endl;
 }
 
 Entity::Entity(float x, float y, SDL_Renderer* renderer) {
@@ -288,10 +286,6 @@ void Archer::loadSprites(SDL_Renderer* renderer) {
     }
 
     SDL_FreeSurface(sheet);
-
-    // Important : reset l'animation seulement si on change d'état
-    // (J'ai retiré current_frame = 0 ici car s'il est appelé en boucle ça reset l'anim)
-    // Assure-toi que current_frame = 0 est fait dans setState ou setDirection uniquement.
 }
 
 
