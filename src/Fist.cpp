@@ -1,5 +1,6 @@
 #include "Fist.h"
 
 Fist::Fist(int damage, int range) : Weapon(damage, range){
-    //pass
+    min_range = 5;
+    max_range = 15;
 }

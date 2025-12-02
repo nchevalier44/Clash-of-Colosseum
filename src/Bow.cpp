@@ -3,6 +3,8 @@
 #include "Entity.h"
 
 Bow::Bow(int damage, int range) : Weapon(damage, range){
+    min_range = 180;
+    max_range = 220;
 }
 
 void Bow::attack(Entity* entity, Entity* owner, std::vector<Projectile*>* projectiles, int origin_x, int origin_y) {

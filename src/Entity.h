@@ -9,20 +9,22 @@
 using namespace std;
 class Entity {
 public:
-    Entity(int x, int y, SDL_Renderer* renderer);
+    Entity(float x, float y, SDL_Renderer* renderer);
     virtual ~Entity();
 
-    void setX(int new_x){ x = new_x; };
-    void setY(int new_y){ y = new_y; };
+    void setX(float new_x){ x = new_x; };
+    void setY(float new_y){ y = new_y; };
     void setHp(int new_hp);
     void setMaxHp(int new_max_hp) { max_hp = new_max_hp; }
     void setSize(int new_size);
-    int getX() const { return x; };
-    int getY() const { return y; };
+    float getX() const { return x; };
+    float getY() const { return y; };
     int getSize() const { return size; };
     int getHp() const { return hp; }
     int getMaxHp() const { return max_hp; }
-    void setRandomSize(int minSize, int maxSize, float baseSpriteSize);
+    float getMoveSpeed() const { return move_speed; }
+    void setMoveSpeed(float new_speed){ move_speed = new_speed; }
+    void setRandomSize(int minSize, int maxSize);
     Weapon* getWeapon() { return weapon; }
     void resetAttackTimer(){ attack_timer -= attack_cooldown; }
     void addAttackTimer(){ attack_timer += 16; }
@@ -30,9 +32,9 @@ public:
     bool canAttackDistance(Entity* entity);
     bool canAttackTime();
 
-    double distance(int x2, int y2);
+    double distance(float x2, float y2);
     Entity* findClosestEntity(vector<Entity*> entities);
-    virtual void moveInDirection(int x, int y);
+    void moveInDirection(float x, float y);
     void drawHealthBar(SDL_Renderer* renderer);
 
     //Sprites
@@ -48,14 +50,16 @@ public:
 protected:
     int hp;
     int max_hp;
-    int size;
+    int size = 1.0f;
     int foot_offset = 10;  // ajuste entre 5 et 20 selon ton sprite
     double sprite_scale; // échelle d’affichage du sprite
-    int x;
-    int y;
+    float x;
+    float y;
     Weapon* weapon;
     float attack_timer = 0.0f; // Compteur interne
     float attack_cooldown = 1000.0f;
+    float move_speed = 1.0f;
+    float baseSpriteSize = 1.0f;
 
     vector<SDL_Texture*> frames;
     string state = "idle";
@@ -71,31 +75,27 @@ protected:
 
 class Guerrier : public Entity {
 public:
-    Guerrier(int x, int y, SDL_Renderer* renderer);
+    Guerrier(float x, float y, SDL_Renderer* renderer);
     void loadSprites(SDL_Renderer* renderer);
-    void moveInDirection(int x, int y);
 };
 
 class Archer : public Entity {
 public:
-    Archer(int x, int y, SDL_Renderer* renderer);
-    void moveInDirection(int target_x, int target_y);
+    Archer(float x, float y, SDL_Renderer* renderer);
     void loadSprites(SDL_Renderer* renderer);
 };
 
 class Golem : public Entity {
 public:
-    Golem(int x, int y, SDL_Renderer* renderer);
+    Golem(float x, float y, SDL_Renderer* renderer);
     void loadSprites(SDL_Renderer* renderer) override;
-    void moveInDirection(int target_x, int target_y) override;
 };
 
 
 class Mage : public Entity {
 public:
-    Mage(int x, int y, SDL_Renderer* renderer);
+    Mage(float x, float y, SDL_Renderer* renderer);
     void loadSprites(SDL_Renderer* renderer);
-    void moveInDirection(int target_x, int target_y);
 };
 
 

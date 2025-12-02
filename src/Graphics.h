@@ -42,6 +42,8 @@ private:
     Mix_Music* gameMusic = nullptr;
     GameMenu* game_menu = nullptr;
 
+    Entity *instantiateChildByType(Entity *e1, Entity *e2);
+    float calculateNewAttribute(float value1, float value2);
 };
 
 #endif //CLASH_OF_COLOSSEUM_GRAPHICS_H

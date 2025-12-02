@@ -190,48 +190,74 @@ void Graphics::handleEvent(bool* running){
 }
 
 Entity* Graphics::createNewEntityFromParents(Entity* e1, Entity* e2){
-    Entity* new_entity = nullptr;
+    //Soigne les parents pour pas qu'ils meurent trop rapidement à la prochaine manche, au cas où ils ont déjà perdu pas mal de points de vie
     e1->setHp(e1->getMaxHp());
     e2->setHp(e2->getMaxHp());
 
-    //Random position
+    Entity* new_entity = instantiateChildByType(e1, e2);
+
+    //Position
     int width, height;
     SDL_GetWindowSize(getWindow(), &width, &height);
     int x = std::rand() % (width-50) + 50; // entre 50 et width-50
     int y = std::rand() % (height-50) + 50; // entre 50 et height-50
+    new_entity->setX(x);
+    new_entity->setY(y);
+
+    //HP
+    int new_max_hp = calculateNewAttribute(e1->getMaxHp(), e2->getMaxHp());
+    new_entity->setHp(new_max_hp);
+    new_entity->setMaxHp(new_max_hp);
+
+    //Size
+    int new_size = calculateNewAttribute(e1->getSize(), e2->getSize());
+    new_entity->setRandomSize(new_size, new_size);
+
+    //Speed
+    float new_speed = calculateNewAttribute(e1->getMoveSpeed(), e2->getMoveSpeed());
+    new_entity->setMoveSpeed(new_speed);
+
+    //Damage
+    int new_damage = calculateNewAttribute(e1->getWeapon()->getDamage(), e2->getWeapon()->getDamage());
+    new_entity->getWeapon()->setDamage(new_damage);
+
+    //Range
+    int new_range = calculateNewAttribute(e1->getWeapon()->getRange(), e2->getWeapon()->getRange());
+    new_entity->getWeapon()->setRange(new_range);
+
+    //TODO : AJOUTER UNE MUTATION DU COOLDOWN
+
+    return new_entity;
+}
+
+Entity* Graphics::instantiateChildByType(Entity* e1, Entity* e2){
+
+    Entity* new_entity = nullptr;
 
     Entity* e_temp = nullptr;
     //Choose the type of entity (e1 or e2)
     (std::rand() % 2) ? e_temp = e1: e_temp = e2;
 
-    if(e_temp->getType() == "Guerrier"){
-        new_entity = new Guerrier(x, y, renderer);
-    } else if(e_temp->getType() == "Archer"){
-        new_entity = new Archer(x, y, renderer);
-    } else if(e_temp->getType() == "Mage"){
-        new_entity = new Mage(x, y, renderer);
-    } else if(e_temp->getType() == "Tank"){
-        new_entity = new Golem(x, y, renderer);
-    } else{
-        new_entity = new Entity(x, y, renderer);
-    }
-
-    float X = (std::rand() % 101) / 100.0f;
-    int new_max_hp = (e1->getMaxHp() * X) + (e2->getMaxHp() * (1.0f - X)); // X hp de e1 et 1-X hp de e2
-
-    // 15% de chance de muter
-    if ((std::rand() % 100) <= 15){
-        float variation = std::rand() % 21 / 100.0f; // Donne un nombre entre 0% ou 20%
-
-        if (std::rand() % 2 == 0) variation = -variation; // Si on a 0, on transforme 0.08 en -0.08 ; si on a 1, on fait rien
-
-        float mutation_factor = 1.0f + variation; // Donne 0.92 (si -0.08) ou 1.08 (si +0.08)
-        new_max_hp *= mutation_factor;
-    }
-    new_entity->setHp(new_max_hp);
-    new_entity->setMaxHp(new_max_hp);
+    if(e_temp->getType() == "Guerrier") new_entity = new Guerrier(0, 0, renderer);
+    else if(e_temp->getType() == "Archer") new_entity = new Archer(0, 0, renderer);
+    else if(e_temp->getType() == "Mage") new_entity = new Mage(0, 0, renderer);
+    else if(e_temp->getType() == "Tank") new_entity = new Golem(0, 0, renderer);
+    else new_entity = new Entity(0, 0, renderer);
 
     return new_entity;
+}
+
+float Graphics::calculateNewAttribute(float value1, float value2){
+    float X = (std::rand() % 101) / 100.0f;
+    float new_value = (value1 * X) + (value2 * (1.0f - X));
+
+    if ((std::rand() % 100) < 15) { // 15% de chance de muter
+        float variation = (std::rand() % 21) / 100.0f; // Donne un nombre entre 0% ou 20%
+        if (std::rand() % 2 == 0) variation = -variation; // Si on a 0, on transforme 0.2 en -0.2 ; si on a 1, on fait rien
+        new_value *= (1.0f + variation);
+    }
+
+    return new_value;
 }
 
 void Graphics::deleteEntity(Entity* entity){

@@ -6,8 +6,10 @@
 
 
 Fireball::Fireball(SDL_Renderer* renderer, int damage, int range)
-    : Weapon(damage, range)
-{
+    : Weapon(damage, range){
+    min_range = 130;
+    max_range = 150;
+
     for (int i = 1; i <= 8; ++i) {
         std::string path = "../assets/Mage/FB_" + std::to_string(i) + ".png";
         SDL_Surface* surf = IMG_Load(path.c_str());

@@ -14,16 +14,17 @@ int randomRange(int min, int max) {
     std::uniform_int_distribution<> distrib(min, max);
     return distrib(gen);
 }
-void Entity::setRandomSize(int minSize, int maxSize, float baseSpriteSize)
-{
+void Entity::setRandomSize(int minSize, int maxSize){
     // Taille (hitbox)
     this->size = randomRange(minSize, maxSize);
 
     // Échelle du sprite (pour qu'il corresponde visuellement à la hitbox)
-    this->sprite_scale = this->size / baseSpriteSize;
+    std::cout << "Size : " << this->size << " | BaseSpriteSize : " << this->baseSpriteSize << std::endl;
+    this->sprite_scale = this->size / this->baseSpriteSize;
+    std::cout << "Sprite scale : " << this->sprite_scale << std::endl;
 }
 
-Entity::Entity(int x, int y, SDL_Renderer* renderer) {
+Entity::Entity(float x, float y, SDL_Renderer* renderer) {
     this->hp = 100;
     this->max_hp = 100;
     this->size = 20;
@@ -46,7 +47,7 @@ bool Entity::canAttackTime(){
 }
 
 
-double Entity::distance(int x2, int y2){
+double Entity::distance(float x2, float y2){
     return sqrt(pow(x2-x, 2)+pow(y2-y, 2));
 }
 
@@ -75,8 +76,8 @@ Entity* Entity::findClosestEntity(vector<Entity*> entities){
     return closest_entity;
 }
 void Entity::drawHealthBar(SDL_Renderer* renderer) {
-    SDL_Rect border = {x-25, y-30, 50, 7};
-    SDL_Rect health = {x-25, y-30, 50*hp/max_hp, 7};
+    SDL_Rect border = {int(x-25), int(y-30), 50, 7};
+    SDL_Rect health = {int(x-25), int(y-30), 50*hp/max_hp, 7};
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderFillRect(renderer, &health);
 
@@ -99,18 +100,24 @@ void Entity::setHp(int new_hp){
     }
 }
 
-void Entity::moveInDirection(int x, int y){
-    if(x > this->x){
-        this->x += 1;
-    } else if(x < this->x){
-        this->x -= 1;
+void Entity::moveInDirection(float target_x, float target_y){
+    setState("run");
+    float dx = target_x - x;
+    float dy = target_y - y;
+    float length = std::sqrt(dx * dx + dy * dy);
+
+    if (length != 0) {
+        // Normalisation (pour ne pas aller plus vite en diagonale)
+        dx /= length;
+        dy /= length;
+
+        // Application de la vitesse en fonction de la taille
+        x += dx * move_speed * 50.0f / size;
+        y += dy * move_speed * 50.0f / size;
     }
 
-    if(y > this->y){
-        this->y += 1;
-    } else if(y < this->y){
-        this->y -= 1;
-    }
+    // Mise à jour de la direction pour les sprites
+    target_x > x ? setDirection("right"): setDirection("left");
 }
 
 void Entity::setState(const string& new_state) {
@@ -152,8 +159,8 @@ void Entity::draw(SDL_Renderer* renderer, int time_speed) {
     int h = size * sprite_scale;   // hauteur du sprite
 
     SDL_Rect dest = {
-        x - w / 2,   // centrer horizontalement
-        y - h + foot_offset,       // sprite au-dessus de la hitbox
+        int(x - w / 2),   // centrer horizontalement
+        int(y - h + foot_offset),       // sprite au-dessus de la hitbox
         w,
         h
     };
@@ -162,8 +169,8 @@ void Entity::draw(SDL_Renderer* renderer, int time_speed) {
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
     SDL_Rect hitbox = {
-        x - size / 2,
-        y - size / 2,
+        int(x - size / 2),
+        int(y - size / 2),
         size,
         size
     };
@@ -171,28 +178,31 @@ void Entity::draw(SDL_Renderer* renderer, int time_speed) {
 }
 
 
-Guerrier::Guerrier(int x, int y, SDL_Renderer* renderer)
+Guerrier::Guerrier(float x, float y, SDL_Renderer* renderer)
     : Entity(x, y, renderer)
 {
-    weapon = new Spear(40, 15);
+    weapon = new Spear(randomRange(35, 45), randomRange(18, 25)); //dégat, range
 
-    setRandomSize(25, 30, 9.0f);
+    this->baseSpriteSize = 9.0f;
+    setRandomSize(25, 30);
+
     foot_offset = 10;
-    // PV random (entre 85 et 115)
     this->hp = this->max_hp = randomRange(130, 160);
-
+    this->attack_cooldown = 500 + (weapon->getDamage() * 30);
+    this->move_speed *= 1.0f + randomRange(-15, 15) / 100.f; //+-15%
     type = "Guerrier";
-
     loadSprites(renderer);
 }
 
-Archer::Archer(int x, int y, SDL_Renderer* renderer)
+Archer::Archer(float x, float y, SDL_Renderer* renderer)
     : Entity(x, y, renderer)
 {
-    weapon = new Bow(25, 200);
+    weapon = new Bow(randomRange(20, 30), randomRange(180, 220));
 
-    setRandomSize(30, 35, 10.0f);
-
+    this->baseSpriteSize = 10.0f;
+    setRandomSize(30, 35);
+    this->attack_cooldown = 500 + (weapon->getDamage() * 30);
+    this->move_speed *= 1.0f + randomRange(-15, 15) / 100.f; //+-15%
     this->hp = this->max_hp = randomRange(70, 90);
     type = "Archer";
 
@@ -267,48 +277,30 @@ void Archer::loadSprites(SDL_Renderer* renderer) {
 }
 
 
-void Archer::moveInDirection(int target_x, int target_y) {
-    setState("run");
-
-    if (target_x > x) {
-        x += 1;
-        setDirection("right");
-    }
-    else if (target_x < x) {
-        x -= 1;
-        setDirection("left");
-    }
-
-    if (target_y > y) {
-        y += 1;
-    }
-    else if (target_y < y) {
-        y -= 1;
-    }
-}
-
-
-
-Mage::Mage(int x, int y, SDL_Renderer* renderer)
+Mage::Mage(float x, float y, SDL_Renderer* renderer)
     : Entity(x, y, renderer)
 {
-    weapon = new Fireball(renderer, 35, 140);
-    foot_offset = 100;
-    setRandomSize(30, 35, 5.0f);
+    weapon = new Fireball(renderer, randomRange(30, 40), randomRange(130, 150));    foot_offset = 100;
+    this->baseSpriteSize = 5.0f;
+    setRandomSize(30, 35);
 
+    this->attack_cooldown = 500 + (weapon->getDamage() * 30);
+    this->move_speed *= 1.0f + randomRange(-15, 15) / 100.f; //+-15%
     this->hp = this->max_hp = randomRange(50, 70);
     type = "Mage";
 
     loadSprites(renderer);
 }
 
-Golem::Golem(int x, int y, SDL_Renderer* renderer)
+Golem::Golem(float x, float y, SDL_Renderer* renderer)
     : Entity(x, y, renderer)
 {
-    weapon = new Fist(20, 15);
+    weapon = new Fist(randomRange(15, 25), randomRange(5, 15));
     foot_offset = 10;
-    setRandomSize(45, 50, 10.0f);
-
+    this->baseSpriteSize = 10.0f;
+    setRandomSize(45, 50);
+    this->attack_cooldown = 500 + (weapon->getDamage() * 40);
+    this->move_speed *= 1.0f + randomRange(-15, 15) / 100.f; //+-15%
     this->hp = this->max_hp = randomRange(280, 350);
     type = "Tank";
 
@@ -340,21 +332,6 @@ void Guerrier::loadSprites(SDL_Renderer* renderer) {
     }
 
     current_frame = 0;
-}
-
-void Guerrier::moveInDirection(int target_x, int target_y) {
-    setState("run");
-
-    if (target_x > x) {
-        x += 1;
-        setDirection("right");
-    } else if (target_x < x) {
-        x -= 1;
-        setDirection("left");
-    }
-
-    if (target_y > y) y += 1;
-    else if (target_y < y) y -= 1;
 }
 
 void Mage::loadSprites(SDL_Renderer* renderer) {
@@ -414,25 +391,6 @@ void Mage::loadSprites(SDL_Renderer* renderer) {
     current_frame = 0;
 }
 
-void Mage::moveInDirection(int target_x, int target_y) {
-    setState("run");
-
-    if (target_x > x) {
-        x += 1;
-        setDirection("right");
-    }
-    else if (target_x < x) {
-        x -= 1;
-        setDirection("left");
-    }
-
-    if (target_y > y) {
-        y += 1;
-    }
-    else if (target_y < y) {
-        y -= 1;
-    }
-}
 void Golem::loadSprites(SDL_Renderer* renderer) {
     // Nettoyage des anciens sprites
     for (auto tex : frames)
@@ -489,27 +447,8 @@ void Golem::loadSprites(SDL_Renderer* renderer) {
     SDL_FreeSurface(sheet);
     current_frame = 0;
 }
-void Golem::moveInDirection(int target_x, int target_y) {
-    setState("run");
 
-    if (target_x > x) {
-        x += 1;
-        setDirection("right");
-    }
-    else if (target_x < x) {
-        x -= 1;
-        setDirection("left");
-    }
-
-    if (target_y > y) {
-        y += 1;
-    }
-    else if (target_y < y) {
-        y -= 1;
-    }
-}
 Entity::~Entity() {
-    // rien de spécial pour l’instant
     for (auto tex : frames)
         SDL_DestroyTexture(tex);
 }
