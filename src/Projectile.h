@@ -11,7 +11,7 @@ public:
                int x, int y, int dest_x, int dest_y,
                int max_alive_time = 10,
                std::vector<SDL_Texture*> frames = {});
-
+    ~Projectile();
     void move();
     void draw(SDL_Renderer* renderer, int time_speed);
     int getX() const { return x; };
@@ -31,6 +31,7 @@ private:
     int current_frame = 0;
     Uint32 last_frame_time = 0;
     Uint32 frame_delay = 80;
+    double angle = 0.0;
 };
 
 #endif

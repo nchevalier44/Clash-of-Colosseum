@@ -45,6 +45,7 @@ public:
     void setDirection(const string& new_dir); // "left" ou "right"
 
     std::string getType() const { return type; };
+    std::string getDirection() const { return direction; }
 
 
 protected:
