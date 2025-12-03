@@ -52,7 +52,7 @@ void GameMenu::drawStatsTable(const std::vector<Entity*>& entities, int generati
     float avgHp = entities.empty() ? 0 : totalHp / entities.size();
 
 
-    SDL_Rect bgRect = {10, 60, 170, 140};
+    SDL_Rect bgRect = {10, 60, 170, 160};
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 180);
     SDL_RenderFillRect(renderer, &bgRect);
 
