@@ -159,7 +159,7 @@ void Graphics::update(bool* running) {
 
         if (entities.size() <= 5){
             deleteAllProjectiles();
-
+            generation++;
             std::vector<Entity*> new_entities; //Temporary vector
 
             for(int i = 0; i+1<entities.size(); i+= 2){
@@ -176,7 +176,7 @@ void Graphics::update(bool* running) {
         }
     }
 
-    if(game_menu) game_menu->draw();
+    if(game_menu) game_menu->draw(entities, generation);
     SDL_RenderPresent(renderer);
 }
 

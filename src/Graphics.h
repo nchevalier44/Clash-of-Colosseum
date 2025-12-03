@@ -39,6 +39,7 @@ private:
     std::vector<Entity*> entities;
     std::vector<Projectile*> projectiles;
     SDL_Texture* backgroundTexture;
+    int generation = 1;
     Mix_Music* gameMusic = nullptr;
     GameMenu* game_menu = nullptr;
 

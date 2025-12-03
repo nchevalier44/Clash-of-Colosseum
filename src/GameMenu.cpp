@@ -6,6 +6,10 @@
 
 GameMenu::GameMenu(SDL_Renderer* renderer, SDL_Window* window) : window(window), renderer(renderer){
     font = TTF_OpenFont("../assets/arial.ttf", 16);
+    statFont = TTF_OpenFont("../assets/arial.ttf", 14);
+    if (!statFont) {
+        std::cerr << "Erreur chargement police stats: " << TTF_GetError() << std::endl;
+    }
     time_options = {1, 2, 5, 10, 20, 50, 100};
     for(int value : time_options){
         std::string string_time = "x" + std::to_string(value);
@@ -22,13 +26,62 @@ GameMenu::~GameMenu(){
     for(SDL_Texture* texture : time_textures){
         SDL_DestroyTexture(texture);
     }
+    if (statFont) TTF_CloseFont(statFont);
 }
 
-void GameMenu::draw(){
+void GameMenu::draw(const std::vector<Entity*>& entities, int generation){
     createBackground();
     displayTimeSpeed();
+    drawStatsTable(entities, generation);
 }
 
+void GameMenu::drawStatsTable(const std::vector<Entity*>& entities, int generation) {
+    if (!statFont) return;
+
+    int nbGuerrier = 0, nbArcher = 0, nbMage = 0, nbGolem = 0;
+    float totalHp = 0;
+
+    for (const auto& e : entities) {
+        std::string t = e->getType();
+        if (t == "Guerrier") nbGuerrier++;
+        else if (t == "Archer") nbArcher++;
+        else if (t == "Mage") nbMage++;
+        else if (t == "Tank") nbGolem++;
+        totalHp += e->getHp();
+    }
+    float avgHp = entities.empty() ? 0 : totalHp / entities.size();
+
+
+    SDL_Rect bgRect = {10, 60, 170, 140};
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 180);
+    SDL_RenderFillRect(renderer, &bgRect);
+
+    std::vector<std::string> lines;
+    lines.push_back("Generation: " + std::to_string(generation));
+    lines.push_back("Vivants: " + std::to_string(entities.size()));
+    lines.push_back("PV Moyens: " + std::to_string((int)avgHp));
+    lines.push_back("----------------");
+    lines.push_back("Guerriers: " + std::to_string(nbGuerrier));
+    lines.push_back("Archers:   " + std::to_string(nbArcher));
+    lines.push_back("Mages:     " + std::to_string(nbMage));
+    lines.push_back("Golems:    " + std::to_string(nbGolem));
+
+    SDL_Color textColor = {255, 255, 255, 255};
+    int yOffset = 65;
+    int xOffset = 20;
+
+    for (const auto& line : lines) {
+        SDL_Surface* surf = TTF_RenderText_Blended(statFont, line.c_str(), textColor);
+        if (surf) {
+            SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
+            SDL_Rect dest = {xOffset, yOffset, surf->w, surf->h};
+            SDL_RenderCopy(renderer, tex, nullptr, &dest);
+            yOffset += 18;
+            SDL_DestroyTexture(tex);
+            SDL_FreeSurface(surf);
+        }
+    }
+}
 void GameMenu::createBackground(){
     int width, height;
     SDL_GetWindowSize(window, &width, &height);

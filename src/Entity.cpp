@@ -313,6 +313,8 @@ Golem::Golem(float x, float y, SDL_Renderer* renderer)
     setRandomSize(45, 50);
     this->attack_cooldown = 500 + (weapon->getDamage() * 40);
     this->move_speed *= 1.0f + randomRange(-15, 15) / 100.f; //+-15%
+    weapon = new Fist(20, 15);
+
     this->hp = this->max_hp = randomRange(280, 350);
     type = "Tank";
 

@@ -31,8 +31,6 @@ Fireball::Fireball(SDL_Renderer* renderer, int damage, int range)
     last_frame_time = SDL_GetTicks();
 }
 
-
-
 void Fireball::attack(Entity* entity, Entity* owner, std::vector<Projectile*>* projectiles, int origin_x, int origin_y) {
     float speed = 1.2f;
     int size = 20;
