@@ -11,7 +11,7 @@ Graphics::Graphics() {
     if (!gameMusic) {
         std::cerr << "Erreur chargement musique jeu: " << Mix_GetError() << std::endl;
     }
-    backgroundTexture = IMG_LoadTexture(renderer, "../assets/bgimg.png");
+    backgroundTexture = IMG_LoadTexture(renderer, "../assets/background.png");
     if (!backgroundTexture) {
         std::cerr << "Erreur chargement background: " << IMG_GetError() << std::endl;
     }

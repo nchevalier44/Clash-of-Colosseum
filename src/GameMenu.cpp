@@ -51,9 +51,16 @@ void GameMenu::drawStatsTable(const std::vector<Entity*>& entities, int generati
     }
     float avgHp = entities.empty() ? 0 : totalHp / entities.size();
 
+    int winW, winH;
+    SDL_GetWindowSize(window, &winW, &winH);
 
-    SDL_Rect bgRect = {10, 60, 170, 160};
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 180);
+    int rectW = 170;
+    int rectH = 160;
+    int margin = 10;
+
+    SDL_Rect bgRect = {winW - rectW - margin, winH - rectH - margin, rectW, rectH};
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 254);
     SDL_RenderFillRect(renderer, &bgRect);
 
     std::vector<std::string> lines;
@@ -67,8 +74,9 @@ void GameMenu::drawStatsTable(const std::vector<Entity*>& entities, int generati
     lines.push_back("Golems:    " + std::to_string(nbGolem));
 
     SDL_Color textColor = {255, 255, 255, 255};
-    int yOffset = 65;
-    int xOffset = 20;
+
+    int xOffset = bgRect.x + 10;
+    int yOffset = bgRect.y + 5;
 
     for (const auto& line : lines) {
         SDL_Surface* surf = TTF_RenderText_Blended(statFont, line.c_str(), textColor);
