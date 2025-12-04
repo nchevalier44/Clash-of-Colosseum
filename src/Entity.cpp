@@ -185,11 +185,15 @@ Guerrier::Guerrier(float x, float y, SDL_Renderer* renderer)
     setRandomSize(25, 30);
 
     foot_offset = 10;
+    updateAttackCooldown();
     this->hp = this->max_hp = randomRange(130, 160);
-    this->attack_cooldown = 500 + (weapon->getDamage() * 30);
     this->move_speed *= 1.0f + randomRange(-15, 15) / 100.f; //+-15%
     type = "Guerrier";
     loadSprites(renderer);
+}
+
+void Guerrier::updateAttackCooldown() {
+    this->attack_cooldown = 500 + (weapon->getDamage() * 30);
 }
 
 Archer::Archer(float x, float y, SDL_Renderer* renderer)
@@ -199,12 +203,15 @@ Archer::Archer(float x, float y, SDL_Renderer* renderer)
 
     this->baseSpriteSize = 10.0f;
     setRandomSize(30, 35);
-    this->attack_cooldown = 500 + (weapon->getDamage() * 30);
     this->move_speed *= 1.0f + randomRange(-15, 15) / 100.f; //+-15%
     this->hp = this->max_hp = randomRange(70, 90);
     type = "Archer";
 
     loadSprites(renderer);
+}
+
+void Archer::updateAttackCooldown() {
+    this->attack_cooldown = 500 + (weapon->getDamage() * 30);
 }
 
 void Archer::loadSprites(SDL_Renderer* renderer) {
@@ -295,8 +302,7 @@ Mage::Mage(float x, float y, SDL_Renderer* renderer)
     weapon = new Fireball(renderer, randomRange(30, 40), randomRange(130, 150));    foot_offset = 100;
     this->baseSpriteSize = 5.0f;
     setRandomSize(30, 35);
-
-    this->attack_cooldown = 500 + (weapon->getDamage() * 30);
+    updateAttackCooldown();
     this->move_speed *= 1.0f + randomRange(-15, 15) / 100.f; //+-15%
     this->hp = this->max_hp = randomRange(50, 70);
     type = "Mage";
@@ -304,21 +310,27 @@ Mage::Mage(float x, float y, SDL_Renderer* renderer)
     loadSprites(renderer);
 }
 
-Golem::Golem(float x, float y, SDL_Renderer* renderer)
-    : Entity(x, y, renderer)
+void Mage::updateAttackCooldown() {
+    this->attack_cooldown = 500 + (weapon->getDamage() * 30);
+}
+
+Golem::Golem(float x, float y, SDL_Renderer* renderer) : Entity(x, y, renderer)
 {
     weapon = new Fist(randomRange(15, 25), randomRange(5, 15));
     foot_offset = 10;
     this->baseSpriteSize = 10.0f;
     setRandomSize(45, 50);
-    this->attack_cooldown = 500 + (weapon->getDamage() * 40);
     this->move_speed *= 1.0f + randomRange(-15, 15) / 100.f; //+-15%
     weapon = new Fist(20, 15);
-
+    updateAttackCooldown();
     this->hp = this->max_hp = randomRange(280, 350);
     type = "Tank";
 
     loadSprites(renderer);
+}
+
+void Golem::updateAttackCooldown() {
+    this->attack_cooldown = 500 + (weapon->getDamage() * 40);
 }
 
 void Guerrier::loadSprites(SDL_Renderer* renderer) {
