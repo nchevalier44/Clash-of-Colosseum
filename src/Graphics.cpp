@@ -87,7 +87,7 @@ void Graphics::updateEntities(bool draw){
         e->addAttackTimer();
 
         if(draw) e->draw(renderer, game_menu->getTimeSpeed());
-        if(draw) e->drawHealthBar(renderer);
+        if(draw && showHealthBars) e->drawHealthBar(renderer);
 
         if (e->getType() == "Archer") {
             Bow* bow = dynamic_cast<Bow *>(e->getWeapon());
@@ -260,7 +260,7 @@ float Graphics::calculateNewAttribute(float value1, float value2){
     float X = (std::rand() % 101) / 100.0f;
     float new_value = (value1 * X) + (value2 * (1.0f - X));
 
-    if ((std::rand() % 100) < 15) { // 15% de chance de muter
+    if ((std::rand() % 100) < mutationRate) { // 15% de chance de muter
         float variation = (std::rand() % 21) / 100.0f; // Donne un nombre entre 0% ou 20%
         if (std::rand() % 2 == 0) variation = -variation; // Si on a 0, on transforme 0.2 en -0.2 ; si on a 1, on fait rien
         new_value *= (1.0f + variation);

@@ -5,6 +5,7 @@
 #include <SDL_ttf.h>
 #include <string>
 #include <SDL_mixer.h>
+#include <vector>
 
 class Menu {
 public:
@@ -15,23 +16,31 @@ public:
     void handleEvent(SDL_Event& event);
     void configureParameters();
 
-    // Getters pour récupérer les valeurs choisies dans le menu
+    // Getters
     int getNbGuerriers() const { return nbGuerriers; }
-    std::string getTypeGuerriers() const { return typeGuerriers; }
+    int getMutationRate() const { return mutationRate; }
+    bool getShowHealthBars() const { return showHealthBars; }
+    float getProjectileSpeedMultiplier() const; // On calculera le float basé sur l'index
 
 private:
     SDL_Renderer* renderer;
     TTF_Font* font = nullptr;
     Mix_Music* menuMusic = nullptr;
-    bool musiqueOn = true; // si tu veux pouvoir la désactiver
+    bool musiqueOn = true;
     SDL_Texture* background = nullptr;
 
-    int nbGuerriers = 10;       // valeur par défaut
-    std::string typeGuerriers = "Guerrier";
-    std::string difficulte = "Normal";
-    int optionsCount = 6; // nb total d'options
+    // Options du jeu
+    int nbGuerriers = 10;
+    int mutationRate = 15;      // 0 à 100
+    bool showHealthBars = true; // Vrai/Faux
+    int speedIndex = 1;         // 0: Lent, 1: Normal, 2: Rapide
 
-    int selectedOption = 0;    // 0 = nbGuerriers, 1 = pvBase, 2 = dureeCombat
+    // Textes pour la vitesse
+    std::vector<std::string> speedLabels = {"Lent", "Normal", "Rapide"};
+
+    // Gestion du menu
+    int optionsCount = 5; // NbGuerriers, Mutation, HealthBars, Speed, Musique
+    int selectedOption = 0;
 };
 
 #endif // CLASH_OF_COLOSSEUM_CONFIG_H

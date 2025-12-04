@@ -30,9 +30,14 @@ Menu::Menu(SDL_Renderer* r) : renderer(r) {
         }
     }
 
-    // Initialisation des options
     nbGuerriers = 10;
     selectedOption = 0;
+    optionsCount = 5;
+}
+float Menu::getProjectileSpeedMultiplier() const {
+    if (speedIndex == 0) return 0.5f; // Lent
+    if (speedIndex == 2) return 2.0f; // Rapide
+    return 1.0f;                      // Normal
 }
 
 Menu::~Menu() {
@@ -55,10 +60,12 @@ void Menu::render() {
         SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
         SDL_RenderClear(renderer);
     }
+
+    // Titre
     SDL_Color white = {220, 220, 220, 255};
     SDL_Color red = {255, 0, 0, 255};
+    SDL_Color yellow = {255, 255, 0, 255}; // Couleur pour la sélection
 
-    // Titre du menu
     SDL_Surface* titleSurface = TTF_RenderText_Solid(font, "Clash of Colosseum", red);
     SDL_Texture* titleTex = SDL_CreateTextureFromSurface(renderer, titleSurface);
     SDL_Rect titleRect = {150, 20, titleSurface->w, titleSurface->h};
@@ -66,27 +73,29 @@ void Menu::render() {
     SDL_FreeSurface(titleSurface);
     SDL_DestroyTexture(titleTex);
 
-    // Liste des options
-    std::vector<std::string> options = {
-        "Nb Guerriers: " + std::to_string(nbGuerriers),
-        "Difficulte: " + difficulte,
-        std::string("Musique: ") + (musiqueOn ? "ON" : "OFF")
-    };
+    // Construction dynamique des textes des options
+    std::vector<std::string> options;
+    options.push_back("Nb Guerriers: " + std::to_string(nbGuerriers));
+    options.push_back("Taux Mutation: " + std::to_string(mutationRate) + "%");
+    options.push_back("Barres de Vie: " + std::string(showHealthBars ? "OUI" : "NON"));
+    options.push_back("Vitesse Tirs: " + speedLabels[speedIndex]);
+    options.push_back("Musique: " + std::string(musiqueOn ? "ON" : "OFF"));
 
     for (int i = 0; i < (int)options.size(); i++) {
-        SDL_Color color = (i == selectedOption ? red : white);
+        // Si l'option est sélectionnée, on l'affiche en jaune, sinon en blanc
+        SDL_Color color = (i == selectedOption ? yellow : white);
 
         SDL_Surface* surface = TTF_RenderText_Solid(font, options[i].c_str(), color);
         SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
 
-        // Rectangle highlight derrière l'option sélectionnée
+        // Petit rectangle gris derrière la sélection pour bien la voir
         if (i == selectedOption) {
-            SDL_SetRenderDrawColor(renderer, 80, 80, 80, 200);
-            SDL_Rect highlight = {40, 80 + i * 40, 400, surface->h + 10};
+            SDL_SetRenderDrawColor(renderer, 80, 80, 80, 150);
+            SDL_Rect highlight = {40, 80 + i * 50, 450, surface->h + 10}; // Espacement un peu plus grand
             SDL_RenderFillRect(renderer, &highlight);
         }
 
-        SDL_Rect rect = {50, 80 + i * 40, surface->w, surface->h};
+        SDL_Rect rect = {50, 85 + i * 50, surface->w, surface->h};
         SDL_RenderCopy(renderer, texture, NULL, &rect);
 
         SDL_FreeSurface(surface);
@@ -99,35 +108,53 @@ void Menu::render() {
 void Menu::handleEvent(SDL_Event& event) {
     if (event.type == SDL_KEYDOWN) {
         switch (event.key.keysym.scancode) {
+            // Navigation Haut / Bas
             case SDL_SCANCODE_UP:
                 selectedOption = (selectedOption + optionsCount - 1) % optionsCount;
                 break;
             case SDL_SCANCODE_DOWN:
                 selectedOption = (selectedOption + 1) % optionsCount;
                 break;
+
+            // Modification Valeur Droite
             case SDL_SCANCODE_RIGHT:
-                if (selectedOption == 0) nbGuerriers++;
-                else if (selectedOption == 2) { // Difficulté
-                    if (difficulte == "Facile") difficulte = "Normal";
-                    else if (difficulte == "Normal") difficulte = "Difficile";
-                    else difficulte = "Facile";
+                if (selectedOption == 0) { // Nb Guerriers
+                    nbGuerriers++;
                 }
-                else if (selectedOption == 3) { // Musique ON/OFF
+                else if (selectedOption == 1) { // Taux Mutation
+                    if (mutationRate < 100) mutationRate += 5; // Par pas de 5
+                }
+                else if (selectedOption == 2) { // Barres de Vie
+                    showHealthBars = !showHealthBars;
+                }
+                else if (selectedOption == 3) { // Vitesse Tirs
+                    speedIndex = (speedIndex + 1) % 3; // Cycle 0 -> 1 -> 2 -> 0
+                }
+                else if (selectedOption == 4) { // Musique
                     musiqueOn = !musiqueOn;
-                    if (musiqueOn) {
-                        Mix_PlayMusic(menuMusic, -1);
-                    } else {
-                        Mix_HaltMusic();
-                    }
+                    if (musiqueOn) Mix_PlayMusic(menuMusic, -1);
+                    else Mix_HaltMusic();
                 }
                 break;
+
+            // Modification Valeur Gauche
             case SDL_SCANCODE_LEFT:
-                if (selectedOption == 0 && nbGuerriers > 1) nbGuerriers--;
-                // Gauche = inverse des cycles type/difficulte
-                else if (selectedOption == 2) {
-                    if (difficulte == "Facile") difficulte = "Difficile";
-                    else if (difficulte == "Normal") difficulte = "Facile";
-                    else difficulte = "Normal";
+                if (selectedOption == 0 && nbGuerriers > 1) {
+                    nbGuerriers--;
+                }
+                else if (selectedOption == 1) { // Taux Mutation
+                    if (mutationRate > 0) mutationRate -= 5;
+                }
+                else if (selectedOption == 2) { // Barres de Vie
+                    showHealthBars = !showHealthBars;
+                }
+                else if (selectedOption == 3) { // Vitesse Tirs
+                    speedIndex = (speedIndex + 2) % 3; // Cycle inverse
+                }
+                else if (selectedOption == 4) { // Musique
+                    musiqueOn = !musiqueOn;
+                    if (musiqueOn) Mix_PlayMusic(menuMusic, -1);
+                    else Mix_HaltMusic();
                 }
                 break;
             default: break;
@@ -139,16 +166,16 @@ void Menu::handleEvent(SDL_Event& event) {
 void Menu::configureParameters() {
     bool running = true;
     SDL_Event event;
-
     while (running) {
         render();
-
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) running = false;
+            if (event.type == SDL_QUIT) {
+                running = false;
+                exit(0); // Quitter brutalement si on ferme la fenêtre
+            }
             handleEvent(event);
-
             if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_RETURN) {
-                running = false; // ENTER pour valider
+                running = false;
             }
         }
     }

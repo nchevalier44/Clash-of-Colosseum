@@ -1,10 +1,11 @@
 #include "Projectile.h"
 #include <cmath>
 
-// Sécurité au cas où M_PI n'est pas défini sur ton système
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
+
+float Projectile::globalSpeedMultiplier = 1.0f;
 
 Projectile::Projectile(Entity* owner, int damage, float speed, int size,
                        int x, int y, int dest_x, int dest_y, int max_alive_time,
@@ -34,8 +35,8 @@ Projectile::Projectile(Entity* owner, int damage, float speed, int size,
 
 
 void Projectile::move(){
-    x += dx;
-    y += dy;
+    x += dx * globalSpeedMultiplier;
+    y += dy * globalSpeedMultiplier;
 }
 
 void Projectile::draw(SDL_Renderer* renderer, int time_speed) {

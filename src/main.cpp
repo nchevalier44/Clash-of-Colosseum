@@ -1,6 +1,7 @@
 #include "Graphics.h"
 #include "Config.h"
 #include "GameMenu.h"
+#include "Projectile.h"
 #include <iostream>
 #include <SDL_image.h>
 #include <vector>
@@ -10,6 +11,7 @@
 #include <array>
 
 int main() {
+    // --- Initialisations SDL (Rien ne change ici) ---
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         std::cerr << "Erreur SDL_Init: " << SDL_GetError() << std::endl;
         return 1;
@@ -17,13 +19,11 @@ int main() {
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
         std::cerr << "Erreur Mix_OpenAudio: " << Mix_GetError() << std::endl;
     }
-
     if (TTF_Init() != 0) {
         std::cerr << "Erreur TTF_Init: " << TTF_GetError() << std::endl;
         SDL_Quit();
         return 1;
     }
-
     int imgFlags = IMG_INIT_PNG | IMG_INIT_JPG;
     if ((IMG_Init(imgFlags) & imgFlags) != imgFlags) {
         std::cerr << "Erreur IMG_Init: " << IMG_GetError() << std::endl;
@@ -32,55 +32,64 @@ int main() {
         return 1;
     }
 
-    std::srand(std::time(nullptr)); // init random
+    std::srand(std::time(nullptr)); // Init random
 
     Graphics graphics;
 
+    // --- CONFIGURATION DU MENU ---
     Menu menu(graphics.getRenderer());
+
+    // Cette fonction bloque le jeu tant que le joueur n'a pas appuyé sur ENTRÉE
     menu.configureParameters();
 
+    // --- TRANSMISSION DES OPTIONS ---
+    // 1. On applique la vitesse des projectiles (variable statique)
+    Projectile::globalSpeedMultiplier = menu.getProjectileSpeedMultiplier();
+
+    // 2. On transmet les options génétiques et graphiques à Graphics
+    graphics.setMutationRate(menu.getMutationRate());
+    graphics.setShowHealthBars(menu.getShowHealthBars());
+
+    // 3. On récupère le nombre d'entités choisi
     int nbGuerriers = menu.getNbGuerriers();
-    std::string typeGuerrier = menu.getTypeGuerriers();
 
     std::cout << "---- Parametres choisis ----\n";
-    std::cout << "Nb Guerriers : " << nbGuerriers << "\n";
+    std::cout << "Nb Entites : " << nbGuerriers << "\n";
+    std::cout << "Taux Mutation : " << menu.getMutationRate() << "%\n";
+    std::cout << "Vitesse Tirs : x" << menu.getProjectileSpeedMultiplier() << "\n";
 
+    // --- CRÉATION DES ENTITÉS (Spawn Circulaire) ---
     std::vector<Entity*> entities;
     std::array<std::string, 4> types = {"Guerrier", "Archer", "Mage", "Golem"};
 
     for (int i = 0; i < nbGuerriers; i++) {
-        std::string entity_type = "";
-        int width, height;
-        SDL_GetWindowSize(graphics.getWindow(), &width, &height);
-        int x = std::rand() % (width-50) + 50; // entre 50 et width-50
-        int y = std::rand() % (height-50) + 50; // entre 50 et height-50
+        // Paramètres de l'arène (Cercle) pour éviter de spawner dans les murs
+        int centerX = 320;
+        int centerY = 240;
+        int maxRadius = 180; // Marge de sécurité par rapport au rayon de 225
+
+        // Génération polaire
+        float angle = (std::rand() % 360) * (3.14159f / 180.0f);
+        float dist = std::rand() % maxRadius;
+
+        int x = centerX + (int)(dist * std::cos(angle));
+        int y = centerY + (int)(dist * std::sin(angle));
+
         int index_type = std::rand() % (types.size());
 
         switch (index_type) {
-            case 0: // Guerrier
-                entities.push_back(new Guerrier(x, y, graphics.getRenderer()));
-                break;
-            case 1: // Archer
-                entities.push_back(new Archer(x, y, graphics.getRenderer()));
-                break;
-            case 2: // Mage
-                entities.push_back(new Mage(x, y, graphics.getRenderer()));
-                break;
-            case 3: // Golem
-                entities.push_back(new Golem(x, y, graphics.getRenderer()));
-                break;
-            default:
-                entities.push_back(new Entity(x, y, graphics.getRenderer()));
-                break;
+            case 0: entities.push_back(new Guerrier(x, y, graphics.getRenderer())); break;
+            case 1: entities.push_back(new Archer(x, y, graphics.getRenderer())); break;
+            case 2: entities.push_back(new Mage(x, y, graphics.getRenderer())); break;
+            case 3: entities.push_back(new Golem(x, y, graphics.getRenderer())); break;
+            default: entities.push_back(new Entity(x, y, graphics.getRenderer())); break;
         }
     }
-    
-    graphics.setEntities(entities);
-    // ----- Boucle principale -----
-    // Stop musique du menu (au cas où elle tourne encore)
-    Mix_HaltMusic();
 
-    // Lance la musique du jeu
+    graphics.setEntities(entities);
+
+    // --- BOUCLE DE JEU
+    Mix_HaltMusic();
     Mix_PlayMusic(graphics.getGameMusic(), -1);
 
     bool running = true;
@@ -88,6 +97,8 @@ int main() {
         graphics.update(&running);
         SDL_Delay(16); // ~60 FPS
     }
+
+    // --- NETTOYAGE ---
     IMG_Quit();
     TTF_Quit();
     Mix_CloseAudio();
