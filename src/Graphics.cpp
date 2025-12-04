@@ -229,12 +229,11 @@ Entity* Graphics::createNewEntityFromParents(Entity* e1, Entity* e2){
     //Damage
     int new_damage = calculateNewAttribute(e1->getWeapon()->getDamage(), e2->getWeapon()->getDamage());
     new_entity->getWeapon()->setDamage(new_damage);
+    new_entity->updateAttackCooldown(); //Cooldown dépend de damage
 
     //Range
     int new_range = calculateNewAttribute(e1->getWeapon()->getRange(), e2->getWeapon()->getRange());
     new_entity->getWeapon()->setRange(new_range);
-
-    //TODO : AJOUTER UNE MUTATION DU COOLDOWN
 
     return new_entity;
 }
@@ -247,10 +246,26 @@ Entity* Graphics::instantiateChildByType(Entity* e1, Entity* e2){
     //Choose the type of entity (e1 or e2)
     (std::rand() % 2) ? e_temp = e1: e_temp = e2;
 
-    if(e_temp->getType() == "Guerrier") new_entity = new Guerrier(0, 0, renderer);
-    else if(e_temp->getType() == "Archer") new_entity = new Archer(0, 0, renderer);
-    else if(e_temp->getType() == "Mage") new_entity = new Mage(0, 0, renderer);
-    else if(e_temp->getType() == "Tank") new_entity = new Golem(0, 0, renderer);
+    std::string entity_type = e_temp->getType();
+
+    std::vector<std::string> list_types = {"Guerrier", "Archer", "Mage", "Tank"};
+
+    if ((std::rand() % 100) < 15) { // 15% de chance de muter
+        //On enlève les deux types des parents pour que la mutation se fasse sur un type qui n'est pas celui des parents
+        std::erase(list_types, e1->getType());
+        std::erase(list_types, e2->getType());
+
+        if (std::rand() % 2 == 0){
+            entity_type = list_types[0];
+        } else{
+            entity_type = list_types[1];
+        }
+    }
+
+    if(entity_type == "Guerrier") new_entity = new Guerrier(0, 0, renderer);
+    else if(entity_type == "Archer") new_entity = new Archer(0, 0, renderer);
+    else if(entity_type == "Mage") new_entity = new Mage(0, 0, renderer);
+    else if(entity_type == "Tank") new_entity = new Golem(0, 0, renderer);
     else new_entity = new Entity(0, 0, renderer);
 
     return new_entity;

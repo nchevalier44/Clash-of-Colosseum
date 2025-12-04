@@ -17,6 +17,7 @@ public:
     void setHp(int new_hp);
     void setMaxHp(int new_max_hp) { max_hp = new_max_hp; }
     void setSize(int new_size);
+    virtual void updateAttackCooldown() { this->attack_cooldown = 500 + (weapon->getDamage() * 30); };
     float getX() const { return x; };
     float getY() const { return y; };
     int getSize() const { return size; };
@@ -77,26 +78,30 @@ protected:
 class Guerrier : public Entity {
 public:
     Guerrier(float x, float y, SDL_Renderer* renderer);
-    void loadSprites(SDL_Renderer* renderer);
+    void loadSprites(SDL_Renderer* renderer) override;
+    void updateAttackCooldown() override;
 };
 
 class Archer : public Entity {
 public:
     Archer(float x, float y, SDL_Renderer* renderer);
-    void loadSprites(SDL_Renderer* renderer);
+    void loadSprites(SDL_Renderer* renderer) override;
+    void updateAttackCooldown() override;
 };
 
 class Golem : public Entity {
 public:
     Golem(float x, float y, SDL_Renderer* renderer);
     void loadSprites(SDL_Renderer* renderer) override;
+    void updateAttackCooldown() override;
 };
 
 
 class Mage : public Entity {
 public:
     Mage(float x, float y, SDL_Renderer* renderer);
-    void loadSprites(SDL_Renderer* renderer);
+    void loadSprites(SDL_Renderer* renderer) override;
+    void updateAttackCooldown() override;
 };
 
 
