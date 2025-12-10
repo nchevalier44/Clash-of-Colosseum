@@ -80,6 +80,8 @@ public:
     Guerrier(float x, float y, SDL_Renderer* renderer);
     void loadSprites(SDL_Renderer* renderer) override;
     void updateAttackCooldown() override;
+    void draw(SDL_Renderer* renderer, int time_speed) override;
+
 };
 
 class Archer : public Entity {
@@ -87,6 +89,8 @@ public:
     Archer(float x, float y, SDL_Renderer* renderer);
     void loadSprites(SDL_Renderer* renderer) override;
     void updateAttackCooldown() override;
+    void draw(SDL_Renderer* renderer, int time_speed) override;
+
 };
 
 class Golem : public Entity {
@@ -94,6 +98,7 @@ public:
     Golem(float x, float y, SDL_Renderer* renderer);
     void loadSprites(SDL_Renderer* renderer) override;
     void updateAttackCooldown() override;
+    void draw(SDL_Renderer* renderer, int time_speed) override;
 };
 
 
@@ -102,6 +107,8 @@ public:
     Mage(float x, float y, SDL_Renderer* renderer);
     void loadSprites(SDL_Renderer* renderer) override;
     void updateAttackCooldown() override;
+    void draw(SDL_Renderer* renderer, int time_speed) override;
+
 };
 
 
