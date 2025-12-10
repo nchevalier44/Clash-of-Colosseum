@@ -1,6 +1,10 @@
 #include "Graphics.h"
 #include "Weapons/Bow.h"
 #include "GameMenu.h"
+#include "Entities/Guerrier.h"
+#include "Entities/Archer.h"
+#include "Entities/Mage.h"
+#include "Entities/Golem.h"
 #include <iostream>
 
 Graphics::Graphics() {

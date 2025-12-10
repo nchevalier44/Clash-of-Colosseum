@@ -2,6 +2,10 @@
 #include "Config.h"
 #include "GameMenu.h"
 #include "Weapons/Projectile.h"
+#include "Entities/Guerrier.h"
+#include "Entities/Archer.h"
+#include "Entities/Mage.h"
+#include "Entities/Golem.h"
 #include <iostream>
 #include <SDL_image.h>
 #include <vector>
