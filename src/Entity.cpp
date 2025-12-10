@@ -17,9 +17,9 @@ int randomRange(int min, int max) {
 void Entity::setRandomSize(int minSize, int maxSize){
     // Taille (hitbox)
     this->size = randomRange(minSize, maxSize);
-
-    // Échelle du sprite (pour qu'il corresponde visuellement à la hitbox)
-    this->sprite_scale = this->size / this->baseSpriteSize;
+    // On n'utilise plus sprite_scale de manière quadratique ici.
+    // On peut l'utiliser comme un multiplicateur visuel si besoin (ex: 1.2 pour être un peu plus grand que la hitbox)
+    this->sprite_scale = 1.5f;
 }
 
 Entity::Entity(float x, float y, SDL_Renderer* renderer) {
@@ -29,34 +29,19 @@ Entity::Entity(float x, float y, SDL_Renderer* renderer) {
     this->x = x;
     this->y = y;
     this->current_renderer = renderer;
-    sprite_scale = 1;
+    sprite_scale = 1.5f;
     loadSprites(renderer);
 }
-void Entity::loadSprites(SDL_Renderer* renderer) {
-    // par défaut : rien, redéfini dans les classes enfants
-}
-
-bool Entity::canAttackDistance(Entity* entity) {
-    return this->distance(entity->getX(), entity->getY()) < entity->getWeapon()->getRange();
-}
-
-bool Entity::canAttackTime(){
-    return attack_timer > attack_cooldown;
-}
+void Entity::loadSprites(SDL_Renderer* renderer) {}
+bool Entity::canAttackDistance(Entity* entity) { return this->distance(entity->getX(), entity->getY()) < entity->getWeapon()->getRange(); }
+bool Entity::canAttackTime(){ return attack_timer > attack_cooldown; }
 
 
-double Entity::distance(float x2, float y2){
-    return sqrt(pow(x2-x, 2)+pow(y2-y, 2));
-}
-
+double Entity::distance(float x2, float y2){ return sqrt(pow(x2-x, 2)+pow(y2-y, 2)); }
 Entity* Entity::findClosestEntity(vector<Entity*> entities){
-    if (entities.size() <= 1) {
-        return nullptr;
-    }
-
+    if (entities.size() <= 1) return nullptr;
     Entity* closest_entity = (entities[0] == this ? entities[1] : entities[0]);
     double dist = distance(closest_entity->getX(), closest_entity->getY());
-
     for(Entity* e : entities){
         if(e != this){
             double d = distance(e->getX(), e->getY());
@@ -66,55 +51,30 @@ Entity* Entity::findClosestEntity(vector<Entity*> entities){
             }
         }
     }
-
-    if(closest_entity == this){
-        return nullptr;
-    }
-
-    return closest_entity;
+    return (closest_entity == this) ? nullptr : closest_entity;
 }
 void Entity::drawHealthBar(SDL_Renderer* renderer) {
     SDL_Rect border = {int(x-25), int(y-30), 50, 7};
     SDL_Rect health = {int(x-25), int(y-30), 50*hp/max_hp, 7};
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderFillRect(renderer, &health);
-
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderDrawRect(renderer, &border);
 }
 
-void Entity::setSize(int new_size) {
-    if (new_size >= 0) {
-        size = new_size;
-    } else {
-        size = 0;
-    }
-}
-void Entity::setHp(int new_hp){
-    if(new_hp > 0){
-        hp = new_hp;
-    }  else{
-        hp = 0;
-    }
-}
-
+void Entity::setSize(int new_size) { size = (new_size >= 0) ? new_size : 0; }
+void Entity::setHp(int new_hp){ hp = (new_hp > 0) ? new_hp : 0; }
 void Entity::moveInDirection(float target_x, float target_y){
     setState("run");
     float dx = target_x - x;
     float dy = target_y - y;
     float length = std::sqrt(dx * dx + dy * dy);
-
     if (length != 0) {
-        // Normalisation (pour ne pas aller plus vite en diagonale)
         dx /= length;
         dy /= length;
-
-        // Application de la vitesse en fonction de la taille
         x += dx * move_speed * 50.0f / size;
         y += dy * move_speed * 50.0f / size;
     }
-
-    // Mise à jour de la direction pour les sprites
     target_x > x ? setDirection("right"): setDirection("left");
 }
 
@@ -126,7 +86,6 @@ void Entity::setState(const string& new_state) {
         loadSprites(current_renderer);
     }
 }
-
 void Entity::setDirection(const string& new_dir) {
     if (direction != new_dir) {
         direction = new_dir;
@@ -136,14 +95,10 @@ void Entity::setDirection(const string& new_dir) {
 
 void Entity::updateAnimation(){
     if (frames.empty()) return;
-
-    anim_timer += 16; // On simule qu'une frame de jeu (16ms) vient de passer
-
-    Uint32 current_time = SDL_GetTicks();
+    anim_timer += 16;
     if (anim_timer >= frame_delay) {
         anim_timer -= frame_delay;
         current_frame = (current_frame + 1) % frames.size();
-
         if (state == "attack" && current_frame == frames.size() - 1) {
             setState("idle");
         }
@@ -153,18 +108,34 @@ void Entity::updateAnimation(){
 void Entity::draw(SDL_Renderer* renderer, int time_speed) {
     if (frames.empty()) return;
 
-    int w = size * sprite_scale;   // largeur du sprite
-    int h = size * sprite_scale;   // hauteur du sprite
+    // Récupérer la taille réelle de la texture pour garder le ratio
+    int texW = 0, texH = 0;
+    SDL_QueryTexture(frames[current_frame], nullptr, nullptr, &texW, &texH);
+
+    // Calcul de la taille d'affichage basée sur la taille de la hitbox (size)
+    // On applique un facteur (sprite_scale) pour que le sprite soit un peu plus grand que la hitbox
+    // si nécessaire (ex: arme qui dépasse).
+
+    // Ratio de l'image
+    float ratio = (float)texH / (float)texW;
+
+    // Largeur affichée : proportionnelle à la taille de la hitbox
+    int w = int(size * sprite_scale);
+    // Hauteur affichée : calculée selon le ratio de l'image pour ne pas déformer
+    int h = int(w * ratio);
 
     SDL_Rect dest = {
-        int(x - w / 2),   // centrer horizontalement
-        int(y - h + foot_offset),       // sprite au-dessus de la hitbox
+        int(x - w / 2),           // Centrer horizontalement sur X
+        int(y - h + (size/4)),    // Aligner le bas du sprite (pieds) vers le bas de la hitbox
+                                  // (size/4) est un petit ajustement pour que les pieds soient "dans" le rectangle bleu
         w,
         h
     };
 
+    // Dessin du sprite
     SDL_RenderCopy(renderer, frames[current_frame], nullptr, &dest);
 
+    // Dessin de la Hitbox (Rectangle bleu)
     SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
     SDL_Rect hitbox = {
         int(x - size / 2),
@@ -179,15 +150,15 @@ void Entity::draw(SDL_Renderer* renderer, int time_speed) {
 Guerrier::Guerrier(float x, float y, SDL_Renderer* renderer)
     : Entity(x, y, renderer)
 {
-    weapon = new Spear(randomRange(35, 45), randomRange(18, 25)); //dégat, range
-
-    this->baseSpriteSize = 9.0f;
+    weapon = new Spear(randomRange(35, 45), randomRange(18, 25));
+    // baseSpriteSize n'est plus utilisé pour le scale quadratique
     setRandomSize(25, 30);
+    this->sprite_scale = 1.8f; // Le sprite est 1.8x plus large que la hitbox (pour l'arme etc)
 
     foot_offset = 10;
     updateAttackCooldown();
     this->hp = this->max_hp = randomRange(130, 160);
-    this->move_speed *= 1.0f + randomRange(-15, 15) / 100.f; //+-15%
+    this->move_speed *= 1.0f + randomRange(-15, 15) / 100.f;
     type = "Guerrier";
     loadSprites(renderer);
 }
@@ -200,13 +171,12 @@ Archer::Archer(float x, float y, SDL_Renderer* renderer)
     : Entity(x, y, renderer)
 {
     weapon = new Bow(renderer, randomRange(20, 30), randomRange(180, 220));
-
-    this->baseSpriteSize = 10.0f;
     setRandomSize(30, 35);
-    this->move_speed *= 1.0f + randomRange(-15, 15) / 100.f; //+-15%
+    this->sprite_scale = 1.5f;
+
+    this->move_speed *= 1.0f + randomRange(-15, 15) / 100.f;
     this->hp = this->max_hp = randomRange(70, 90);
     type = "Archer";
-
     loadSprites(renderer);
 }
 
@@ -299,14 +269,17 @@ void Archer::loadSprites(SDL_Renderer* renderer) {
 Mage::Mage(float x, float y, SDL_Renderer* renderer)
     : Entity(x, y, renderer)
 {
-    weapon = new Fireball(renderer, randomRange(30, 40), randomRange(130, 150));    foot_offset = 100;
-    this->baseSpriteSize = 5.0f;
+    weapon = new Fireball(renderer, randomRange(30, 40), randomRange(130, 150));
+    // CORRECTION OFFSET MAGE : 100 était beaucoup trop grand
+    foot_offset = 10;
+
     setRandomSize(30, 35);
+    this->sprite_scale = 1.6f; // Ajuster selon le visuel
+
     updateAttackCooldown();
-    this->move_speed *= 1.0f + randomRange(-15, 15) / 100.f; //+-15%
+    this->move_speed *= 1.0f + randomRange(-15, 15) / 100.f;
     this->hp = this->max_hp = randomRange(50, 70);
     type = "Mage";
-
     loadSprites(renderer);
 }
 
@@ -318,14 +291,14 @@ Golem::Golem(float x, float y, SDL_Renderer* renderer) : Entity(x, y, renderer)
 {
     weapon = new Fist(randomRange(15, 25), randomRange(5, 15));
     foot_offset = 10;
-    this->baseSpriteSize = 10.0f;
     setRandomSize(45, 50);
-    this->move_speed *= 1.0f + randomRange(-15, 15) / 100.f; //+-15%
+    this->sprite_scale = 1.4f; // Golem est costaud
+
+    this->move_speed *= 1.0f + randomRange(-15, 15) / 100.f;
     weapon = new Fist(20, 15);
     updateAttackCooldown();
     this->hp = this->max_hp = randomRange(280, 350);
     type = "Tank";
-
     loadSprites(renderer);
 }
 
