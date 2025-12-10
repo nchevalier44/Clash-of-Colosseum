@@ -1,5 +1,5 @@
 #include "Weapon.h"
-#include "Entity.h"
+#include "../Entities/Entity.h"
 
 Weapon::Weapon(int damage, int range) : damage(damage), range(range){
 }

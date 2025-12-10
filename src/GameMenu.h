@@ -3,7 +3,7 @@
 
 #include <SDL2/SDL_ttf.h>
 #include <vector>
-#include "Entity.h"
+#include "Entities/Entity.h"
 
 class GameMenu {
 public:

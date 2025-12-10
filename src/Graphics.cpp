@@ -1,5 +1,5 @@
 #include "Graphics.h"
-#include "Bow.h"
+#include "Weapons/Bow.h"
 #include "GameMenu.h"
 #include <iostream>
 

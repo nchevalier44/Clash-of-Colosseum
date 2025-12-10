@@ -1,0 +1,168 @@
+#include "Entity.h"
+#include "../Weapons/Bow.h"
+
+void Entity::setRandomSize(int minSize, int maxSize){
+    // Taille (hitbox)
+    this->size = randomRange(minSize, maxSize);
+
+    // Échelle du sprite (pour qu'il corresponde visuellement à la hitbox)
+    this->sprite_scale = this->size / this->baseSpriteSize;
+}
+
+Entity::Entity(float x, float y, SDL_Renderer* renderer) {
+    this->hp = 100;
+    this->max_hp = 100;
+    this->size = 20;
+    this->x = x;
+    this->y = y;
+    this->current_renderer = renderer;
+    sprite_scale = 1;
+    loadSprites(renderer);
+}
+void Entity::loadSprites(SDL_Renderer* renderer) {
+    // par défaut : rien, redéfini dans les classes enfants
+}
+
+bool Entity::canAttackDistance(Entity* entity) {
+    return this->distance(entity->getX(), entity->getY()) < entity->getWeapon()->getRange();
+}
+
+bool Entity::canAttackTime(){
+    return attack_timer > attack_cooldown;
+}
+
+
+double Entity::distance(float x2, float y2){
+    return sqrt(pow(x2-x, 2)+pow(y2-y, 2));
+}
+
+Entity* Entity::findClosestEntity(vector<Entity*> entities){
+    if (entities.size() <= 1) {
+        return nullptr;
+    }
+
+    Entity* closest_entity = (entities[0] == this ? entities[1] : entities[0]);
+    double dist = distance(closest_entity->getX(), closest_entity->getY());
+
+    for(Entity* e : entities){
+        if(e != this){
+            double d = distance(e->getX(), e->getY());
+            if(d < dist){
+                closest_entity = e;
+                dist = d;
+            }
+        }
+    }
+
+    if(closest_entity == this){
+        return nullptr;
+    }
+
+    return closest_entity;
+}
+void Entity::drawHealthBar(SDL_Renderer* renderer) {
+    SDL_Rect border = {int(x-25), int(y-30), 50, 7};
+    SDL_Rect health = {int(x-25), int(y-30), 50*hp/max_hp, 7};
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_RenderFillRect(renderer, &health);
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderDrawRect(renderer, &border);
+}
+
+void Entity::setSize(int new_size) {
+    if (new_size >= 0) {
+        size = new_size;
+    } else {
+        size = 0;
+    }
+}
+void Entity::setHp(int new_hp){
+    if(new_hp > 0){
+        hp = new_hp;
+    }  else{
+        hp = 0;
+    }
+}
+
+void Entity::moveInDirection(float target_x, float target_y){
+    setState("run");
+    float dx = target_x - x;
+    float dy = target_y - y;
+    float length = std::sqrt(dx * dx + dy * dy);
+
+    if (length != 0) {
+        // Normalisation (pour ne pas aller plus vite en diagonale)
+        dx /= length;
+        dy /= length;
+
+        // Application de la vitesse en fonction de la taille
+        x += dx * move_speed * 50.0f / size;
+        y += dy * move_speed * 50.0f / size;
+    }
+
+    // Mise à jour de la direction pour les sprites
+    target_x > x ? setDirection("right"): setDirection("left");
+}
+
+void Entity::setState(const string& new_state) {
+    if (state != new_state) {
+        state = new_state;
+        current_frame = 0;
+        anim_timer = 0;
+        loadSprites(current_renderer);
+    }
+}
+
+void Entity::setDirection(const string& new_dir) {
+    if (direction != new_dir) {
+        direction = new_dir;
+        loadSprites(current_renderer);
+    }
+}
+
+void Entity::updateAnimation(){
+    if (frames.empty()) return;
+
+    anim_timer += 16; // On simule qu'une frame de jeu (16ms) vient de passer
+
+    Uint32 current_time = SDL_GetTicks();
+    if (anim_timer >= frame_delay) {
+        anim_timer -= frame_delay;
+        current_frame = (current_frame + 1) % frames.size();
+
+        if (state == "attack" && current_frame == frames.size() - 1) {
+            setState("idle");
+        }
+    }
+}
+
+void Entity::draw(SDL_Renderer* renderer, int time_speed) {
+    if (frames.empty()) return;
+
+    int w = size * sprite_scale;   // largeur du sprite
+    int h = size * sprite_scale;   // hauteur du sprite
+
+    SDL_Rect dest = {
+        int(x - w / 2),   // centrer horizontalement
+        int(y - h + foot_offset),       // sprite au-dessus de la hitbox
+        w,
+        h
+    };
+
+    SDL_RenderCopy(renderer, frames[current_frame], nullptr, &dest);
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+    SDL_Rect hitbox = {
+        int(x - size / 2),
+        int(y - size / 2),
+        size,
+        size
+    };
+    SDL_RenderDrawRect(renderer, &hitbox);
+}
+
+Entity::~Entity() {
+    for (auto tex : frames)
+        SDL_DestroyTexture(tex);
+}

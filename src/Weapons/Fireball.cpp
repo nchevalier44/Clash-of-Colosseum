@@ -1,6 +1,6 @@
 #include "Fireball.h"
 #include "Projectile.h"
-#include "Entity.h"
+#include "../Entities/Entity.h"
 #include <SDL_image.h>
 #include <iostream>
 

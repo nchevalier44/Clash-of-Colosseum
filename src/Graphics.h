@@ -5,8 +5,8 @@
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include <vector>
 #include <memory>
-#include "Entity.h"
-#include "Projectile.h"
+#include "Entities/Entity.h"
+#include "Weapons/Projectile.h"
 #include "GameMenu.h"
 #include <SDL_mixer.h>
 
