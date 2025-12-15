@@ -25,7 +25,8 @@ int main() {
     menu.configureParameters();
 
     Projectile::globalSpeedMultiplier = menu.getProjectileSpeedMultiplier();
-    graphics.setMutationRate(menu.getMutationRate());
+    graphics.setMutationTypeRate(menu.getMutationTypeRate());
+    graphics.setMutationStatsRate(menu.getMutationStatsRate());
     graphics.setShowHealthBars(menu.getShowHealthBars());
 
     // Transmission de la nouvelle option

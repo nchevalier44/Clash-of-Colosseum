@@ -18,7 +18,8 @@ public:
 
     // Getters
     int getNbGuerriers() const { return nbGuerriers; }
-    int getMutationRate() const { return mutationRate; }
+    int getMutationTypeRate() const { return mutationTypeRate; }
+    int getMutationStatsRate() const { return mutationStatsRate; }
     bool getShowHealthBars() const {
         return showHealthBars;
     }
@@ -34,7 +35,8 @@ private:
 
     // Options du jeu
     int nbGuerriers = 10;
-    int mutationRate = 15;      // 0 à 100
+    int mutationTypeRate = 15;      // 0 à 100
+    int mutationStatsRate = 15;
     bool showHealthBars = true; // Vrai/Faux
     bool sameTypePeace = false;
     int speedIndex = 1;         // 0: Lent, 1: Normal, 2: Rapide
@@ -43,7 +45,7 @@ private:
     std::vector<std::string> speedLabels = {"Lent", "Normal", "Rapide"};
 
     // Gestion du menu
-    int optionsCount = 6;
+    int optionsCount = 7;
     int selectedOption = 0;
 };
 
