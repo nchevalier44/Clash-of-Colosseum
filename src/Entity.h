@@ -34,7 +34,7 @@ public:
     bool canAttackTime();
 
     double distance(float x2, float y2);
-    Entity* findClosestEntity(vector<Entity*> entities);
+    Entity* findClosestEntity(vector<Entity*> entities, bool ignoreSameType = false);
     void moveInDirection(float x, float y);
     void drawHealthBar(SDL_Renderer* renderer);
 

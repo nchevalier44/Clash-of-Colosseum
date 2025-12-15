@@ -50,26 +50,24 @@ double Entity::distance(float x2, float y2){
     return sqrt(pow(x2-x, 2)+pow(y2-y, 2));
 }
 
-Entity* Entity::findClosestEntity(vector<Entity*> entities){
-    if (entities.size() <= 1) {
-        return nullptr;
-    }
+Entity*Entity::findClosestEntity(vector<Entity*> entities, bool ignoreSameType){
+    if (entities.empty()) return nullptr;
 
-    Entity* closest_entity = (entities[0] == this ? entities[1] : entities[0]);
-    double dist = distance(closest_entity->getX(), closest_entity->getY());
+    Entity* closest_entity = nullptr;
+    double min_dist = 100000000.0; // Valeur très grande
 
     for(Entity* e : entities){
-        if(e != this){
-            double d = distance(e->getX(), e->getY());
-            if(d < dist){
-                closest_entity = e;
-                dist = d;
-            }
-        }
-    }
+        // On ne se cible pas soi-même
+        if(e == this) continue;
 
-    if(closest_entity == this){
-        return nullptr;
+        // Si l'option est activée et que c'est le même type, on ignore
+        if(ignoreSameType && e->getType() == this->getType()) continue;
+
+        double d = distance(e->getX(), e->getY());
+        if(d < min_dist){
+            closest_entity = e;
+            min_dist = d;
+        }
     }
 
     return closest_entity;

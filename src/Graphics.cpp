@@ -51,7 +51,7 @@ void Graphics::updateEntities(bool draw){
     std::vector<Entity*> toDelete;
 
     for (Entity* e : entities) {
-        Entity* closest = e->findClosestEntity(entities);
+        Entity* closest = e->findClosestEntity(entities, sameTypePeace);
         if (!closest) continue;
 
         if (e->canAttackDistance(closest)) {
