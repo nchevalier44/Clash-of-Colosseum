@@ -59,7 +59,7 @@ void Graphics::updateEntities(bool draw){
         if (!closest) continue;
 
         if (e->canAttackDistance(closest)) {
-            // --- AJOUT : ORIENTATION AUTOMATIQUE ---
+            // --- ORIENTATION AUTOMATIQUE ---
             // On force l'entité à regarder sa cible avant d'attaquer
             if (closest->getX() < e->getX()) {
                 e->setDirection("left");
@@ -71,6 +71,7 @@ void Graphics::updateEntities(bool draw){
             if (e->canAttackTime()) {
                 e->setState("attack");
                 if (e->getWeapon()->type() == "Bow" || e->getWeapon()->type() == "Fireball") {
+                    std::cout << "Distance : " << e->distance(closest->getX(), closest->getY()) << "| Range : " << e->getWeapon()->getRange() << std::endl;
                     e->getWeapon()->attack(closest, e, &projectiles, e->getX(), e->getY());
                 } else {
                     e->getWeapon()->attack(closest);
@@ -97,11 +98,16 @@ void Graphics::updateEntities(bool draw){
             Bow* bow = dynamic_cast<Bow *>(e->getWeapon());
             if(draw) bow->draw(e->getX() + e->getSize(), e->getY(), renderer);
         }
+
+        SDL_Rect point = {int(e->getX()-5), int(e->getY()-5), 10, 10};
+        SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
+        SDL_RenderFillRect(renderer, &point);
     }
 
     for (Entity* d : toDelete) {
         deleteEntity(d);
     }
+
 }
 
 void Graphics::updateProjectiles(bool draw){

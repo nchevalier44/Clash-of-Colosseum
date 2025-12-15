@@ -24,7 +24,7 @@ void Entity::loadSprites(SDL_Renderer* renderer) {
 }
 
 bool Entity::canAttackDistance(Entity* entity) {
-    return this->distance(entity->getX(), entity->getY()) < entity->getWeapon()->getRange();
+    return this->distance(entity->getX(), entity->getY()) < this->getWeapon()->getRange();
 }
 
 bool Entity::canAttackTime(){
