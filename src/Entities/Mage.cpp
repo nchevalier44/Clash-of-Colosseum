@@ -2,7 +2,8 @@
 #include "../Weapons/Fireball.h"
 
 Mage::Mage(float x, float y, SDL_Renderer* renderer) : Entity(x, y, renderer){
-    weapon = new Fireball(renderer, randomRange(30, 40), randomRange(130, 150));    foot_offset = 100;
+    weapon = new Fireball(renderer, randomRange(30, 40), randomRange(130, 150));
+    foot_offset = 100;
     this->baseSpriteSize = 5.0f;
     setRandomSize(30, 35);
     updateAttackCooldown();
