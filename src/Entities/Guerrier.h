@@ -9,6 +9,4 @@ public:
     void loadSprites(SDL_Renderer* renderer) override;
     void updateAttackCooldown() override;
 };
-
-
 #endif //CLASH_OF_COLOSSEUM_GUERRIER_H

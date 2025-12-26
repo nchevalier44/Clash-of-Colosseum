@@ -4,8 +4,8 @@
 Archer::Archer(float x, float y, SDL_Renderer* renderer) : Entity(x, y, renderer){
     weapon = new Bow(renderer, randomRange(20, 30), randomRange(180, 220));
 
-    this->baseSpriteSize = 10.0f;
-    setRandomSize(30, 35);
+    this->baseSpriteSize = 25.0f;
+    setRandomSize(50, 55);
     this->move_speed *= 1.0f + randomRange(-15, 15) / 100.f; //+-15%
     this->hp = this->max_hp = randomRange(70, 90);
     type = "Archer";

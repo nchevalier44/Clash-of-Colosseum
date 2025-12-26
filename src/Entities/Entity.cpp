@@ -36,26 +36,24 @@ double Entity::distance(float x2, float y2){
     return sqrt(pow(x2-x, 2)+pow(y2-y, 2));
 }
 
-Entity* Entity::findClosestEntity(vector<Entity*> entities){
-    if (entities.size() <= 1) {
-        return nullptr;
-    }
+Entity* Entity::findClosestEntity(vector<Entity*> entities, bool ignoreSameType){
+    if (entities.empty()) return nullptr;
 
-    Entity* closest_entity = (entities[0] == this ? entities[1] : entities[0]);
-    double dist = distance(closest_entity->getX(), closest_entity->getY());
+    Entity* closest_entity = nullptr;
+    double min_dist = 100000000.0; // Valeur très grande
 
     for(Entity* e : entities){
-        if(e != this){
-            double d = distance(e->getX(), e->getY());
-            if(d < dist){
-                closest_entity = e;
-                dist = d;
-            }
-        }
-    }
+        // On ne se cible pas soi-même
+        if(e == this) continue;
 
-    if(closest_entity == this){
-        return nullptr;
+        // Si l'option est activée et que c'est le même type, on ignore
+        if(ignoreSameType && e->getType() == this->getType()) continue;
+
+        double d = distance(e->getX(), e->getY());
+        if(d < min_dist){
+            closest_entity = e;
+            min_dist = d;
+        }
     }
 
     return closest_entity;
@@ -153,11 +151,15 @@ void Entity::draw(SDL_Renderer* renderer, int time_speed) {
     SDL_RenderCopy(renderer, frames[current_frame], nullptr, &dest);
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+    // Calcul du centre vertical du sprite pour y placer la hitbox
+    // Centre Y du sprite = (y - h + foot_offset) + h/2
+    // Position Y hitbox = Centre Y du sprite - size/2
+
     SDL_Rect hitbox = {
-        int(x - size / 2),
-        int(y - size / 2),
-        size,
-        size
+            int(x - size / 2),
+            int(y - h / 2 + foot_offset - size / 2), // Hitbox centrée sur le visuel
+            size,
+            size
     };
     SDL_RenderDrawRect(renderer, &hitbox);
 }

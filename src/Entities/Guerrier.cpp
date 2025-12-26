@@ -4,8 +4,8 @@
 Guerrier::Guerrier(float x, float y, SDL_Renderer* renderer) : Entity(x, y, renderer){
     weapon = new Spear(randomRange(35, 45), randomRange(18, 25)); //dégat, range
 
-    this->baseSpriteSize = 9.0f;
-    setRandomSize(25, 30);
+    this->baseSpriteSize = 20.0f;
+    setRandomSize(40, 50);
 
     foot_offset = 10;
     updateAttackCooldown();

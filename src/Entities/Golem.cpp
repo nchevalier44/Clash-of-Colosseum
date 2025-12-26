@@ -4,8 +4,8 @@
 Golem::Golem(float x, float y, SDL_Renderer* renderer) : Entity(x, y, renderer){
     weapon = new Fist(randomRange(15, 25), randomRange(5, 15));
     foot_offset = 10;
-    this->baseSpriteSize = 10.0f;
-    setRandomSize(45, 50);
+    this->baseSpriteSize = 40.0f;
+    setRandomSize(80, 90);
     this->move_speed *= 1.0f + randomRange(-15, 15) / 100.f; //+-15%
     weapon = new Fist(20, 15);
     updateAttackCooldown();
