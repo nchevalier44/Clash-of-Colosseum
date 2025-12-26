@@ -18,8 +18,12 @@ public:
 
     // Getters
     int getNbGuerriers() const { return nbGuerriers; }
-    int getMutationRate() const { return mutationRate; }
-    bool getShowHealthBars() const { return showHealthBars; }
+    int getMutationTypeRate() const { return mutationTypeRate; }
+    int getMutationStatsRate() const { return mutationStatsRate; }
+    bool getShowHealthBars() const {
+        return showHealthBars;
+    }
+    bool getSameTypePeace() const { return sameTypePeace; }
     float getProjectileSpeedMultiplier() const; // On calculera le float basé sur l'index
 
 private:
@@ -31,15 +35,17 @@ private:
 
     // Options du jeu
     int nbGuerriers = 10;
-    int mutationRate = 15;      // 0 à 100
+    int mutationTypeRate = 15;      // 0 à 100
+    int mutationStatsRate = 15;
     bool showHealthBars = true; // Vrai/Faux
+    bool sameTypePeace = false;
     int speedIndex = 1;         // 0: Lent, 1: Normal, 2: Rapide
 
     // Textes pour la vitesse
     std::vector<std::string> speedLabels = {"Lent", "Normal", "Rapide"};
 
     // Gestion du menu
-    int optionsCount = 5; // NbGuerriers, Mutation, HealthBars, Speed, Musique
+    int optionsCount = 7;
     int selectedOption = 0;
 };
 

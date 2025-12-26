@@ -55,7 +55,7 @@ void Graphics::updateEntities(bool draw){
     std::vector<Entity*> toDelete;
 
     for (Entity* e : entities) {
-        Entity* closest = e->findClosestEntity(entities);
+        Entity* closest = e->findClosestEntity(entities, sameTypePeace);
         if (!closest) continue;
 
         if (e->canAttackDistance(closest)) {
@@ -229,7 +229,7 @@ Entity* Graphics::createNewEntityFromParents(Entity* e1, Entity* e2){
 
     //Size
     int new_size = calculateNewAttribute(e1->getSize(), e2->getSize());
-    new_entity->setRandomSize(new_size, new_size);
+    new_entity->setSize(new_size);
 
     //Speed
     float new_speed = calculateNewAttribute(e1->getMoveSpeed(), e2->getMoveSpeed());
@@ -259,7 +259,7 @@ Entity* Graphics::instantiateChildByType(Entity* e1, Entity* e2){
 
     std::vector<std::string> list_types = {"Guerrier", "Archer", "Mage", "Tank"};
 
-    if ((std::rand() % 100) < 15) { // 15% de chance de muter
+    if ((std::rand() % 100) < mutationTypeRate) { // 15% de chance de muter
         //On enlève les deux types des parents pour que la mutation se fasse sur un type qui n'est pas celui des parents
         std::erase(list_types, e1->getType());
         std::erase(list_types, e2->getType());
@@ -284,7 +284,7 @@ float Graphics::calculateNewAttribute(float value1, float value2){
     float X = (std::rand() % 101) / 100.0f;
     float new_value = (value1 * X) + (value2 * (1.0f - X));
 
-    if ((std::rand() % 100) < mutationRate) { // 15% de chance de muter
+    if ((std::rand() % 100) < mutationStatsRate) { // 15% de chance de muter
         float variation = (std::rand() % 21) / 100.0f; // Donne un nombre entre 0% ou 20%
         if (std::rand() % 2 == 0) variation = -variation; // Si on a 0, on transforme 0.2 en -0.2 ; si on a 1, on fait rien
         new_value *= (1.0f + variation);

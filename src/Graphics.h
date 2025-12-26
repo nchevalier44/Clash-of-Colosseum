@@ -24,7 +24,9 @@ public:
     void handleEvent(bool* running);
     void updateEntities(bool draw);
     void updateProjectiles(bool draw);
-    void setMutationRate(int rate) { mutationRate = rate; }
+    void setMutationTypeRate(int rate) { mutationTypeRate = rate; }
+    void setMutationStatsRate(int rate) { mutationStatsRate = rate; }
+    void setSameTypePeace(bool peace) { sameTypePeace = peace; }
     void setShowHealthBars(bool show) { showHealthBars = show; }
 
     Entity* createNewEntityFromParents(Entity* e1, Entity* e2);
@@ -37,8 +39,10 @@ public:
 private:
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
-    int mutationRate = 15;
+    int mutationTypeRate = 15;
+    int mutationStatsRate = 15;
     bool showHealthBars = true;
+    bool sameTypePeace = false;
 
     std::vector<Entity*> entities;
     std::vector<Projectile*> projectiles;

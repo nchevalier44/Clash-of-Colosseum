@@ -44,7 +44,7 @@ public:
     bool canAttackTime();
 
     double distance(float x2, float y2);
-    Entity* findClosestEntity(vector<Entity*> entities);
+    Entity* findClosestEntity(vector<Entity*> entities, bool ignoreSameType = false);
     void moveInDirection(float x, float y);
     void drawHealthBar(SDL_Renderer* renderer);
 
@@ -84,5 +84,42 @@ protected:
     string type = "Entity";
 
 };
+
+class Guerrier : public Entity {
+public:
+    Guerrier(float x, float y, SDL_Renderer* renderer);
+    void loadSprites(SDL_Renderer* renderer) override;
+    void updateAttackCooldown() override;
+    void draw(SDL_Renderer* renderer, int time_speed) override;
+
+};
+
+class Archer : public Entity {
+public:
+    Archer(float x, float y, SDL_Renderer* renderer);
+    void loadSprites(SDL_Renderer* renderer) override;
+    void updateAttackCooldown() override;
+    void draw(SDL_Renderer* renderer, int time_speed) override;
+
+};
+
+class Golem : public Entity {
+public:
+    Golem(float x, float y, SDL_Renderer* renderer);
+    void loadSprites(SDL_Renderer* renderer) override;
+    void updateAttackCooldown() override;
+    void draw(SDL_Renderer* renderer, int time_speed) override;
+};
+
+
+class Mage : public Entity {
+public:
+    Mage(float x, float y, SDL_Renderer* renderer);
+    void loadSprites(SDL_Renderer* renderer) override;
+    void updateAttackCooldown() override;
+    void draw(SDL_Renderer* renderer, int time_speed) override;
+
+};
+
 
 #endif //CLASH_OF_COLOSSEUM_ENTITY_H

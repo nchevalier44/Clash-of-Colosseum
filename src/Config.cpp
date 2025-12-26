@@ -32,7 +32,7 @@ Menu::Menu(SDL_Renderer* r) : renderer(r) {
 
     nbGuerriers = 10;
     selectedOption = 0;
-    optionsCount = 5;
+    optionsCount = 7;
 }
 float Menu::getProjectileSpeedMultiplier() const {
     if (speedIndex == 0) return 0.5f; // Lent
@@ -53,7 +53,6 @@ Menu::~Menu() {
 }
 
 void Menu::render() {
-    // Fond
     if (background) {
         SDL_RenderCopy(renderer, background, NULL, NULL);
     } else {
@@ -61,10 +60,9 @@ void Menu::render() {
         SDL_RenderClear(renderer);
     }
 
-    // Titre
     SDL_Color white = {220, 220, 220, 255};
     SDL_Color red = {255, 0, 0, 255};
-    SDL_Color yellow = {255, 255, 0, 255}; // Couleur pour la sélection
+    SDL_Color yellow = {255, 255, 0, 255};
 
     SDL_Surface* titleSurface = TTF_RenderText_Solid(font, "Clash of Colosseum", red);
     SDL_Texture* titleTex = SDL_CreateTextureFromSurface(renderer, titleSurface);
@@ -73,25 +71,23 @@ void Menu::render() {
     SDL_FreeSurface(titleSurface);
     SDL_DestroyTexture(titleTex);
 
-    // Construction dynamique des textes des options
     std::vector<std::string> options;
     options.push_back("Nb Guerriers: " + std::to_string(nbGuerriers));
-    options.push_back("Taux Mutation: " + std::to_string(mutationRate) + "%");
+    options.push_back("Mut. Type (Classe): " + std::to_string(mutationTypeRate) + "%");
+    options.push_back("Mut. Stats (Force): " + std::to_string(mutationStatsRate) + "%");
     options.push_back("Barres de Vie: " + std::string(showHealthBars ? "OUI" : "NON"));
     options.push_back("Vitesse Tirs: " + speedLabels[speedIndex]);
     options.push_back("Musique: " + std::string(musiqueOn ? "ON" : "OFF"));
+    options.push_back("Paix meme type: " + std::string(sameTypePeace ? "ON" : "OFF")); // Nouvelle option
 
     for (int i = 0; i < (int)options.size(); i++) {
-        // Si l'option est sélectionnée, on l'affiche en jaune, sinon en blanc
         SDL_Color color = (i == selectedOption ? yellow : white);
-
         SDL_Surface* surface = TTF_RenderText_Solid(font, options[i].c_str(), color);
         SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
 
-        // Petit rectangle gris derrière la sélection pour bien la voir
         if (i == selectedOption) {
             SDL_SetRenderDrawColor(renderer, 80, 80, 80, 150);
-            SDL_Rect highlight = {40, 80 + i * 50, 450, surface->h + 10}; // Espacement un peu plus grand
+            SDL_Rect highlight = {40, 80 + i * 50, 450, surface->h + 10};
             SDL_RenderFillRect(renderer, &highlight);
         }
 
@@ -108,7 +104,6 @@ void Menu::render() {
 void Menu::handleEvent(SDL_Event& event) {
     if (event.type == SDL_KEYDOWN) {
         switch (event.key.keysym.scancode) {
-            // Navigation Haut / Bas
             case SDL_SCANCODE_UP:
                 selectedOption = (selectedOption + optionsCount - 1) % optionsCount;
                 break;
@@ -116,46 +111,24 @@ void Menu::handleEvent(SDL_Event& event) {
                 selectedOption = (selectedOption + 1) % optionsCount;
                 break;
 
-            // Modification Valeur Droite
             case SDL_SCANCODE_RIGHT:
-                if (selectedOption == 0) { // Nb Guerriers
-                    nbGuerriers++;
-                }
-                else if (selectedOption == 1) { // Taux Mutation
-                    if (mutationRate < 100) mutationRate += 5; // Par pas de 5
-                }
-                else if (selectedOption == 2) { // Barres de Vie
-                    showHealthBars = !showHealthBars;
-                }
-                else if (selectedOption == 3) { // Vitesse Tirs
-                    speedIndex = (speedIndex + 1) % 3; // Cycle 0 -> 1 -> 2 -> 0
-                }
-                else if (selectedOption == 4) { // Musique
-                    musiqueOn = !musiqueOn;
-                    if (musiqueOn) Mix_PlayMusic(menuMusic, -1);
-                    else Mix_HaltMusic();
-                }
+                if (selectedOption == 0) nbGuerriers++;
+                else if (selectedOption == 1) { if (mutationTypeRate < 100) mutationTypeRate += 5; }
+                else if (selectedOption == 2) { if (mutationStatsRate < 100) mutationStatsRate += 5; } // Nouveau
+                else if (selectedOption == 3) showHealthBars = !showHealthBars;
+                else if (selectedOption == 4) speedIndex = (speedIndex + 1) % 3;
+                else if (selectedOption == 5) { musiqueOn = !musiqueOn; if(musiqueOn) Mix_PlayMusic(menuMusic,-1); else Mix_HaltMusic(); }
+                else if (selectedOption == 6) sameTypePeace = !sameTypePeace;
                 break;
 
-            // Modification Valeur Gauche
             case SDL_SCANCODE_LEFT:
-                if (selectedOption == 0 && nbGuerriers > 1) {
-                    nbGuerriers--;
-                }
-                else if (selectedOption == 1) { // Taux Mutation
-                    if (mutationRate > 0) mutationRate -= 5;
-                }
-                else if (selectedOption == 2) { // Barres de Vie
-                    showHealthBars = !showHealthBars;
-                }
-                else if (selectedOption == 3) { // Vitesse Tirs
-                    speedIndex = (speedIndex + 2) % 3; // Cycle inverse
-                }
-                else if (selectedOption == 4) { // Musique
-                    musiqueOn = !musiqueOn;
-                    if (musiqueOn) Mix_PlayMusic(menuMusic, -1);
-                    else Mix_HaltMusic();
-                }
+                if (selectedOption == 0 && nbGuerriers > 1) nbGuerriers--;
+                else if (selectedOption == 1) { if (mutationTypeRate > 0) mutationTypeRate -= 5; }
+                else if (selectedOption == 2) { if (mutationStatsRate > 0) mutationStatsRate -= 5; } // Nouveau
+                else if (selectedOption == 3) showHealthBars = !showHealthBars;
+                else if (selectedOption == 4) speedIndex = (speedIndex + 2) % 3;
+                else if (selectedOption == 5) { musiqueOn = !musiqueOn; if(musiqueOn) Mix_PlayMusic(menuMusic,-1); else Mix_HaltMusic(); }
+                else if (selectedOption == 6) sameTypePeace = !sameTypePeace;
                 break;
             default: break;
         }
@@ -171,7 +144,7 @@ void Menu::configureParameters() {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 running = false;
-                exit(0); // Quitter brutalement si on ferme la fenêtre
+                exit(0);
             }
             handleEvent(event);
             if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_RETURN) {
