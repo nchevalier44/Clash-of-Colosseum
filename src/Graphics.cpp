@@ -71,7 +71,6 @@ void Graphics::updateEntities(bool draw){
             if (e->canAttackTime()) {
                 e->setState("attack");
                 if (e->getWeapon()->type() == "Bow" || e->getWeapon()->type() == "Fireball") {
-                    std::cout << "Distance : " << e->distance(closest->getX(), closest->getY()) << "| Range : " << e->getWeapon()->getRange() << std::endl;
                     e->getWeapon()->attack(closest, e, &projectiles, e->getX(), e->getY());
                 } else {
                     e->getWeapon()->attack(closest);
