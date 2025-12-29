@@ -69,7 +69,3 @@ void Bow::attack(Entity* entity, Entity* owner, std::vector<Projectile*>* projec
 
     projectiles->push_back(projectile);
 }
-
-// La méthode draw reste vide car l'arc est sur le sprite du personnage
-void Bow::draw(int x, int y, SDL_Renderer* renderer) {
-}
