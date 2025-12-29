@@ -7,6 +7,10 @@
 #include "../Weapons/Weapon.h"
 #include <iostream>
 #include <random>
+#include <thread>
+#include <atomic>
+#include <mutex>
+#include <chrono>
 
 using namespace std;
 
@@ -21,6 +25,9 @@ class Entity {
 public:
     Entity(float x, float y, SDL_Renderer* renderer);
     virtual ~Entity();
+
+    void startThread(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, int* game_time_speed, bool* same_type_peace, std::mutex* global_mutex);
+    void stopThread();
 
     void setX(float new_x){ x = new_x; };
     void setY(float new_y){ y = new_y; };
@@ -83,6 +90,12 @@ protected:
 
     string type = "Entity";
 
+    std::thread entity_thread;
+    std::atomic<bool> thread_is_running = false;
+    
+private:
+    void threadLoop(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, int* game_time_speed, bool* same_type_peace, std::mutex* global_mutex);
+    void threadUpdate(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, bool* same_type_peace, std::mutex* global_mutex);
 };
 
 #endif //CLASH_OF_COLOSSEUM_ENTITY_H

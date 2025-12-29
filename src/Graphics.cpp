@@ -6,6 +6,7 @@
 #include "Entities/Mage.h"
 #include "Entities/Golem.h"
 #include <iostream>
+#include <algorithm>
 
 Graphics::Graphics() {
     SDL_CreateWindowAndRenderer(640, 480, 0, &window, &renderer);
@@ -51,65 +52,43 @@ void Graphics::setEntities(const std::vector<Entity*>& ents) {
     entities = ents;
 }
 
+void Graphics::startAllEntitiesThread(){
+    for(Entity* e : entities){
+        e->startThread(&entities, &projectiles, &game_time_speed, &same_type_peace, &global_mutex);
+    }
+}
+
+void Graphics::stopAllEntitiesThread(){
+    for(Entity* e : entities){
+        e->stopThread();
+    }
+}
+
 void Graphics::updateEntities(bool draw){
-    std::vector<Entity*> toDelete;
+
+    std::lock_guard<std::mutex> lock(global_mutex);
 
     for (Entity* e : entities) {
-        Entity* closest = e->findClosestEntity(entities, sameTypePeace);
-        if (!closest) continue;
-
-        if (e->canAttackDistance(closest)) {
-            // --- ORIENTATION AUTOMATIQUE ---
-            // On force l'entité à regarder sa cible avant d'attaquer
-            if (closest->getX() < e->getX()) {
-                e->setDirection("left");
-            } else {
-                e->setDirection("right");
-            }
-            // ---------------------------------------
-
-            if (e->canAttackTime()) {
-                e->setState("attack");
-                if (e->getWeapon()->type() == "Bow" || e->getWeapon()->type() == "Fireball") {
-                    e->getWeapon()->attack(closest, e, &projectiles, e->getX(), e->getY());
-                } else {
-                    e->getWeapon()->attack(closest);
-                }
-
-                e->resetAttackTimer();
-
-                if (closest->getHp() == 0) {
-                    toDelete.push_back(closest); // suppression différée
-                }
-            }
-        } else {
-            e->setState("run");
-            e->moveInDirection(closest->getX(), closest->getY());
+        if(e->getHp() <= 0){
+            entities_to_delete.push_back(e);
+            continue;
         }
 
         e->updateAnimation();
-        e->addAttackTimer();
 
-        if(draw) e->draw(renderer, game_menu->getTimeSpeed());
+        if(draw) e->draw(renderer, game_time_speed);
         if(draw && showHealthBars) e->drawHealthBar(renderer);
-
-        if (e->getType() == "Archer") {
-            Bow* bow = dynamic_cast<Bow *>(e->getWeapon());
-            if(draw) bow->draw(e->getX() + e->getSize(), e->getY(), renderer);
-        }
 
         SDL_Rect point = {int(e->getX()-5), int(e->getY()-5), 10, 10};
         SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
         SDL_RenderFillRect(renderer, &point);
     }
-
-    for (Entity* d : toDelete) {
-        deleteEntity(d);
-    }
-
 }
 
 void Graphics::updateProjectiles(bool draw){
+
+    std::lock_guard<std::mutex> lock(global_mutex);
+
     for (auto p = projectiles.begin(); p != projectiles.end(); ) {
         Projectile* proj = *p;
         if(SDL_GetTicks() >= proj->getEndTime()){
@@ -118,7 +97,7 @@ void Graphics::updateProjectiles(bool draw){
             continue;
         }
         proj->move();
-        if(draw) proj->draw(renderer, game_menu->getTimeSpeed());
+        if(draw) proj->draw(renderer, game_time_speed);
 
         bool hit = false;
 
@@ -146,7 +125,9 @@ void Graphics::updateProjectiles(bool draw){
 }
 
 void Graphics::update(bool* running) {
+
     handleEvent(running);
+    game_time_speed = game_menu->getTimeSpeed();
 
     // On nettoie d'abord l'écran (noir par défaut)
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -161,12 +142,23 @@ void Graphics::update(bool* running) {
         SDL_RenderClear(renderer);
     }
 
-    for(int i = 0; i<game_menu->getTimeSpeed(); i++) { // On répète l'action plusieurs fois si le temps est plus rapide
-        bool draw = i == game_menu->getTimeSpeed()-1; //On dessine que si c'est la dernière update de la boucle
+
+    for(int i = 0; i<game_time_speed; i++) { // On répète l'action plusieurs fois si le temps est plus rapide
+        bool draw = i == game_time_speed-1; //On dessine que si c'est la dernière update de la boucle
+
         updateEntities(draw);
         updateProjectiles(draw);
 
+        if (!entities_to_delete.empty()) {
+            for(Entity* e : entities_to_delete){
+                deleteEntity(e);
+            }
+            entities_to_delete.clear();
+        }
+
         if (entities.size() <= 5){
+            stopAllEntitiesThread();
+            std::lock_guard<std::mutex> lock(global_mutex);
             deleteAllProjectiles();
             generation++;
             std::vector<Entity*> new_entities; //Temporary vector
@@ -181,9 +173,11 @@ void Graphics::update(bool* running) {
                 }
             }
             entities.insert(entities.end(), new_entities.begin(), new_entities.end());
-
+            startAllEntitiesThread();
         }
     }
+
+    std::lock_guard<std::mutex> lock(global_mutex);
 
     if(game_menu) game_menu->draw(entities, generation);
     SDL_RenderPresent(renderer);
@@ -199,7 +193,9 @@ void Graphics::handleEvent(bool* running){
 
         if (event.type == SDL_KEYDOWN) {
             switch (event.key.keysym.scancode) {
-                case SDL_SCANCODE_RIGHT: game_menu->faster(); break;
+                case SDL_SCANCODE_RIGHT:
+                    game_menu->faster();
+                    break;
                 case SDL_SCANCODE_LEFT:  game_menu->lower(); break;
                 default: break;
             }
@@ -294,10 +290,13 @@ float Graphics::calculateNewAttribute(float value1, float value2){
 }
 
 void Graphics::deleteEntity(Entity* entity){
+    if(entity) entity->stopThread();
+    std::lock_guard<std::mutex> lock(global_mutex);
     for (auto it = entities.begin(); it != entities.end(); it++) {
         if (*it == entity) {
-            delete *it;
+            Entity* ptr_to_delete = *it;
             entities.erase(it);
+            delete ptr_to_delete;
             return;
         }
     }

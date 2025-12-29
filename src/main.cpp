@@ -67,6 +67,7 @@ int main() {
     Mix_HaltMusic();
     Mix_PlayMusic(graphics.getGameMusic(), -1);
 
+    graphics.startAllEntitiesThread();
     bool running = true;
     while (running) {
         graphics.update(&running);

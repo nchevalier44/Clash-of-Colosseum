@@ -1,6 +1,67 @@
 #include "Entity.h"
 #include "../Weapons/Bow.h"
 
+void Entity::startThread(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, int* game_time_speed, bool* same_type_peace, std::mutex* global_mutex) {
+    this->thread_is_running = true;
+    this->entity_thread = std::thread(&Entity::threadLoop, this, all_entities, all_projectiles, game_time_speed, same_type_peace, global_mutex);
+}
+
+void Entity::stopThread() {
+    if(!thread_is_running) return;
+
+    this->thread_is_running = false;
+    if(this->entity_thread.joinable()){
+        this->entity_thread.join();
+    }
+}
+
+void Entity::threadUpdate(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, bool* same_type_peace,  std::mutex* global_mutex){
+    //On verrouille l'accès aux données partagées (le vecteur all_entities)
+    std::lock_guard<std::mutex> lock(*global_mutex);
+
+    Entity* closest = findClosestEntity(*all_entities, *same_type_peace);
+
+    if(closest){
+        if(this->canAttackDistance(closest)){
+            //On force l'entité à regarder sa cible (orientation automatique)
+            if (closest->getX() < this->getX()) {
+                this->setDirection("left");
+            } else {
+                this->setDirection("right");
+            }
+
+            if (this->canAttackTime()) {
+                this->setState("attack");
+                if (this->getWeapon()->type() == "Bow" || this->getWeapon()->type() == "Fireball") {
+                    this->getWeapon()->attack(closest, this, all_projectiles, this->getX(), this->getY());
+                } else {
+                    this->getWeapon()->attack(closest);
+                }
+
+                this->resetAttackTimer();
+
+            }
+        } else {
+            this->setState("run");
+            this->moveInDirection(closest->getX(), closest->getY());
+        }
+    }
+    this->addAttackTimer();
+}
+
+void Entity::threadLoop(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, int* game_time_speed, bool* same_type_peace, std::mutex* global_mutex) {
+    while(thread_is_running && hp > 0){
+
+        for(int i = 0; i < *game_time_speed; i++){
+            if(hp <= 0) break; //On arrête si on est mort
+            this->threadUpdate(all_entities, all_projectiles, same_type_peace, global_mutex);
+        }
+
+        //Pour 60 fps = 16ms de pause
+        std::this_thread::sleep_for(std::chrono::milliseconds(16));
+    }
+}
+
 void Entity::setRandomSize(int minSize, int maxSize){
     // Taille (hitbox)
     this->size = randomRange(minSize, maxSize);
@@ -124,7 +185,6 @@ void Entity::updateAnimation(){
 
     anim_timer += 16; // On simule qu'une frame de jeu (16ms) vient de passer
 
-    Uint32 current_time = SDL_GetTicks();
     if (anim_timer >= frame_delay) {
         anim_timer -= frame_delay;
         current_frame = (current_frame + 1) % frames.size();
@@ -165,6 +225,7 @@ void Entity::draw(SDL_Renderer* renderer, int time_speed) {
 }
 
 Entity::~Entity() {
+    stopThread();
     for (auto tex : frames)
         SDL_DestroyTexture(tex);
 }

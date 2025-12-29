@@ -9,6 +9,7 @@
 #include "Weapons/Projectile.h"
 #include "GameMenu.h"
 #include <SDL_mixer.h>
+#include <mutex>
 
 
 class Graphics {
@@ -26,8 +27,11 @@ public:
     void updateProjectiles(bool draw);
     void setMutationTypeRate(int rate) { mutationTypeRate = rate; }
     void setMutationStatsRate(int rate) { mutationStatsRate = rate; }
-    void setSameTypePeace(bool peace) { sameTypePeace = peace; }
+    void setSameTypePeace(bool peace) { same_type_peace = peace; }
     void setShowHealthBars(bool show) { showHealthBars = show; }
+
+    void startAllEntitiesThread();
+    void stopAllEntitiesThread();
 
     Entity* createNewEntityFromParents(Entity* e1, Entity* e2);
 
@@ -36,16 +40,21 @@ public:
     // Ajout de la méthode pour injecter les entités depuis le main
     void setEntities(const std::vector<Entity*>& ents);
 
+    std::mutex global_mutex;
+
 private:
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
     int mutationTypeRate = 15;
     int mutationStatsRate = 15;
     bool showHealthBars = true;
-    bool sameTypePeace = false;
+    bool same_type_peace = false;
+
+    int game_time_speed = 1;
 
     std::vector<Entity*> entities;
     std::vector<Projectile*> projectiles;
+    std::vector<Entity*> entities_to_delete;
     SDL_Texture* backgroundTexture;
     int generation = 1;
     Mix_Music* gameMusic = nullptr;
@@ -53,6 +62,7 @@ private:
 
     Entity *instantiateChildByType(Entity *e1, Entity *e2);
     float calculateNewAttribute(float value1, float value2);
+
 };
 
 #endif //CLASH_OF_COLOSSEUM_GRAPHICS_H
