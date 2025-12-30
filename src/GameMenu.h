@@ -4,6 +4,14 @@
 #include <SDL2/SDL_ttf.h>
 #include <vector>
 #include "Entities/Entity.h"
+#include <iomanip>
+#include <sstream>
+
+inline std::string roundingFloatToString(float value, int n = 2) {
+    std::stringstream stream;
+    stream << std::fixed << std::setprecision(n) << value;
+    return stream.str();
+}
 
 class GameMenu {
 public:
@@ -13,11 +21,17 @@ public:
     void faster();
     void lower();
     int getTimeSpeed() const { return time_options[time_index]; }
+    void setSelectedEntity(Entity* e) {selected_entity = e;}
+
+    Entity * getSelectedEntity(){return selected_entity;}
+
 private:
     void createBackground();
     void displayTimeSpeed();
     void drawStatsTable(const std::vector<Entity*>& entities, int generation);
+    void drawEntityStats();
 
+    Entity* selected_entity = nullptr;
     TTF_Font* font = nullptr;
     TTF_Font* statFont = nullptr;
     SDL_Renderer* renderer = nullptr;

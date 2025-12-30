@@ -33,6 +33,50 @@ void GameMenu::draw(const std::vector<Entity*>& entities, int generation){
     createBackground();
     displayTimeSpeed();
     drawStatsTable(entities, generation);
+    drawEntityStats();
+}
+
+void GameMenu::drawEntityStats() {
+    if (!statFont) return;
+    if (!selected_entity) return;
+    std::vector<std::string> lines;
+    lines.push_back("Type : " + selected_entity->getType());
+    lines.push_back("Age : " + std::to_string(selected_entity->getAge()));
+    lines.push_back("Hp : " + std::to_string(selected_entity->getHp()));
+    lines.push_back("Max Hp : " + std::to_string(selected_entity->getMaxHp()));
+    lines.push_back("Range : " + std::to_string(selected_entity->getWeapon()->getRange()));
+    lines.push_back("Damage : " + std::to_string(selected_entity->getWeapon()->getDamage()));
+    lines.push_back("Speed : " + roundingFloatToString(selected_entity->getMoveSpeed()));
+
+    int winW, winH;
+    SDL_GetWindowSize(window, &winW, &winH);
+
+    int rectW = 140;
+    int rectH = 140;
+    int margin = 10;
+
+    SDL_Rect bgRect = {winW - rectW - margin, winH - 3 * rectH + 4*margin, rectW, rectH};
+
+    SDL_SetRenderDrawColor(renderer, 40, 40, 40, 230);
+    SDL_RenderFillRect(renderer, &bgRect);
+
+    SDL_Color textColor = {255, 255, 255, 255};
+
+    int xOffset = bgRect.x + 10;
+    int yOffset = bgRect.y + 5;
+
+    for (const auto& line : lines) {
+        SDL_Surface* surf = TTF_RenderText_Blended(statFont, line.c_str(), textColor);
+        if (surf) {
+            SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
+            SDL_Rect dest = {xOffset, yOffset, surf->w, surf->h};
+            SDL_RenderCopy(renderer, tex, nullptr, &dest);
+            yOffset += 18;
+            SDL_DestroyTexture(tex);
+            SDL_FreeSurface(surf);
+        }
+    }
+
 }
 
 void GameMenu::drawStatsTable(const std::vector<Entity*>& entities, int generation) {
@@ -40,6 +84,9 @@ void GameMenu::drawStatsTable(const std::vector<Entity*>& entities, int generati
 
     int nbGuerrier = 0, nbArcher = 0, nbMage = 0, nbGolem = 0;
     float totalHp = 0;
+    float avgDamage = 0;
+    float avgSpeed = 0;
+    float avgAge = 0;
 
     for (const auto& e : entities) {
         std::string t = e->getType();
@@ -47,26 +94,35 @@ void GameMenu::drawStatsTable(const std::vector<Entity*>& entities, int generati
         else if (t == "Archer") nbArcher++;
         else if (t == "Mage") nbMage++;
         else if (t == "Tank") nbGolem++;
-        totalHp += e->getHp();
+        totalHp += e->getMaxHp();
+        avgDamage += e->getWeapon()->getDamage();
+        avgSpeed += e->getMoveSpeed();
+        avgAge += e->getAge();
     }
     float avgHp = entities.empty() ? 0 : totalHp / entities.size();
+    avgDamage = entities.empty() ? 0 : avgDamage / entities.size();
+    avgSpeed = entities.empty() ? 0 : avgSpeed / entities.size();
+    avgAge = entities.empty() ? 0 : avgAge / entities.size();
 
     int winW, winH;
     SDL_GetWindowSize(window, &winW, &winH);
 
     int rectW = 170;
-    int rectH = 160;
+    int rectH = 220;
     int margin = 10;
 
     SDL_Rect bgRect = {winW - rectW - margin, winH - rectH - margin, rectW, rectH};
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 254);
+    SDL_SetRenderDrawColor(renderer, 40, 40, 40, 230);
     SDL_RenderFillRect(renderer, &bgRect);
 
     std::vector<std::string> lines;
     lines.push_back("Generation: " + std::to_string(generation));
     lines.push_back("Vivants: " + std::to_string(entities.size()));
-    lines.push_back("PV Moyens: " + std::to_string((int)avgHp));
+    lines.push_back("PV Max Moyens: " + std::to_string((int)avgHp));
+    lines.push_back("Degats Moyens: " + std::to_string((int)avgDamage));
+    lines.push_back("Vitesse Moyennes: " + roundingFloatToString(avgSpeed));
+    lines.push_back("Age Moyens: " + roundingFloatToString(avgAge));
     lines.push_back("----------------");
     lines.push_back("Guerriers: " + std::to_string(nbGuerrier));
     lines.push_back("Archers:   " + std::to_string(nbArcher));

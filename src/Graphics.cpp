@@ -76,8 +76,20 @@ void Graphics::updateEntities(bool draw){
 
         e->updateAnimation();
 
-        if(draw) e->draw(renderer, game_time_speed);
+        if(draw) e->draw(renderer);
         if(draw && showHealthBars) e->drawHealthBar(renderer);
+
+        if (game_menu->getSelectedEntity() == e) {
+            float h = e->getSize() * e->getSpriteScale();
+            SDL_Rect hitbox = {
+                int(e->getX() - e->getSize() / 2),
+                int(e->getY() - h + e->getFootOffset() + h / 2),
+                e->getSize(),
+                e->getSize()
+            };
+            SDL_SetRenderDrawColor(renderer, 230, 0, 0, 255);
+            SDL_RenderDrawRect(renderer, &hitbox);
+        }
 
         SDL_Rect point = {int(e->getX()-5), int(e->getY()-5), 10, 10};
         SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
@@ -151,6 +163,9 @@ void Graphics::update(bool* running) {
 
         if (!entities_to_delete.empty()) {
             for(Entity* e : entities_to_delete){
+                if (e == game_menu->getSelectedEntity()) {
+                    game_menu->setSelectedEntity(nullptr);
+                }
                 deleteEntity(e);
             }
             entities_to_delete.clear();
@@ -159,6 +174,7 @@ void Graphics::update(bool* running) {
         if (entities.size() <= 5){
             stopAllEntitiesThread();
             std::lock_guard<std::mutex> lock(global_mutex);
+            increaseAllEntitiesAge();
             deleteAllProjectiles();
             generation++;
             std::vector<Entity*> new_entities; //Temporary vector
@@ -200,7 +216,39 @@ void Graphics::handleEvent(bool* running){
                 default: break;
             }
         }
+
+        if (event.type == SDL_MOUSEBUTTONDOWN) {
+            int x = event.button.x;
+            int y = event.button.y;
+
+            if (event.button.button == SDL_BUTTON_LEFT) {
+                std::lock_guard<std::mutex> lock(global_mutex);
+                Entity* selected_entity = getEntityAtPos(x, y);
+                if (selected_entity == nullptr || selected_entity == game_menu->getSelectedEntity()) {
+                    game_menu->setSelectedEntity(nullptr);
+                } else {
+                    game_menu->setSelectedEntity(selected_entity);
+                }
+            }
+        }
     }
+}
+
+Entity* Graphics::getEntityAtPos(float x, float y) {
+    for (Entity* e : entities) {
+        float h = e->getSize() * e->getSpriteScale();
+        float start_x = e->getX() - e->getSize() / 2;
+        float start_y = e->getY() - h + e->getFootOffset() + h / 2;
+        float end_x = start_x + e->getSize();
+        float end_y = start_y + e->getSize();
+
+        if (start_x <= x && x <= end_x) {
+            if (start_y <= y && y <= end_y) {
+                return e;
+            }
+        }
+    }
+    return nullptr;
 }
 
 Entity* Graphics::createNewEntityFromParents(Entity* e1, Entity* e2){
@@ -309,4 +357,10 @@ void Graphics::deleteAllProjectiles(){
     }
 
     projectiles.clear();
+}
+
+void Graphics::increaseAllEntitiesAge() {
+    for (Entity* e : entities) {
+        e->increaseAge();
+    }
 }

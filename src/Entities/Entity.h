@@ -34,12 +34,16 @@ public:
     void setHp(int new_hp);
     void setMaxHp(int new_max_hp) { max_hp = new_max_hp; }
     void setSize(int new_size);
+    void increaseAge(){age++;};
     virtual void updateAttackCooldown() { this->attack_cooldown = 500 + (weapon->getDamage() * 30); };
     float getX() const { return x; };
     float getY() const { return y; };
     int getSize() const { return size; };
     int getHp() const { return hp; }
     int getMaxHp() const { return max_hp; }
+    int getAge() const { return age; }
+    int getFootOffset() const { return foot_offset; }
+    double getSpriteScale() const { return sprite_scale; }
     float getMoveSpeed() const { return move_speed; }
     void setMoveSpeed(float new_speed){ move_speed = new_speed; }
     void setRandomSize(int minSize, int maxSize);
@@ -58,7 +62,7 @@ public:
     //Sprites
     virtual void loadSprites(SDL_Renderer* renderer); // à redéfinir
     virtual void updateAnimation();
-    virtual void draw(SDL_Renderer* renderer, int time_speed);
+    virtual void draw(SDL_Renderer* renderer);
     void setState(const string& new_state); // "idle", "run", "attack"
     void setDirection(const string& new_dir); // "left" ou "right"
 
@@ -79,6 +83,7 @@ protected:
     float attack_cooldown = 1000.0f;
     float move_speed = 1.0f;
     float baseSpriteSize = 1.0f;
+    int age = 0;
 
     vector<SDL_Texture*> frames;
     string state = "idle";

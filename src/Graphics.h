@@ -22,7 +22,13 @@ public:
     void update(bool* running);
     SDL_Renderer* getRenderer() const;
     void deleteAllProjectiles();
+
+    void increaseAllEntitiesAge();
+
     void handleEvent(bool* running);
+
+    Entity *getEntityAtPos(float x, float y);
+
     void updateEntities(bool draw);
     void updateProjectiles(bool draw);
     void setMutationTypeRate(int rate) { mutationTypeRate = rate; }

@@ -195,7 +195,7 @@ void Entity::updateAnimation(){
     }
 }
 
-void Entity::draw(SDL_Renderer* renderer, int time_speed) {
+void Entity::draw(SDL_Renderer* renderer) {
     if (frames.empty()) return;
 
     int w = size * sprite_scale;   // largeur du sprite
@@ -216,10 +216,10 @@ void Entity::draw(SDL_Renderer* renderer, int time_speed) {
     // Position Y hitbox = Centre Y du sprite - size/2
 
     SDL_Rect hitbox = {
-            int(x - size / 2),
-            int(y - h / 2 + foot_offset - size / 2), // Hitbox centrée sur le visuel
-            size,
-            size
+        int(x - size / 2),
+        int(y - h + foot_offset + h / 2),
+        size,
+        size
     };
     SDL_RenderDrawRect(renderer, &hitbox);
 }
