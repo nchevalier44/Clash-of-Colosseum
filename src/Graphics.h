@@ -57,6 +57,7 @@ private:
     bool same_type_peace = false;
 
     int game_time_speed = 1;
+    bool is_game_paused = false;
 
     std::vector<Entity*> entities;
     std::vector<Projectile*> projectiles;

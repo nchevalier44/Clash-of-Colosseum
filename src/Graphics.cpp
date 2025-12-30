@@ -139,6 +139,8 @@ void Graphics::updateProjectiles(bool draw){
 void Graphics::update(bool* running) {
 
     handleEvent(running);
+    if (is_game_paused) return;
+
     game_time_speed = game_menu->getTimeSpeed();
 
     // On nettoie d'abord l'écran (noir par défaut)
@@ -212,7 +214,12 @@ void Graphics::handleEvent(bool* running){
                 case SDL_SCANCODE_RIGHT:
                     game_menu->faster();
                     break;
-                case SDL_SCANCODE_LEFT:  game_menu->lower(); break;
+                case SDL_SCANCODE_LEFT:
+                    game_menu->lower();
+                    break;
+                case SDL_SCANCODE_SPACE:
+                    is_game_paused = !is_game_paused;
+                    is_game_paused ? stopAllEntitiesThread() : startAllEntitiesThread();
                 default: break;
             }
         }
