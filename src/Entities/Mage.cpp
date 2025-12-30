@@ -15,7 +15,7 @@ Mage::Mage(float x, float y, SDL_Renderer* renderer) : Entity(x, y, renderer){
 }
 
 void Mage::updateAttackCooldown() {
-    this->attack_cooldown = 500 + (weapon->getDamage() * 30);
+    this->attack_cooldown = 500 + (weapon->getDamage() * 40);
 }
 
 void Mage::loadSprites(SDL_Renderer* renderer) {

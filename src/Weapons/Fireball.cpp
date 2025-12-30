@@ -10,8 +10,8 @@ Fireball::Fireball(SDL_Renderer* renderer, int damage, int range)
     min_range = 130;
     max_range = 150;
 
-    for (int i = 1; i <= 8; ++i) {
-        std::string path = "../assets/Mage/FB_" + std::to_string(i) + ".png";
+    for (int i = 1; i <= 5; ++i) {
+        std::string path = "../assets/Mage/FB_moving_" + std::to_string(i) + ".png";
         SDL_Surface* surf = IMG_Load(path.c_str());
         if (!surf) {
             std::cerr << "Erreur chargement " << path << " : " << IMG_GetError() << std::endl;
