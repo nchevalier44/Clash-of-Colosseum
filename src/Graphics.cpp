@@ -136,9 +136,18 @@ void Graphics::updateProjectiles(bool draw){
     }
 }
 
-void Graphics::update(bool* running) {
+void Graphics::update(bool* running, bool* keep_playing) {
 
-    handleEvent(running);
+    handleEvent(running, keep_playing);
+
+    //Exit button have been clicked so we stop the simulation
+    if (game_menu->isSimulationStopped()) {
+        stopAllEntitiesThread();
+        *running = false;
+        return;
+    }
+
+    //Game is not running so we do nothing
     if (is_game_paused) return;
 
     game_time_speed = game_menu->getTimeSpeed();
@@ -197,16 +206,17 @@ void Graphics::update(bool* running) {
 
     std::lock_guard<std::mutex> lock(global_mutex);
 
-    if(game_menu) game_menu->draw(entities, generation);
+    if(game_menu) game_menu->draw(entities, generation, is_game_paused);
     SDL_RenderPresent(renderer);
 }
 
-void Graphics::handleEvent(bool* running){
+void Graphics::handleEvent(bool* running, bool* keep_playing){
     SDL_Event event;
 
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
             *running = false;
+            *keep_playing = false;
         }
 
         if (event.type == SDL_KEYDOWN) {
@@ -217,9 +227,19 @@ void Graphics::handleEvent(bool* running){
                 case SDL_SCANCODE_LEFT:
                     game_menu->lower();
                     break;
+
+                case SDL_SCANCODE_ESCAPE:
                 case SDL_SCANCODE_SPACE:
                     is_game_paused = !is_game_paused;
-                    is_game_paused ? stopAllEntitiesThread() : startAllEntitiesThread();
+                    if (is_game_paused) {
+                        stopAllEntitiesThread();
+                        std::lock_guard<std::mutex> lock(global_mutex);
+                        if(game_menu) game_menu->draw(entities, generation, is_game_paused);
+                        SDL_RenderPresent(renderer);
+                    } else {
+                        startAllEntitiesThread();
+                    }
+                    break;
                 default: break;
             }
         }
@@ -229,12 +249,39 @@ void Graphics::handleEvent(bool* running){
             int y = event.button.y;
 
             if (event.button.button == SDL_BUTTON_LEFT) {
+
+                //Click on a button ?
+                std::vector<Button*> buttons = game_menu->getButtons();
+                for (Button* b : buttons) {
+                    SDL_Rect rect = b->getRect();
+                    if ((rect.x <= x && x <= rect.x + rect.w) && (rect.y <= y && y <= rect.y + rect.h)) {
+                        b->onClick(b);
+                    }
+                }
+
+                //Click on an entity ?
                 std::lock_guard<std::mutex> lock(global_mutex);
                 Entity* selected_entity = getEntityAtPos(x, y);
                 if (selected_entity == nullptr || selected_entity == game_menu->getSelectedEntity()) {
                     game_menu->setSelectedEntity(nullptr);
                 } else {
                     game_menu->setSelectedEntity(selected_entity);
+                }
+            }
+        }
+
+        if (event.type == SDL_MOUSEMOTION) {
+            int x = event.motion.x;
+            int y = event.motion.y;
+
+            //Hover a button = change color ?
+            std::vector<Button*> buttons = game_menu->getButtons();
+            for (Button* b : buttons) {
+                SDL_Rect rect = b->getRect();
+                if ((rect.x <= x && x <= rect.x + rect.w) && (rect.y <= y && y <= rect.y + rect.h)) {
+                    b->setHovering(true);
+                } else {
+                    b->setHovering(false);
                 }
             }
         }

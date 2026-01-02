@@ -1,7 +1,3 @@
-#include <string>
-#include <iostream>
-#include <sstream>
-#include <iomanip>
 #include "GameMenu.h"
 
 GameMenu::GameMenu(SDL_Renderer* renderer, SDL_Window* window) : window(window), renderer(renderer){
@@ -11,15 +7,32 @@ GameMenu::GameMenu(SDL_Renderer* renderer, SDL_Window* window) : window(window),
         std::cerr << "Erreur chargement police stats: " << TTF_GetError() << std::endl;
     }
     time_options = {1, 2, 5, 10, 20, 50, 100};
-    for(int value : time_options){
+    for(int value : time_options) {
         std::string string_time = "x" + std::to_string(value);
 
-        SDL_Surface* surface = TTF_RenderText_Solid(font, string_time.c_str(), {255, 255, 255});
-        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_Surface *surface = TTF_RenderText_Solid(font, string_time.c_str(), {255, 255, 255});
+        SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
 
         time_textures.push_back(texture);
         SDL_FreeSurface(surface);
     }
+
+    int width_window, height_window;
+    SDL_GetWindowSize(window, &width_window, &height_window);
+
+    Button* stats_visible_button = new Button("Hide Stats", font, 2*width_window/5, 16, renderer,  [this](Button* button) {
+        hide_stats = !hide_stats;
+        if (hide_stats) {
+            button->setText("Show Stats");
+        } else {
+            button->setText("Hide Stats");
+        }
+    });
+    Button* exit_button = new Button("Exit", font, 4*width_window/5, 16, renderer, [this](Button* button) {
+        stop_simulation = true;
+    });
+    buttons.push_back(stats_visible_button);
+    buttons.push_back(exit_button);
 }
 
 GameMenu::~GameMenu(){
@@ -27,11 +40,18 @@ GameMenu::~GameMenu(){
         SDL_DestroyTexture(texture);
     }
     if (statFont) TTF_CloseFont(statFont);
+    if (font) TTF_CloseFont(font);
+    for (Button* b : buttons) {
+        delete b;
+    }
 }
 
-void GameMenu::draw(const std::vector<Entity*>& entities, int generation){
+void GameMenu::draw(const std::vector<Entity*>& entities, int generation, bool is_game_paused){
     createBackground();
-    displayTimeSpeed();
+    displayTimeSpeed(is_game_paused);
+    for (Button* b : buttons) {
+        b->draw(window, renderer);
+    }
     drawStatsTable(entities, generation);
     drawEntityStats();
 }
@@ -80,7 +100,7 @@ void GameMenu::drawEntityStats() {
 }
 
 void GameMenu::drawStatsTable(const std::vector<Entity*>& entities, int generation) {
-    if (!statFont) return;
+    if (!statFont || hide_stats) return;
 
     int nbGuerrier = 0, nbArcher = 0, nbMage = 0, nbGolem = 0;
     float totalHp = 0;
@@ -146,6 +166,7 @@ void GameMenu::drawStatsTable(const std::vector<Entity*>& entities, int generati
         }
     }
 }
+
 void GameMenu::createBackground(){
     int width, height;
     SDL_GetWindowSize(window, &width, &height);
@@ -156,15 +177,22 @@ void GameMenu::createBackground(){
     SDL_RenderFillRect(renderer, &rect);
 }
 
-void GameMenu::displayTimeSpeed(){
-    SDL_Texture* texture = time_textures[time_index];
+void GameMenu::displayTimeSpeed(bool is_game_paused){
+    SDL_Texture* texture;
+    if (!is_game_paused) {
+        texture = time_textures[time_index];
+    } else {
+        SDL_Surface* surface = TTF_RenderText_Solid(font, "Pause", {255, 255, 255});
+        texture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_FreeSurface(surface);
+    }
+
 
     int width_text, height_text, width_window, height_window;
     SDL_GetWindowSize(window, &width_window, &height_window);
     SDL_QueryTexture(texture, nullptr, nullptr, &width_text, &height_text);
 
-    SDL_Rect text_rect = {width_window/2 - width_text/2, 25 - height_text/2, width_text, height_text};
-
+    SDL_Rect text_rect = {width_window - 50, 16, width_text, height_text};
     SDL_RenderCopy(renderer, texture, nullptr, &text_rect);
 }
 

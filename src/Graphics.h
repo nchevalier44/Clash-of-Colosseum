@@ -19,13 +19,13 @@ public:
     Mix_Music* getGameMusic() const { return gameMusic; }
     SDL_Renderer* getRenderer() { return renderer; } ;
     SDL_Window* getWindow() { return window; } ;
-    void update(bool* running);
+    void update(bool* running, bool* keep_playing);
     SDL_Renderer* getRenderer() const;
     void deleteAllProjectiles();
 
     void increaseAllEntitiesAge();
 
-    void handleEvent(bool* running);
+    void handleEvent(bool* running, bool* keep_playing);
 
     Entity *getEntityAtPos(float x, float y);
 

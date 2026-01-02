@@ -14,15 +14,18 @@
 #include <ctime>
 #include <array>
 
-int main() {
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) return 1;
+bool init() {
+    if (SDL_Init(SDL_INIT_VIDEO) != 0) return false;
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) std::cerr << Mix_GetError() << std::endl;
-    if (TTF_Init() != 0) return 1;
+    if (TTF_Init() != 0) return false;
     int imgFlags = IMG_INIT_PNG | IMG_INIT_JPG;
-    if ((IMG_Init(imgFlags) & imgFlags) != imgFlags) return 1;
+    if ((IMG_Init(imgFlags) & imgFlags) != imgFlags) return false;
 
     std::srand(std::time(nullptr));
+    return true;
+}
 
+void start_game(bool* keep_playing) {
     Graphics graphics;
     Menu menu(graphics.getRenderer());
 
@@ -70,8 +73,17 @@ int main() {
     graphics.startAllEntitiesThread();
     bool running = true;
     while (running) {
-        graphics.update(&running);
+        graphics.update(&running, keep_playing);
         SDL_Delay(16);
+    }
+}
+
+int main() {
+    if (!init()) return 1;
+
+    bool keep_playing = true;
+    while (keep_playing) {
+        start_game(&keep_playing);
     }
 
     IMG_Quit(); TTF_Quit(); Mix_CloseAudio(); Mix_Quit(); SDL_Quit();
