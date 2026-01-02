@@ -1,6 +1,7 @@
 #ifndef CLASH_OF_COLOSSEUM_CONFIG_H
 #define CLASH_OF_COLOSSEUM_CONFIG_H
 
+#include <map>
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <string>
@@ -9,7 +10,7 @@
 
 class Menu {
 public:
-    Menu(SDL_Renderer* r);
+    Menu(SDL_Renderer* r, std::map<std::string, std::string>* parameters);
     ~Menu();
 
     void render();
@@ -20,12 +21,11 @@ public:
     int getNbGuerriers() const { return nbGuerriers; }
     int getMutationTypeRate() const { return mutationTypeRate; }
     int getMutationStatsRate() const { return mutationStatsRate; }
-    bool getShowHealthBars() const {
-        return showHealthBars;
-    }
+    bool getShowHealthBars() const { return showHealthBars; }
+    bool getMusicOn() const { return musiqueOn; }
     bool getSameTypePeace() const { return sameTypePeace; }
     float getProjectileSpeedMultiplier() const; // On calculera le float basé sur l'index
-
+    int getSpeedIndex() const { return speedIndex; }
 private:
     SDL_Renderer* renderer;
     TTF_Font* font = nullptr;

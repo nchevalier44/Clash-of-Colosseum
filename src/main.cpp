@@ -9,10 +9,12 @@
 #include <iostream>
 #include <SDL_image.h>
 #include <vector>
-#include <memory>   // pour std::unique_ptr
+#include <memory>
 #include <SDL_mixer.h>
 #include <ctime>
 #include <array>
+#include <map>
+
 
 bool init() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) return false;
@@ -25,9 +27,9 @@ bool init() {
     return true;
 }
 
-void start_game(bool* keep_playing) {
+void start_game(bool* keep_playing, std::map<std::string, std::string>* parameters) {
     Graphics graphics;
-    Menu menu(graphics.getRenderer());
+    Menu menu(graphics.getRenderer(), parameters);
 
     menu.configureParameters();
 
@@ -40,7 +42,14 @@ void start_game(bool* keep_playing) {
     graphics.setSameTypePeace(menu.getSameTypePeace());
 
     int nbGuerriers = menu.getNbGuerriers();
-    std::cout << "Paix meme type : " << (menu.getSameTypePeace() ? "ON" : "OFF") << "\n";
+
+    (*parameters)["nb_guerriers"] = std::to_string(nbGuerriers);
+    (*parameters)["mutation_type_rate"] = std::to_string(menu.getMutationTypeRate());
+    (*parameters)["mutation_stats_rate"] = std::to_string(menu.getMutationStatsRate());
+    (*parameters)["show_healthbar"] = std::to_string(menu.getShowHealthBars());
+    (*parameters)["projectile_speed_multiplier_index"] = std::to_string(menu.getSpeedIndex());
+    (*parameters)["music"] = std::to_string(menu.getMusicOn());
+    (*parameters)["same_type_peace"] = std::to_string(menu.getSameTypePeace());
 
     // --- NOUVEAU SPAWN ALEATOIRE ---
     std::vector<Entity*> entities;
@@ -67,8 +76,10 @@ void start_game(bool* keep_playing) {
 
     graphics.setEntities(entities);
 
-    Mix_HaltMusic();
-    Mix_PlayMusic(graphics.getGameMusic(), -1);
+    if (menu.getMusicOn()) {
+        Mix_HaltMusic();
+        Mix_PlayMusic(graphics.getGameMusic(), -1);
+    }
 
     graphics.startAllEntitiesThread();
     bool running = true;
@@ -81,9 +92,19 @@ void start_game(bool* keep_playing) {
 int main() {
     if (!init()) return 1;
 
+    std::map<std::string, std::string> parameters = {
+        { "nb_guerriers", "10" },
+        {"mutation_type_rate", "15"},
+        {"mutation_stats_rate", "15"},
+        {"show_healthbar", "true"},
+        {"projectile_speed_multiplier_index", "1"},
+        {"music", "true"},
+        {"same_type_peace", "false"}
+    };
+
     bool keep_playing = true;
     while (keep_playing) {
-        start_game(&keep_playing);
+        start_game(&keep_playing, &parameters);
     }
 
     IMG_Quit(); TTF_Quit(); Mix_CloseAudio(); Mix_Quit(); SDL_Quit();

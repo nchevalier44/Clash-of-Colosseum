@@ -5,11 +5,22 @@
 #include <SDL_image.h>
 #include <vector>
 
-Menu::Menu(SDL_Renderer* r) : renderer(r) {
+Menu::Menu(SDL_Renderer* r, std::map<std::string, std::string>* parameters) : renderer(r) {
     font = TTF_OpenFont("../assets/arial.ttf", 24);
     if (!font) {
         std::cerr << "Erreur chargement police: " << TTF_GetError() << std::endl;
     }
+
+    nbGuerriers = std::stoi((*parameters)["nb_guerriers"]);
+    mutationTypeRate = std::stoi((*parameters)["mutation_type_rate"]);
+    mutationStatsRate = std::stoi((*parameters)["mutation_stats_rate"]);
+    showHealthBars = (*parameters)["show_healthbars"] == "true";
+    speedIndex = std::stoi((*parameters)["projectile_speed_multiplier_index"]);
+    musiqueOn = (*parameters)["musique_on"] == "true";
+    sameTypePeace = (*parameters)["same_type_peace"] == "true";
+    selectedOption = 0;
+    optionsCount = 7;
+
     menuMusic = Mix_LoadMUS("../assets/menumusic.mp3");
     if (!menuMusic) {
         std::cerr << "Erreur chargement musique menu: " << Mix_GetError() << std::endl;
@@ -29,11 +40,8 @@ Menu::Menu(SDL_Renderer* r) : renderer(r) {
             std::cerr << "Erreur SDL_CreateTextureFromSurface (fond): " << SDL_GetError() << std::endl;
         }
     }
-
-    nbGuerriers = 10;
-    selectedOption = 0;
-    optionsCount = 7;
 }
+
 float Menu::getProjectileSpeedMultiplier() const {
     if (speedIndex == 0) return 0.5f; // Lent
     if (speedIndex == 2) return 2.0f; // Rapide
