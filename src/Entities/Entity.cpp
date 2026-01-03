@@ -221,7 +221,6 @@ void Entity::moveInDirection(float target_x, float target_y){
         dy /= length;
 
         // Application de la vitesse en fonction de la taille
-        std::cout << size << std::endl;
         x += dx * move_speed / size;
         y += dy * move_speed / size;
     }
