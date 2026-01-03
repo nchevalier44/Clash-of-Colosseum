@@ -11,6 +11,7 @@
 #include <atomic>
 #include <mutex>
 #include <chrono>
+#include <map>
 
 using namespace std;
 
@@ -25,6 +26,8 @@ class Entity {
 public:
     Entity(float x, float y, SDL_Renderer* renderer);
     virtual ~Entity();
+
+    void deleteAllFrames();
 
     void startThread(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, int* game_time_speed, bool* same_type_peace, std::mutex* global_mutex);
     void stopThread();
@@ -42,11 +45,11 @@ public:
     int getHp() const { return hp; }
     int getMaxHp() const { return max_hp; }
     int getAge() const { return age; }
-    int getFootOffset() const { return foot_offset; }
-    double getSpriteScale() const { return sprite_scale; }
+    float getRatioHitboxWidth() const { return ratio_hitbox_width; }
+    float getRatioHitboxHeight() const { return ratio_hitbox_height; }
     float getMoveSpeed() const { return move_speed; }
     void setMoveSpeed(float new_speed){ move_speed = new_speed; }
-    void setRandomSize(int minSize, int maxSize);
+    void setRandomSize(float minSize, float maxSize);
     Weapon* getWeapon() { return weapon; }
     void resetAttackTimer(){ attack_timer -= attack_cooldown; }
     void addAttackTimer(){ attack_timer += 16; }
@@ -58,6 +61,8 @@ public:
     Entity* findClosestEntity(vector<Entity*> entities, bool ignoreSameType = false);
     void moveInDirection(float x, float y);
     void drawHealthBar(SDL_Renderer* renderer);
+
+    bool isFrameEmpty(SDL_Surface * surface);
 
     //Sprites
     virtual void loadSprites(SDL_Renderer* renderer); // à redéfinir
@@ -73,25 +78,34 @@ public:
 protected:
     int hp;
     int max_hp;
-    int size = 1.0f;
-    int foot_offset = 10;  // ajuste entre 5 et 20 selon ton sprite
-    double sprite_scale; // échelle d’affichage du sprite
+    float base_sprite_size = 1.0f;
+    float ratio_hitbox_width;
+    float ratio_hitbox_height;
+    float size;
     float x;
     float y;
     Weapon* weapon;
+
     float attack_timer = 0.0f; // Compteur interne
     float attack_cooldown = 1000.0f;
     float move_speed = 1.0f;
-    float baseSpriteSize = 1.0f;
     int age = 0;
 
-    vector<SDL_Texture*> frames;
+    string sprites_file_right;
+    string sprites_file_left;
+    map<string, map<string, vector<SDL_Texture*>>> frames; // {"idle": {"left" : [frame_0, frame_1, ...], "right": ...}, "run": ..., ...}
     string state = "idle";
     string direction = "right";
     int current_frame = 0;
     Uint32 frame_delay = 120;
     float anim_timer = 0;
     SDL_Renderer* current_renderer = nullptr;
+
+    // The entity attack at this number of frame
+    // (for example thank to this variable, the arrow from the archer will be launch
+    // at the end of his animation instead of the beginning)
+    int frame_to_attack = 0;
+    bool ready_to_attack = false; //This variable will be set to true when the animation is at the 'frame_to_attack' position
 
     string type = "Entity";
 

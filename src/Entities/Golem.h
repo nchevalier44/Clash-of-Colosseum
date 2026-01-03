@@ -6,7 +6,6 @@
 class Golem : public Entity {
 public:
     Golem(float x, float y, SDL_Renderer* renderer);
-    void loadSprites(SDL_Renderer* renderer) override;
     void updateAttackCooldown() override;
 };
 

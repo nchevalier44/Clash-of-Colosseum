@@ -6,7 +6,6 @@
 class Mage : public Entity {
 public:
     Mage(float x, float y, SDL_Renderer* renderer);
-    void loadSprites(SDL_Renderer* renderer) override;
     void updateAttackCooldown() override;
 };
 

@@ -80,18 +80,21 @@ void Graphics::updateEntities(bool draw){
         if(draw && showHealthBars) e->drawHealthBar(renderer);
 
         if (game_menu->getSelectedEntity() == e) {
-            float h = e->getSize() * e->getSpriteScale();
+            int s = e->getSize() * 64; // Taille d'affichage du sprite
+            int w = s * e->getRatioHitboxWidth();   // largeur de la hitbox
+            int h = s * e->getRatioHitboxHeight();   // hauteur de la hitbox
+
             SDL_Rect hitbox = {
-                int(e->getX() - e->getSize() / 2),
-                int(e->getY() - h + e->getFootOffset() + h / 2),
-                e->getSize(),
-                e->getSize()
+                int(e->getX() - w/2),
+                int(e->getY() - h/2),
+                w,
+                h
             };
             SDL_SetRenderDrawColor(renderer, 230, 0, 0, 255);
             SDL_RenderDrawRect(renderer, &hitbox);
         }
 
-        SDL_Rect point = {int(e->getX()-5), int(e->getY()-5), 10, 10};
+        SDL_Rect point = {int(e->getX()-4), int(e->getY()-4), 8, 8};
         SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
         SDL_RenderFillRect(renderer, &point);
     }
@@ -290,11 +293,14 @@ void Graphics::handleEvent(bool* running, bool* keep_playing){
 
 Entity* Graphics::getEntityAtPos(float x, float y) {
     for (Entity* e : entities) {
-        float h = e->getSize() * e->getSpriteScale();
-        float start_x = e->getX() - e->getSize() / 2;
-        float start_y = e->getY() - h + e->getFootOffset() + h / 2;
-        float end_x = start_x + e->getSize();
-        float end_y = start_y + e->getSize();
+        int s = e->getSize() * 64; // Taille d'affichage du sprite
+        int w = s * e->getRatioHitboxWidth();   // largeur de la hitbox
+        int h = s * e->getRatioHitboxHeight();   // hauteur de la hitbox
+
+        float start_x = e->getX() - w / 2;
+        float start_y = e->getY() - h / 2;
+        float end_x = start_x + w;
+        float end_y = start_y + h;
 
         if (start_x <= x && x <= end_x) {
             if (start_y <= y && y <= end_y) {

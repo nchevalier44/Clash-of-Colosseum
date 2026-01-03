@@ -6,7 +6,6 @@
 class Archer : public Entity {
 public:
     Archer(float x, float y, SDL_Renderer* renderer);
-    void loadSprites(SDL_Renderer* renderer) override;
     void updateAttackCooldown() override;
 };
 
