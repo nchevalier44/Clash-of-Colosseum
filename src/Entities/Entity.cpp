@@ -38,7 +38,7 @@ void Entity::threadUpdate(std::vector<Entity*>* all_entities, std::vector<Projec
                     } else {
                         this->getWeapon()->attack(closest);
                     }
-
+                    ready_to_attack = false;
                     //current cooldown
                     this->resetAttackTimer();
                 }
@@ -194,11 +194,11 @@ void Entity::drawHealthBar(SDL_Renderer* renderer) {
     SDL_RenderDrawRect(renderer, &border);
 }
 
-void Entity::setSize(int new_size) {
-    if (new_size >= 0) {
+void Entity::setSize(float new_size) {
+    if (new_size >= 0.5) {
         size = new_size;
     } else {
-        size = 0;
+        size = 0.5;
     }
 }
 void Entity::setHp(int new_hp){
@@ -250,17 +250,15 @@ void Entity::updateAnimation(){
     anim_timer += 16; // On simule qu'une frame de jeu (16ms) vient de passer
 
     if (anim_timer >= frame_delay) {
+        if (state == "attack" && current_frame == frames[state][direction].size() - 1) {
+            setState("idle"); // We set the entity to idle because he has to wait before another attack (cooldown)
+        }
+
         anim_timer -= frame_delay;
         current_frame = (current_frame + 1) % frames[state][direction].size();
 
-        if (state == "attack") {
-            if (current_frame == frame_to_attack) {
-                ready_to_attack = true; //He can attack according to the animation
-            }
-            if (current_frame == frames[state][direction].size() - 1) {
-                setState("idle"); // We set the entity to idle because he has to wait before another attack (cooldown)
-            }
-
+        if (state == "attack" && current_frame == frame_to_attack) {
+            ready_to_attack = true; //He can attack according to the animation
         }
     }
 }

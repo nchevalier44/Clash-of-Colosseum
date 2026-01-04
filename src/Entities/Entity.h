@@ -36,12 +36,12 @@ public:
     void setY(float new_y){ y = new_y; };
     void setHp(int new_hp);
     void setMaxHp(int new_max_hp) { max_hp = new_max_hp; }
-    void setSize(int new_size);
+    void setSize(float new_size);
     void increaseAge(){age++;};
     virtual void updateAttackCooldown() { this->attack_cooldown = 500 + (weapon->getDamage() * 30); };
     float getX() const { return x; };
     float getY() const { return y; };
-    int getSize() const { return size; };
+    float getSize() const { return size; };
     int getHp() const { return hp; }
     int getMaxHp() const { return max_hp; }
     int getAge() const { return age; }
@@ -97,7 +97,7 @@ protected:
     string state = "idle";
     string direction = "right";
     int current_frame = 0;
-    Uint32 frame_delay = 120;
+    Uint32 frame_delay = 100;
     float anim_timer = 0;
     SDL_Renderer* current_renderer = nullptr;
 

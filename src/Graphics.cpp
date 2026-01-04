@@ -124,7 +124,7 @@ void Graphics::updateProjectiles(bool draw){
                 float sumRadius = e->getSize() + 10;
 
                 if (distance <= sumRadius) {
-                    e->setHp(e->getHp() - proj->getDamage()); // inflige les dégâts
+                    e->setHp(e->getHp() - proj->getDamage() * 1.3 * proj->getSize()); // inflige les dégâts
                     hit = true;
                     delete proj;
                     p = projectiles.erase(p);
@@ -327,7 +327,7 @@ Entity* Graphics::createNewEntityFromParents(Entity* e1, Entity* e2){
     new_entity->setMaxHp(new_max_hp);
 
     //Size
-    int new_size = calculateNewAttribute(e1->getSize(), e2->getSize());
+    float new_size = calculateNewAttribute(e1->getSize(), e2->getSize());
     new_entity->setSize(new_size);
 
     //Speed

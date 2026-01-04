@@ -52,17 +52,15 @@ void Projectile::draw(SDL_Renderer* renderer, int time_speed) {
         // On demande à SDL la taille réelle de l'image chargée
         SDL_QueryTexture(frames[current_frame], nullptr, nullptr, &texW, &texH);
 
-        // On calcule le ratio (ex: une flèche est plus large que haute)
         float ratio = (float)texH / (float)texW;
 
-        // On définit la largeur voulue (basée sur 'size')
-        int draw_width = size * 3; // On allonge un peu pour que la flèche soit visible
+        int draw_width = size;
         int draw_height = draw_width * ratio; // La hauteur s'adapte automatiquement !
 
         // On centre l'image
         SDL_Rect dest = {
-            int(x) - draw_width / 2,
-            int(y) - draw_height / 2,
+            int(x - draw_width / 2),
+            int(y - draw_height / 2),
             draw_width,
             draw_height
         };

@@ -31,8 +31,8 @@ Bow::~Bow() {
 
 void Bow::attack(Entity* entity, Entity* owner, std::vector<Projectile*>* projectiles, int origin_x, int origin_y) {
     //launch a projectile in direction of the entity
-    float speed = 1.75f;
-    int size = 10; // Taille ajustée
+    float speed = 2.0f;
+    int size = owner->getSize() * 25; // Taille ajustée
 
     // Position de départ
     int launch_x = origin_x;

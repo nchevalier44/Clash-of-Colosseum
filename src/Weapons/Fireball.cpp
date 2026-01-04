@@ -33,7 +33,7 @@ Fireball::Fireball(SDL_Renderer* renderer, int damage, int range)
 
 void Fireball::attack(Entity* entity, Entity* owner, std::vector<Projectile*>* projectiles, int origin_x, int origin_y) {
     float speed = 1.2f;
-    int size = 20;
+    int size = owner->getSize() * 25;
     Projectile* projectile = new Projectile(owner, this->damage, speed, size,
                                             origin_x, origin_y,
                                             entity->getX(), entity->getY(),

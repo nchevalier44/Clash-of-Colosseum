@@ -13,9 +13,10 @@ Guerrier::Guerrier(float x, float y, SDL_Renderer* renderer) : Entity(x, y, rend
 
     updateAttackCooldown();
     this->hp = this->max_hp = randomRange(130, 160);
-    this->move_speed *= 1.0f + randomRange(-15, 15) / 100.f; //+-15%
+    this->move_speed *= 1.0f + randomRange(-15, 15) / 100.f - 0.01*size; //+-15%
     type = "Guerrier";
     frame_to_attack = 1;
+    frame_delay += (size - 1.5) * 15;
 
     sprites_file_right = "../assets/Shieldmaiden/guerrier_right.png";
     sprites_file_left = "../assets/Shieldmaiden/guerrier_left.png";

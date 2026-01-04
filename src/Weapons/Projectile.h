@@ -20,6 +20,7 @@ public:
     Entity* getOwner() const { return owner; };
     Uint32 getEndTime() const { return end_time; }
     static float globalSpeedMultiplier;
+    int getSize() const { return size; };
 
 private:
     float x, y, dx, dy;
