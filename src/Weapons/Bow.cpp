@@ -34,33 +34,14 @@ void Bow::attack(Entity* entity, Entity* owner, std::vector<Projectile*>* projec
     float speed = 2.0f;
     int size = owner->getSize() * 25; // Taille ajustée
 
-    // Position de départ
-    int launch_x = origin_x;
-    int launch_y = origin_y;
-
-    // Récupération de la direction (nécessite la modif dans Entity.h)
-    std::string dir = owner->getDirection();
-
-    // Décalage pour faire partir la flèche de l'arc et non des pieds
-    int offset_x = 25;
-    int offset_y = 25;
-
-    if (dir == "right") {
-        launch_x += offset_x;
-        launch_y -= offset_y;
-    } else {
-        launch_x -= offset_x;
-        launch_y -= offset_y;
-    }
-
     // Création du projectile avec les frames (la flèche)
     Projectile* projectile = new Projectile(
         owner,
         this->damage,
         speed,
         size,
-        launch_x,
-        launch_y,
+        origin_x,
+        origin_y,
         entity->getX(),
         entity->getY(),
         15000,
