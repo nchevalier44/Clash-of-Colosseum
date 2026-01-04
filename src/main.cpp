@@ -29,6 +29,14 @@ bool init() {
 
 void start_game(bool* keep_playing, std::map<std::string, std::string>* parameters) {
     Graphics graphics;
+
+    int winW = std::stoi((*parameters)["window_width"]);
+    int winH = std::stoi((*parameters)["window_height"]);
+
+    if (winW != 0 && winH != 0) {
+        SDL_SetWindowSize(graphics.getWindow(), winW, winH);
+        SDL_SetWindowPosition(graphics.getWindow(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+    }
     Menu menu(graphics.getRenderer(), parameters);
 
     menu.configureParameters();
@@ -51,12 +59,11 @@ void start_game(bool* keep_playing, std::map<std::string, std::string>* paramete
     (*parameters)["music"] = std::to_string(menu.getMusicOn());
     (*parameters)["same_type_peace"] = std::to_string(menu.getSameTypePeace());
 
+    SDL_GetWindowSize(graphics.getWindow(), &winW, &winH);
+
     // --- NOUVEAU SPAWN ALEATOIRE ---
     std::vector<Entity*> entities;
     std::array<std::string, 4> types = {"Guerrier", "Archer", "Mage", "Golem"};
-
-    int winW, winH;
-    SDL_GetWindowSize(graphics.getWindow(), &winW, &winH);
 
     for (int i = 0; i < nbGuerriers; i++) {
         // Spawn aléatoire sur toute la map (avec une petite marge de 30px pour pas être dans le mur)
@@ -87,6 +94,10 @@ void start_game(bool* keep_playing, std::map<std::string, std::string>* paramete
         graphics.update(&running, keep_playing);
         SDL_Delay(16);
     }
+    //On récupère la taille de la fenêtre pour rouvrir la fenêtre du menu à la même taille
+    SDL_GetWindowSize(graphics.getWindow(), &winW, &winH);
+    (*parameters)["window_width"] = std::to_string(winW);
+    (*parameters)["window_height"] = std::to_string(winH);
 }
 
 int main() {
@@ -99,7 +110,9 @@ int main() {
         {"show_healthbar", "true"},
         {"projectile_speed_multiplier_index", "1"},
         {"music", "true"},
-        {"same_type_peace", "false"}
+        {"same_type_peace", "false"},
+        {"window_width", "0"},
+        {"window_height", "0"}
     };
 
     bool keep_playing = true;

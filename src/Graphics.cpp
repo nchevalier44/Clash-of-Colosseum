@@ -155,15 +155,11 @@ void Graphics::update(bool* running, bool* keep_playing) {
 
     game_time_speed = game_menu->getTimeSpeed();
 
-    // On nettoie d'abord l'écran (noir par défaut)
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
-
     // On dessine l'image de fond. Le NULL, NULL signifie "toute l'image" sur "toute la fenêtre"
     if (backgroundTexture) {
         SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
     } else {
-        // Si l'image n'a pas chargé, on garde ton ancienne couleur jaune 'sable' en fallback
+        // Si l'image n'a pas chargé, on met une couleur uni
         SDL_SetRenderDrawColor(renderer, 230, 198, 34, 255);
         SDL_RenderClear(renderer);
     }
