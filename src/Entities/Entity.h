@@ -111,7 +111,8 @@ protected:
 
     std::thread entity_thread;
     std::atomic<bool> thread_is_running = false;
-    
+    bool is_attacking = false;
+
 private:
     void threadLoop(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, int* game_time_speed, bool* same_type_peace, std::mutex* global_mutex);
     void threadUpdate(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, bool* same_type_peace, std::mutex* global_mutex);

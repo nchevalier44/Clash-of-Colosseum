@@ -39,13 +39,14 @@ void Entity::threadUpdate(std::vector<Entity*>* all_entities, std::vector<Projec
                         this->getWeapon()->attack(closest);
                     }
                     ready_to_attack = false;
+                    is_attacking = true;
                     //current cooldown
                     this->resetAttackTimer();
                 }
             } else {
                 ready_to_attack = false;
             }
-        } else {
+        } else if (!is_attacking){
             this->setState("run");
             this->moveInDirection(closest->getX(), closest->getY());
             ready_to_attack = false;
@@ -251,6 +252,7 @@ void Entity::updateAnimation(){
 
     if (anim_timer >= frame_delay) {
         if (state == "attack" && current_frame == frames[state][direction].size() - 1) {
+            is_attacking = false;
             setState("idle"); // We set the entity to idle because he has to wait before another attack (cooldown)
         }
 
