@@ -1,6 +1,6 @@
 #include "Graphics.h"
 #include "Weapons/Bow.h"
-#include "GameMenu.h"
+#include "Menu/GameMenu.h"
 #include "Entities/Guerrier.h"
 #include "Entities/Archer.h"
 #include "Entities/Mage.h"

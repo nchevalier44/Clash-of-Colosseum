@@ -1,5 +1,5 @@
 #include "Graphics.h"
-#include "Config.h"
+#include "Menu/Config.h"
 #include "GameMenu.h"
 #include "Weapons/Projectile.h"
 #include "Entities/Guerrier.h"

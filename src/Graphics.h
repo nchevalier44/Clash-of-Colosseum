@@ -7,7 +7,7 @@
 #include <memory>
 #include "Entities/Entity.h"
 #include "Weapons/Projectile.h"
-#include "GameMenu.h"
+#include "Menu/GameMenu.h"
 #include <SDL_mixer.h>
 #include <mutex>
 

@@ -3,7 +3,7 @@
 
 #include <SDL2/SDL_ttf.h>
 #include <vector>
-#include "Entities/Entity.h"
+#include "../Entities/Entity.h"
 #include <iomanip>
 #include <sstream>
 

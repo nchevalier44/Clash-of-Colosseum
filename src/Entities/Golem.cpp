@@ -1,5 +1,5 @@
 #include "Golem.h"
-#include "../Weapons/Fist.h"
+#include "../Weapons/Punch.h"
 
 Golem::Golem(float x, float y, SDL_Renderer* renderer) : Entity(x, y, renderer){
     base_sprite_size = 2.75f;
@@ -9,7 +9,7 @@ Golem::Golem(float x, float y, SDL_Renderer* renderer) : Entity(x, y, renderer){
 
     float min_range = ratio_hitbox_height * size * 64;
     int range = randomRange(int(0.9*min_range), int(1.1*min_range));
-    weapon = new Fist(randomRange(15, 25), range);
+    weapon = new Punch(randomRange(15, 25), range);
 
     this->move_speed *= 0.8f + randomRange(-15, 15) / 100.f - 0.01*size; //+-15%
     updateAttackCooldown();

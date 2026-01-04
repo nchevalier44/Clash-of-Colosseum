@@ -18,8 +18,8 @@ Guerrier::Guerrier(float x, float y, SDL_Renderer* renderer) : Entity(x, y, rend
     frame_to_attack = 1;
     frame_delay += (size - 1.5) * 15;
 
-    sprites_file_right = "../assets/Shieldmaiden/guerrier_right.png";
-    sprites_file_left = "../assets/Shieldmaiden/guerrier_left.png";
+    sprites_file_right = "../assets/Guerrier/guerrier_right.png";
+    sprites_file_left = "../assets/Guerrier/guerrier_left.png";
 
     loadSprites(renderer);
 }

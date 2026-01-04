@@ -1,4 +1,4 @@
-#include "GameMenu.h"
+#include "../GameMenu.h"
 
 GameMenu::GameMenu(SDL_Renderer* renderer, SDL_Window* window) : window(window), renderer(renderer){
     font = TTF_OpenFont("../assets/arial.ttf", 16);
