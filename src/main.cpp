@@ -45,6 +45,7 @@ void start_game(bool* keep_playing, std::map<std::string, std::string>* paramete
     graphics.setMutationTypeRate(menu.getMutationTypeRate());
     graphics.setMutationStatsRate(menu.getMutationStatsRate());
     graphics.setShowHealthBars(menu.getShowHealthBars());
+    graphics.setMinNumberEntity(menu.getMinNumberEntity());
 
     // Transmission de la nouvelle option
     graphics.setSameTypePeace(menu.getSameTypePeace());
@@ -58,6 +59,7 @@ void start_game(bool* keep_playing, std::map<std::string, std::string>* paramete
     (*parameters)["projectile_speed_multiplier_index"] = std::to_string(menu.getSpeedIndex());
     (*parameters)["music"] = std::to_string(menu.getMusicOn());
     (*parameters)["same_type_peace"] = std::to_string(menu.getSameTypePeace());
+    (*parameters)["min_number_entity"] = std::to_string(menu.getMinNumberEntity());
 
     SDL_GetWindowSize(graphics.getWindow(), &winW, &winH);
 
@@ -112,7 +114,8 @@ int main() {
         {"music", "true"},
         {"same_type_peace", "false"},
         {"window_width", "0"},
-        {"window_height", "0"}
+        {"window_height", "0"},
+        {"min_number_entity", "5"}
     };
 
     bool keep_playing = true;

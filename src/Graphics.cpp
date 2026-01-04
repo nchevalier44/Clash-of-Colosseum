@@ -6,7 +6,6 @@
 #include "Entities/Mage.h"
 #include "Entities/Golem.h"
 #include <iostream>
-#include <algorithm>
 
 Graphics::Graphics() {
     SDL_CreateWindowAndRenderer(640, 480, 0, &window, &renderer);
@@ -181,7 +180,7 @@ void Graphics::update(bool* running, bool* keep_playing) {
             entities_to_delete.clear();
         }
 
-        if (entities.size() <= 5){
+        if (entities.size() <= min_number_entity){
             stopAllEntitiesThread();
             std::lock_guard<std::mutex> lock(global_mutex);
             increaseAllEntitiesAge();

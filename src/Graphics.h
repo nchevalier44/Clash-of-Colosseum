@@ -45,6 +45,7 @@ public:
 
     // Ajout de la méthode pour injecter les entités depuis le main
     void setEntities(const std::vector<Entity*>& ents);
+    void setMinNumberEntity(int number){ min_number_entity = number; };
 
     std::mutex global_mutex;
 
@@ -59,6 +60,7 @@ private:
     int game_time_speed = 1;
     bool is_game_paused = false;
 
+    int min_number_entity = 5;
     std::vector<Entity*> entities;
     std::vector<Projectile*> projectiles;
     std::vector<Entity*> entities_to_delete;

@@ -26,6 +26,9 @@ public:
     bool getSameTypePeace() const { return sameTypePeace; }
     float getProjectileSpeedMultiplier() const; // On calculera le float basé sur l'index
     int getSpeedIndex() const { return speedIndex; }
+
+    int getMinNumberEntity() const { return min_number_entity; };
+
 private:
     SDL_Renderer* renderer;
     TTF_Font* font = nullptr;
@@ -40,6 +43,7 @@ private:
     bool showHealthBars = true; // Vrai/Faux
     bool sameTypePeace = false;
     int speedIndex = 1;         // 0: Lent, 1: Normal, 2: Rapide
+    int min_number_entity = 5;
 
     // Textes pour la vitesse
     std::vector<std::string> speedLabels = {"Lent", "Normal", "Rapide"};

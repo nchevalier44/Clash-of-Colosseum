@@ -15,7 +15,7 @@ Golem::Golem(float x, float y, SDL_Renderer* renderer) : Entity(x, y, renderer){
     updateAttackCooldown();
     this->hp = this->max_hp = randomRange(280, 350);
     type = "Tank";
-    this->frame_delay = 170;
+    this->frame_delay = 150;
     this->frame_to_attack = 6;
 
     sprites_file_right = "../assets/Golem/golem_right.png";

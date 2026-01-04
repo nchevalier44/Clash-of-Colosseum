@@ -18,8 +18,9 @@ Menu::Menu(SDL_Renderer* r, std::map<std::string, std::string>* parameters) : re
     speedIndex = std::stoi((*parameters)["projectile_speed_multiplier_index"]);
     musiqueOn = (*parameters)["musique_on"] == "true";
     sameTypePeace = (*parameters)["same_type_peace"] == "true";
+    min_number_entity = std::stoi((*parameters)["min_number_entity"]);
     selectedOption = 0;
-    optionsCount = 7;
+    optionsCount = 8;
 
     menuMusic = Mix_LoadMUS("../assets/menumusic.mp3");
     if (!menuMusic) {
@@ -81,6 +82,7 @@ void Menu::render() {
 
     std::vector<std::string> options;
     options.push_back("Nb Guerriers: " + std::to_string(nbGuerriers));
+    options.push_back("Min number entity: " + std::to_string(min_number_entity));
     options.push_back("Mut. Type (Classe): " + std::to_string(mutationTypeRate) + "%");
     options.push_back("Mut. Stats (Force): " + std::to_string(mutationStatsRate) + "%");
     options.push_back("Barres de Vie: " + std::string(showHealthBars ? "OUI" : "NON"));
@@ -121,22 +123,24 @@ void Menu::handleEvent(SDL_Event& event) {
 
             case SDL_SCANCODE_RIGHT:
                 if (selectedOption == 0) nbGuerriers++;
-                else if (selectedOption == 1) { if (mutationTypeRate < 100) mutationTypeRate += 5; }
-                else if (selectedOption == 2) { if (mutationStatsRate < 100) mutationStatsRate += 5; } // Nouveau
-                else if (selectedOption == 3) showHealthBars = !showHealthBars;
-                else if (selectedOption == 4) speedIndex = (speedIndex + 1) % 3;
-                else if (selectedOption == 5) { musiqueOn = !musiqueOn; if(musiqueOn) Mix_PlayMusic(menuMusic,-1); else Mix_HaltMusic(); }
-                else if (selectedOption == 6) sameTypePeace = !sameTypePeace;
+                else if (selectedOption == 1) { min_number_entity++; }
+                else if (selectedOption == 2) { if (mutationTypeRate < 100) mutationTypeRate += 5; }
+                else if (selectedOption == 3) { if (mutationStatsRate < 100) mutationStatsRate += 5; } // Nouveau
+                else if (selectedOption == 4) showHealthBars = !showHealthBars;
+                else if (selectedOption == 5) speedIndex = (speedIndex + 1) % 3;
+                else if (selectedOption == 6) { musiqueOn = !musiqueOn; if(musiqueOn) Mix_PlayMusic(menuMusic,-1); else Mix_HaltMusic(); }
+                else if (selectedOption == 7) sameTypePeace = !sameTypePeace;
                 break;
 
             case SDL_SCANCODE_LEFT:
-                if (selectedOption == 0 && nbGuerriers > 1) nbGuerriers--;
-                else if (selectedOption == 1) { if (mutationTypeRate > 0) mutationTypeRate -= 5; }
-                else if (selectedOption == 2) { if (mutationStatsRate > 0) mutationStatsRate -= 5; } // Nouveau
-                else if (selectedOption == 3) showHealthBars = !showHealthBars;
-                else if (selectedOption == 4) speedIndex = (speedIndex + 2) % 3;
-                else if (selectedOption == 5) { musiqueOn = !musiqueOn; if(musiqueOn) Mix_PlayMusic(menuMusic,-1); else Mix_HaltMusic(); }
-                else if (selectedOption == 6) sameTypePeace = !sameTypePeace;
+                if (selectedOption == 0 && nbGuerriers > 2) nbGuerriers--;
+                else if (selectedOption == 1) { if (min_number_entity > 2) min_number_entity--; }
+                else if (selectedOption == 2) { if (mutationTypeRate > 0) mutationTypeRate -= 5; }
+                else if (selectedOption == 3) { if (mutationStatsRate > 0) mutationStatsRate -= 5; } // Nouveau
+                else if (selectedOption == 4) showHealthBars = !showHealthBars;
+                else if (selectedOption == 5) speedIndex = (speedIndex + 2) % 3;
+                else if (selectedOption == 6) { musiqueOn = !musiqueOn; if(musiqueOn) Mix_PlayMusic(menuMusic,-1); else Mix_HaltMusic(); }
+                else if (selectedOption == 7) sameTypePeace = !sameTypePeace;
                 break;
             default: break;
         }
