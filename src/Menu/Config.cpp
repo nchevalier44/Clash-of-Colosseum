@@ -1,4 +1,4 @@
-#include "../Config.h"
+#include "./Config.h"
 #include <SDL_ttf.h>
 #include <string>
 #include <iostream>
@@ -14,10 +14,10 @@ Menu::Menu(SDL_Renderer* r, std::map<std::string, std::string>* parameters) : re
     nbGuerriers = std::stoi((*parameters)["nb_guerriers"]);
     mutationTypeRate = std::stoi((*parameters)["mutation_type_rate"]);
     mutationStatsRate = std::stoi((*parameters)["mutation_stats_rate"]);
-    showHealthBars = (*parameters)["show_healthbars"] == "true";
+    showHealthBars = (*parameters)["show_healthbars"] == "1";
     speedIndex = std::stoi((*parameters)["projectile_speed_multiplier_index"]);
-    musiqueOn = (*parameters)["musique_on"] == "true";
-    sameTypePeace = (*parameters)["same_type_peace"] == "true";
+    musiqueOn = (*parameters)["music"] == "1";
+    sameTypePeace = (*parameters)["same_type_peace"] == "1";
     min_number_entity = std::stoi((*parameters)["min_number_entity"]);
     selectedOption = 0;
     optionsCount = 8;

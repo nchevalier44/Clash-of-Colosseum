@@ -1,6 +1,6 @@
 #include "Graphics.h"
 #include "Menu/Config.h"
-#include "GameMenu.h"
+#include "Menu/GameMenu.h"
 #include "Weapons/Projectile.h"
 #include "Entities/Guerrier.h"
 #include "Entities/Archer.h"
@@ -55,7 +55,7 @@ void start_game(bool* keep_playing, std::map<std::string, std::string>* paramete
     (*parameters)["nb_guerriers"] = std::to_string(nbGuerriers);
     (*parameters)["mutation_type_rate"] = std::to_string(menu.getMutationTypeRate());
     (*parameters)["mutation_stats_rate"] = std::to_string(menu.getMutationStatsRate());
-    (*parameters)["show_healthbar"] = std::to_string(menu.getShowHealthBars());
+    (*parameters)["show_healthbars"] = std::to_string(menu.getShowHealthBars());
     (*parameters)["projectile_speed_multiplier_index"] = std::to_string(menu.getSpeedIndex());
     (*parameters)["music"] = std::to_string(menu.getMusicOn());
     (*parameters)["same_type_peace"] = std::to_string(menu.getSameTypePeace());
@@ -109,10 +109,10 @@ int main() {
         { "nb_guerriers", "10" },
         {"mutation_type_rate", "15"},
         {"mutation_stats_rate", "15"},
-        {"show_healthbar", "true"},
+        {"show_healthbars", "1"},
         {"projectile_speed_multiplier_index", "1"},
-        {"music", "true"},
-        {"same_type_peace", "false"},
+        {"music", "1"},
+        {"same_type_peace", "0"},
         {"window_width", "0"},
         {"window_height", "0"},
         {"min_number_entity", "5"}

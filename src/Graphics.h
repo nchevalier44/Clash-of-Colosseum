@@ -20,6 +20,13 @@ public:
     SDL_Renderer* getRenderer() { return renderer; } ;
     SDL_Window* getWindow() { return window; } ;
     void update(bool* running, bool* keep_playing);
+
+    bool multipleTypesAreAlive();
+
+    void deleteDeadEntities();
+
+    std::map<std::string, int> getNumberEntitiesPerTypes();
+
     SDL_Renderer* getRenderer() const;
     void deleteAllProjectiles();
 
@@ -56,6 +63,7 @@ private:
     int mutationStatsRate = 15;
     bool showHealthBars = true;
     bool same_type_peace = false;
+    bool end_of_game = false;
 
     int game_time_speed = 1;
     bool is_game_paused = false;

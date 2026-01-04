@@ -149,10 +149,8 @@ void Graphics::update(bool* running, bool* keep_playing) {
         return;
     }
 
-    //Game is not running so we do nothing
-    if (is_game_paused) return;
-
-    game_time_speed = game_menu->getTimeSpeed();
+    //Game is not running so we do nothing (we wait handleEvent)
+    if (is_game_paused || end_of_game) return;
 
     // On dessine l'image de fond. Le NULL, NULL signifie "toute l'image" sur "toute la fenêtre"
     if (backgroundTexture) {
@@ -163,22 +161,30 @@ void Graphics::update(bool* running, bool* keep_playing) {
         SDL_RenderClear(renderer);
     }
 
-
+    game_time_speed = game_menu->getTimeSpeed();
     for(int i = 0; i<game_time_speed; i++) { // On répète l'action plusieurs fois si le temps est plus rapide
-        bool draw = i == game_time_speed-1; //On dessine que si c'est la dernière update de la boucle
 
+        bool draw = i == game_time_speed-1; //On dessine que si c'est la dernière update de la boucle (
         updateEntities(draw);
         updateProjectiles(draw);
 
+
         if (!entities_to_delete.empty()) {
-            for(Entity* e : entities_to_delete){
-                if (e == game_menu->getSelectedEntity()) {
-                    game_menu->setSelectedEntity(nullptr);
+            deleteDeadEntities();
+
+            //Il ne reste qu'un seul type d'entité, ils ne s'attaquent pas (same_type_peace), donc on arrête la simulation
+            if (same_type_peace && !multipleTypesAreAlive()) {
+                end_of_game = true;
+                stopAllEntitiesThread();
+                std::map<std::string, int> dico = getNumberEntitiesPerTypes();
+                for (auto pair : dico) {
+                    if (pair.second != 0) game_menu->displayEndSimulation(pair, generation);
+                    break;
                 }
-                deleteEntity(e);
+                return;
             }
-            entities_to_delete.clear();
         }
+
 
         if (entities.size() <= min_number_entity){
             stopAllEntitiesThread();
@@ -203,9 +209,39 @@ void Graphics::update(bool* running, bool* keep_playing) {
     }
 
     std::lock_guard<std::mutex> lock(global_mutex);
-
     if(game_menu) game_menu->draw(entities, generation, is_game_paused);
     SDL_RenderPresent(renderer);
+}
+
+bool Graphics::multipleTypesAreAlive() {
+    // Renvoie s'il reste plusieurs espèces/types d'entitées en vie
+    std::map<std::string, int> number_entity_type = getNumberEntitiesPerTypes();
+    int number_type_alive = 0;
+    for (auto pair : number_entity_type) {
+        if (pair.second != 0) number_type_alive++;
+    }
+    return number_type_alive > 1;
+}
+
+
+void Graphics::deleteDeadEntities() {
+    for(Entity* e : entities_to_delete){
+        if (e == game_menu->getSelectedEntity()) {
+            game_menu->setSelectedEntity(nullptr);
+        }
+        deleteEntity(e);
+    }
+    entities_to_delete.clear();
+}
+
+std::map<std::string, int> Graphics::getNumberEntitiesPerTypes() {
+    //Compte le nombre d'entité en vie par type/espèce
+    std::lock_guard<std::mutex> lock(global_mutex);
+    std::map<std::string, int> result = {{"Guerrier", 0}, {"Archer", 0}, {"Mage", 0}, {"Golem", 0}};
+    for (Entity* e : entities) {
+        result[e->getType()] += 1;
+    }
+    return result;
 }
 
 void Graphics::handleEvent(bool* running, bool* keep_playing){
@@ -224,6 +260,13 @@ void Graphics::handleEvent(bool* running, bool* keep_playing){
                     break;
                 case SDL_SCANCODE_LEFT:
                     game_menu->lower();
+                    break;
+
+                case SDL_SCANCODE_RETURN:
+                    if (end_of_game) {
+                        *running = false;
+                        return;
+                    }
                     break;
 
                 case SDL_SCANCODE_ESCAPE:

@@ -1,4 +1,5 @@
-#include "../GameMenu.h"
+#include "./GameMenu.h"
+
 
 GameMenu::GameMenu(SDL_Renderer* renderer, SDL_Window* window) : window(window), renderer(renderer){
     font = TTF_OpenFont("../assets/arial.ttf", 16);
@@ -29,7 +30,7 @@ GameMenu::GameMenu(SDL_Renderer* renderer, SDL_Window* window) : window(window),
         }
     });
     Button* exit_button = new Button("Exit", font, 4*width_window/5, 16, renderer, [this](Button* button) {
-        stop_simulation = true;
+        stop_simulation = true; //ensuite dans Graphics::update(), ça arrête tout
     });
     buttons.push_back(stats_visible_button);
     buttons.push_back(exit_button);
@@ -44,6 +45,51 @@ GameMenu::~GameMenu(){
     for (Button* b : buttons) {
         delete b;
     }
+}
+
+void GameMenu::displayEndSimulation(std::pair<std::string, int> pair, int generation) {
+
+    //Background
+    int window_width, window_height;
+    SDL_GetWindowSize(window, &window_width, &window_height);
+    int rect_width = 450;
+    int rect_height = 150;
+    SDL_Rect back_rect = {window_width/2 - rect_width/2, window_height/2 - rect_height/2, rect_width, rect_height};
+    SDL_SetRenderDrawColor(renderer, 40, 40, 40, 230);
+    SDL_RenderFillRect(renderer, &back_rect);
+
+    //Title
+    TTF_Font* title_font = TTF_OpenFont("../assets/arial.ttf", 24);
+    SDL_Surface* title_surface = TTF_RenderText_Solid(title_font, "Fin de la simulation", {255, 255, 255});
+    SDL_Texture* title_texture = SDL_CreateTextureFromSurface(renderer, title_surface);
+    int width_title, height_title;
+    SDL_QueryTexture(title_texture, nullptr, nullptr, &width_title, &height_title);
+    SDL_Rect title_rect = {int(back_rect.x + back_rect.w/2 - width_title/2), int(back_rect.y + 0.25*back_rect.h - height_title/2), width_title, height_title};
+    SDL_RenderCopy(renderer, title_texture, nullptr, &title_rect);
+    SDL_FreeSurface(title_surface);
+    TTF_CloseFont(title_font);
+    SDL_DestroyTexture(title_texture);
+
+    //Text
+    std::vector<std::string> lines;
+    lines.push_back("Le type " + pair.first + " a gagne avec " + std::to_string(pair.second) + " entitees restantes.");
+    lines.push_back("Ils leurs aura fallu " + std::to_string(generation) + " generations pour gagner.");
+    lines.push_back("Appuyez sur entree pour revenir au menu principal.");
+    int i = 0; // Pour la position en hauteur de chaque ligne
+    for (auto line : lines) {
+        SDL_Surface* surface = TTF_RenderText_Solid(font, line.c_str(), {255, 255, 255});
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+        int width, height;
+        SDL_QueryTexture(texture, nullptr, nullptr, &width, &height);
+        //i*(height+5) est pour mettre chaque ligne en dessous de l'autre avec un interligne de 5 pixels
+        SDL_Rect rect = {int(back_rect.x + back_rect.w/2 - width/2), int(back_rect.y + 0.5*back_rect.h - height/2 + i*(height+5)), width, height};
+        SDL_RenderCopy(renderer, texture, nullptr, &rect);
+        i++;
+        SDL_FreeSurface(surface);
+        SDL_DestroyTexture(texture);
+    }
+
+    SDL_RenderPresent(renderer);
 }
 
 void GameMenu::draw(const std::vector<Entity*>& entities, int generation, bool is_game_paused){

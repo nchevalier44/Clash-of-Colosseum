@@ -28,6 +28,8 @@ public:
     std::vector<Button*> getButtons(){ return buttons; }
     bool isSimulationStopped() const { return stop_simulation; }
 
+    void displayEndSimulation(std::pair<std::string, int> pair, int generation);
+
 private:
     void createBackground();
     void displayTimeSpeed(bool is_game_paused);
