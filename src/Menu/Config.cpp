@@ -88,11 +88,11 @@ void Menu::render() {
     options.push_back("Barres de Vie: " + std::string(showHealthBars ? "OUI" : "NON"));
     options.push_back("Vitesse Tirs: " + speedLabels[speedIndex]);
     options.push_back("Musique: " + std::string(musiqueOn ? "ON" : "OFF"));
-    options.push_back("Paix meme type: " + std::string(sameTypePeace ? "ON" : "OFF")); // Nouvelle option
+    options.push_back("Paix même type: " + std::string(sameTypePeace ? "ON" : "OFF")); // Nouvelle option
 
     for (int i = 0; i < (int)options.size(); i++) {
         SDL_Color color = (i == selectedOption ? yellow : white);
-        SDL_Surface* surface = TTF_RenderText_Solid(font, options[i].c_str(), color);
+        SDL_Surface* surface = TTF_RenderUTF8_Solid(font, options[i].c_str(), color);
         SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
 
         if (i == selectedOption) {

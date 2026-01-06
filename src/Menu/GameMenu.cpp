@@ -11,7 +11,7 @@ GameMenu::GameMenu(SDL_Renderer* renderer, SDL_Window* window) : window(window),
     for(int value : time_options) {
         std::string string_time = "x" + std::to_string(value);
 
-        SDL_Surface *surface = TTF_RenderText_Solid(font, string_time.c_str(), {255, 255, 255});
+        SDL_Surface *surface = TTF_RenderUTF8_Solid(font, string_time.c_str(), {255, 255, 255});
         SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
 
         time_textures.push_back(texture);
@@ -59,8 +59,9 @@ void GameMenu::displayEndSimulation(std::pair<std::string, int> pair, int genera
     SDL_RenderFillRect(renderer, &back_rect);
 
     //Title
+
     TTF_Font* title_font = TTF_OpenFont("../assets/arial.ttf", 24);
-    SDL_Surface* title_surface = TTF_RenderText_Solid(title_font, "Fin de la simulation", {255, 255, 255});
+    SDL_Surface* title_surface = TTF_RenderUTF8_Solid(title_font, "Fin de la simulation", {255, 255, 255});
     SDL_Texture* title_texture = SDL_CreateTextureFromSurface(renderer, title_surface);
     int width_title, height_title;
     SDL_QueryTexture(title_texture, nullptr, nullptr, &width_title, &height_title);
@@ -72,12 +73,12 @@ void GameMenu::displayEndSimulation(std::pair<std::string, int> pair, int genera
 
     //Text
     std::vector<std::string> lines;
-    lines.push_back("Le type " + pair.first + " a gagne avec " + std::to_string(pair.second) + " entitees restantes.");
-    lines.push_back("Ils leurs aura fallu " + std::to_string(generation) + " generations pour gagner.");
-    lines.push_back("Appuyez sur entree pour revenir au menu principal.");
+    lines.push_back("Le type " + pair.first + " à gagné avec " + std::to_string(pair.second) + " entitées restantes.");
+    lines.push_back("Ils leurs aura fallu " + std::to_string(generation) + " générations pour gagner.");
+    lines.push_back("Appuyez sur entrée pour revenir au menu principal.");
     int i = 0; // Pour la position en hauteur de chaque ligne
     for (auto line : lines) {
-        SDL_Surface* surface = TTF_RenderText_Solid(font, line.c_str(), {255, 255, 255});
+        SDL_Surface* surface = TTF_RenderUTF8_Solid(font, line.c_str(), {255, 255, 255});
         SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
         int width, height;
         SDL_QueryTexture(texture, nullptr, nullptr, &width, &height);
@@ -183,12 +184,12 @@ void GameMenu::drawStatsTable(const std::vector<Entity*>& entities, int generati
     SDL_RenderFillRect(renderer, &bgRect);
 
     std::vector<std::string> lines;
-    lines.push_back("Generation: " + std::to_string(generation));
+    lines.push_back("Génération: " + std::to_string(generation));
     lines.push_back("Vivants: " + std::to_string(entities.size()));
     lines.push_back("PV Max Moyens: " + std::to_string((int)avgHp));
-    lines.push_back("Degats Moyens: " + std::to_string((int)avgDamage));
+    lines.push_back("Dégats Moyens: " + std::to_string((int)avgDamage));
     lines.push_back("Vitesse Moyennes: " + roundingFloatToString(avgSpeed));
-    lines.push_back("Age Moyens: " + roundingFloatToString(avgAge));
+    lines.push_back("Âge Moyens: " + roundingFloatToString(avgAge));
     lines.push_back("----------------");
     lines.push_back("Guerriers: " + std::to_string(nbGuerrier));
     lines.push_back("Archers:   " + std::to_string(nbArcher));
@@ -201,7 +202,7 @@ void GameMenu::drawStatsTable(const std::vector<Entity*>& entities, int generati
     int yOffset = bgRect.y + 5;
 
     for (const auto& line : lines) {
-        SDL_Surface* surf = TTF_RenderText_Blended(statFont, line.c_str(), textColor);
+        SDL_Surface* surf = TTF_RenderUTF8_Blended(statFont, line.c_str(), textColor);
         if (surf) {
             SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
             SDL_Rect dest = {xOffset, yOffset, surf->w, surf->h};
@@ -228,7 +229,7 @@ void GameMenu::displayTimeSpeed(bool is_game_paused){
     if (!is_game_paused) {
         texture = time_textures[time_index];
     } else {
-        SDL_Surface* surface = TTF_RenderText_Solid(font, "Pause", {255, 255, 255});
+        SDL_Surface* surface = TTF_RenderUTF8_Solid(font, "Pause", {255, 255, 255});
         texture = SDL_CreateTextureFromSurface(renderer, surface);
         SDL_FreeSurface(surface);
     }
