@@ -32,7 +32,9 @@ public:
     void startThread(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, int* game_time_speed, bool* same_type_peace, std::mutex* global_mutex);
     void stopThread();
 
-    void setX(float new_x){ x = new_x; };
+    void setX(float new_x){ x = new_x; }
+
+    void setPause(bool pause) { this->pause = pause; };
     void setY(float new_y){ y = new_y; };
     void setHp(int new_hp);
     void setMaxHp(int new_max_hp) { max_hp = new_max_hp; }
@@ -112,6 +114,7 @@ protected:
     std::thread entity_thread;
     std::atomic<bool> thread_is_running = false;
     bool is_attacking = false;
+    bool pause = false;
 
 private:
     void threadLoop(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, int* game_time_speed, bool* same_type_peace, std::mutex* global_mutex);

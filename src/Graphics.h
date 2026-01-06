@@ -46,6 +46,8 @@ public:
     void startAllEntitiesThread();
     void stopAllEntitiesThread();
 
+    void pauseAllEntities(bool pause);
+
     Entity* createNewEntityFromParents(Entity* e1, Entity* e2);
 
     void deleteEntity(Entity* entity);

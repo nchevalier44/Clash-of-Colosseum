@@ -2,6 +2,7 @@
 #include "../Weapons/Bow.h"
 
 void Entity::startThread(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, int* game_time_speed, bool* same_type_peace, std::mutex* global_mutex) {
+    if (thread_is_running) return;
     this->thread_is_running = true;
     this->entity_thread = std::thread(&Entity::threadLoop, this, all_entities, all_projectiles, game_time_speed, same_type_peace, global_mutex);
 }
@@ -58,9 +59,11 @@ void Entity::threadUpdate(std::vector<Entity*>* all_entities, std::vector<Projec
 void Entity::threadLoop(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, int* game_time_speed, bool* same_type_peace, std::mutex* global_mutex) {
     while(thread_is_running && hp > 0){
 
-        for(int i = 0; i < *game_time_speed; i++){
-            if(hp <= 0) break; //On arrête si on est mort
-            this->threadUpdate(all_entities, all_projectiles, same_type_peace, global_mutex);
+        if (!pause) {
+            for(int i = 0; i < *game_time_speed; i++){
+                if(hp <= 0) break; //On arrête si on est mort
+                this->threadUpdate(all_entities, all_projectiles, same_type_peace, global_mutex);
+            }
         }
 
         //Pour 60 fps = 16ms de pause

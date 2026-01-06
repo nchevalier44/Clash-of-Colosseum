@@ -51,6 +51,12 @@ void Graphics::stopAllEntitiesThread(){
     }
 }
 
+void Graphics::pauseAllEntities(bool pause) {
+    for(Entity* e : entities) {
+        e->setPause(pause);
+    }
+}
+
 void Graphics::updateEntities(bool draw){
 
     std::lock_guard<std::mutex> lock(global_mutex);
@@ -63,8 +69,10 @@ void Graphics::updateEntities(bool draw){
 
         e->updateAnimation();
 
-        if(draw) e->draw(renderer);
-        if(draw && showHealthBars) e->drawHealthBar(renderer);
+        if (!draw) return;
+
+        e->draw(renderer);
+        if(showHealthBars) e->drawHealthBar(renderer);
 
         if (game_menu->getSelectedEntity() == e) {
             int s = e->getSize() * 64; // Taille d'affichage du sprite
@@ -80,10 +88,6 @@ void Graphics::updateEntities(bool draw){
             SDL_SetRenderDrawColor(renderer, 230, 0, 0, 255);
             SDL_RenderDrawRect(renderer, &hitbox);
         }
-
-        SDL_Rect point = {int(e->getX()-4), int(e->getY()-4), 8, 8};
-        SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
-        SDL_RenderFillRect(renderer, &point);
     }
 }
 
@@ -174,9 +178,10 @@ void Graphics::update(bool* running, bool* keep_playing) {
         }
 
 
+        //Reproduction
         if (entities.size() <= min_number_entity){
-            stopAllEntitiesThread();
             std::lock_guard<std::mutex> lock(global_mutex);
+            pauseAllEntities(true);
             increaseAllEntitiesAge();
             deleteAllProjectiles();
             generation++;
@@ -208,6 +213,7 @@ void Graphics::update(bool* running, bool* keep_playing) {
             }
             entities.insert(entities.end(), new_entities.begin(), new_entities.end());
             startAllEntitiesThread();
+            pauseAllEntities(false);
         }
     }
 
@@ -420,7 +426,7 @@ Entity* Graphics::instantiateChildByType(Entity* e1, Entity* e2){
     else if(entity_type == "Archer") new_entity = new Archer(0, 0, renderer);
     else if(entity_type == "Mage") new_entity = new Mage(0, 0, renderer);
     else if(entity_type == "Tank") new_entity = new Golem(0, 0, renderer);
-    else new_entity = new Entity(0, 0, renderer);
+    else new_entity = new Guerrier(0, 0, renderer);
 
     return new_entity;
 }
