@@ -74,7 +74,7 @@ void GameMenu::displayEndSimulation(std::pair<std::string, int> pair, int genera
     //Text
     std::vector<std::string> lines;
     lines.push_back("Le type " + pair.first + " à gagné avec " + std::to_string(pair.second) + " entitées restantes.");
-    lines.push_back("Ils leurs aura fallu " + std::to_string(generation) + " générations pour gagner.");
+    lines.push_back("Ils leur aura fallu " + std::to_string(generation) + " générations pour gagner.");
     lines.push_back("Appuyez sur entrée pour revenir au menu principal.");
     int i = 0; // Pour la position en hauteur de chaque ligne
     for (auto line : lines) {

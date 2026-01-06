@@ -181,15 +181,30 @@ void Graphics::update(bool* running, bool* keep_playing) {
             deleteAllProjectiles();
             generation++;
             std::vector<Entity*> new_entities; //Temporary vector
+            std::vector<Entity*> parents_left = entities;
 
-            for(int i = 0; i+1<entities.size(); i+= 2){
-                //We have now 2 parents
+            while (parents_left.size() >= 2) {
                 int number_of_children = std::rand() % 5 + 1;
-                //The 2 parents make between 1 and 5 children
+
+                Entity* p1 = parents_left[0];
+                int i = 1;
+                //Les parents doivent avoir le même type si same_type_peace est activé
+                if (same_type_peace) {
+                    while (i < parents_left.size() && parents_left[i]->getType() != p1->getType()) i++;
+                    if (i == parents_left.size()) { // Aucun parents ne correspond
+                        parents_left.erase(parents_left.begin());
+                        continue;
+                    }
+                }
+                Entity* p2 = parents_left[i];
+
                 for(int j = 0; j<number_of_children; j++){
-                    Entity* new_entity = this->createNewEntityFromParents(entities[i], entities[i+1]);
+                    Entity* new_entity = this->createNewEntityFromParents(p1, p2);
                     new_entities.push_back(new_entity);
                 }
+                //On supprime les deux parents de la liste de ceux qui reste
+                parents_left.erase(parents_left.begin() + i); // p2
+                parents_left.erase(parents_left.begin()); // p1
             }
             entities.insert(entities.end(), new_entities.begin(), new_entities.end());
             startAllEntitiesThread();
