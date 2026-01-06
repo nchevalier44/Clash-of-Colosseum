@@ -27,16 +27,9 @@ bool init() {
     return true;
 }
 
-void start_game(bool* keep_playing, std::map<std::string, std::string>* parameters) {
-    Graphics graphics;
+void start_game(bool* keep_playing, std::map<std::string, std::string>* parameters, SDL_Window* window, SDL_Renderer* renderer) {
+    Graphics graphics(window, renderer);
 
-    int winW = std::stoi((*parameters)["window_width"]);
-    int winH = std::stoi((*parameters)["window_height"]);
-
-    if (winW != 0 && winH != 0) {
-        SDL_SetWindowSize(graphics.getWindow(), winW, winH);
-        SDL_SetWindowPosition(graphics.getWindow(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-    }
     Menu menu(graphics.getRenderer(), parameters);
 
     menu.configureParameters();
@@ -61,6 +54,7 @@ void start_game(bool* keep_playing, std::map<std::string, std::string>* paramete
     (*parameters)["same_type_peace"] = std::to_string(menu.getSameTypePeace());
     (*parameters)["min_number_entity"] = std::to_string(menu.getMinNumberEntity());
 
+    int winW, winH;
     SDL_GetWindowSize(graphics.getWindow(), &winW, &winH);
 
     // --- NOUVEAU SPAWN ALEATOIRE ---
@@ -96,10 +90,6 @@ void start_game(bool* keep_playing, std::map<std::string, std::string>* paramete
         graphics.update(&running, keep_playing);
         SDL_Delay(16);
     }
-    //On récupère la taille de la fenêtre pour rouvrir la fenêtre du menu à la même taille
-    SDL_GetWindowSize(graphics.getWindow(), &winW, &winH);
-    (*parameters)["window_width"] = std::to_string(winW);
-    (*parameters)["window_height"] = std::to_string(winH);
 }
 
 int main() {
@@ -113,15 +103,21 @@ int main() {
         {"projectile_speed_multiplier_index", "1"},
         {"music", "1"},
         {"same_type_peace", "0"},
-        {"window_width", "0"},
-        {"window_height", "0"},
         {"min_number_entity", "5"}
     };
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    SDL_CreateWindowAndRenderer(640, 480, 0, &window, &renderer);
+    SDL_SetWindowTitle(window, "Clash of Colosseum");
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     bool keep_playing = true;
     while (keep_playing) {
-        start_game(&keep_playing, &parameters);
+        start_game(&keep_playing, &parameters, window, renderer);
     }
+
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
 
     IMG_Quit(); TTF_Quit(); Mix_CloseAudio(); Mix_Quit(); SDL_Quit();
     return 0;

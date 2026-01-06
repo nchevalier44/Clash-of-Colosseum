@@ -14,10 +14,10 @@
 
 class Graphics {
 public:
-    Graphics();
+    Graphics(SDL_Window* window, SDL_Renderer* renderer);
     ~Graphics();
     Mix_Music* getGameMusic() const { return gameMusic; }
-    SDL_Renderer* getRenderer() { return renderer; } ;
+    SDL_Renderer* getRenderer() { return renderer; }
     SDL_Window* getWindow() { return window; } ;
     void update(bool* running, bool* keep_playing);
 

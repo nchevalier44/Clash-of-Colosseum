@@ -7,10 +7,7 @@
 #include "Entities/Golem.h"
 #include <iostream>
 
-Graphics::Graphics() {
-    SDL_CreateWindowAndRenderer(640, 480, 0, &window, &renderer);
-    SDL_SetWindowTitle(window, "Clash of Colosseum");
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+Graphics::Graphics(SDL_Window* window, SDL_Renderer* renderer) : window(window), renderer(renderer) {
     gameMusic = Mix_LoadMUS("../assets/gamemusic.mp3");
     if (!gameMusic) {
         std::cerr << "Erreur chargement musique jeu: " << Mix_GetError() << std::endl;
@@ -27,15 +24,6 @@ SDL_Renderer* Graphics::getRenderer() const {
 }
 
 Graphics::~Graphics() {
-
-    if (renderer) {
-        SDL_DestroyRenderer(renderer);
-        this->renderer = nullptr;
-    }
-    if (window) {
-        SDL_DestroyWindow(window);
-        window = nullptr;
-    }
     if (!entities.empty()) {
         entities.clear();
     }
