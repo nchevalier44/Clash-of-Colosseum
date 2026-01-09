@@ -116,7 +116,7 @@ void Graphics::updateProjectiles(bool draw){
                 float sumRadius = e->getSize() + 10;
 
                 if (distance <= sumRadius) {
-                    e->setHp(e->getHp() - proj->getDamage() * 1.3 * proj->getSize()); // inflige les dégâts
+                    e->setHp(e->getHp() - proj->getDamage() * 1.3 * proj->getOwner()->getSize()); // inflige les dégâts
                     hit = true;
                     delete proj;
                     p = projectiles.erase(p);
