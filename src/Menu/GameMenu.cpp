@@ -21,7 +21,7 @@ GameMenu::GameMenu(SDL_Renderer* renderer, SDL_Window* window) : window(window),
     int width_window, height_window;
     SDL_GetWindowSize(window, &width_window, &height_window);
 
-    Button* stats_visible_button = new Button("Hide Stats", font, 2*width_window/5, 16, renderer,  [this](Button* button) {
+    Button* stats_visible_button = new Button("Hide Stats", font, renderer,  [this](Button* button) {
         hide_stats = !hide_stats;
         if (hide_stats) {
             button->setText("Show Stats");
@@ -29,9 +29,15 @@ GameMenu::GameMenu(SDL_Renderer* renderer, SDL_Window* window) : window(window),
             button->setText("Hide Stats");
         }
     });
-    Button* exit_button = new Button("Exit", font, 4*width_window/5, 16, renderer, [this](Button* button) {
+    Button* exit_button = new Button("Exit", font, renderer, [this](Button* button) {
         stop_simulation = true; //ensuite dans Graphics::update(), ça arrête tout
     });
+    stats_visible_button->setX(4*width_window/9 - stats_visible_button->getRect().w);
+    exit_button->setX(5*width_window/9);
+
+    stats_visible_button->setY(16);
+    exit_button->setY(16);
+
     buttons.push_back(stats_visible_button);
     buttons.push_back(exit_button);
 }
@@ -96,6 +102,14 @@ void GameMenu::displayEndSimulation(std::pair<std::string, int> pair, int genera
 void GameMenu::draw(const std::vector<Entity*>& entities, int generation, bool is_game_paused){
     createBackground();
     displayTimeSpeed(is_game_paused);
+    int window_width, window_height;
+    SDL_GetWindowSize(window, &window_width, &window_height);
+    buttons[0]->setX(4*window_width/9 - buttons[0]->getRect().w);
+    buttons[1]->setX(5*window_width/9);
+
+    buttons[0]->setY(16);
+    buttons[1]->setY(16);
+
     for (Button* b : buttons) {
         b->draw(window, renderer);
     }

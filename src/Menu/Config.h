@@ -10,12 +10,12 @@
 
 class Menu {
 public:
-    Menu(SDL_Renderer* r, std::map<std::string, std::string>* parameters);
+    Menu(SDL_Renderer* r, std::map<std::string, std::string>* parameters, bool* keep_playing);
     ~Menu();
 
-    void render();
-    void handleEvent(SDL_Event& event);
-    void configureParameters();
+    void render(SDL_Texture* background);
+    void handleEvent(SDL_Event& event, Mix_Music* music);
+    void configureParameters(SDL_Window* window, Mix_Music* music, SDL_Texture* background);
 
     // Getters
     int getNbGuerriers() const { return nbGuerriers; }
@@ -30,9 +30,9 @@ public:
     int getMinNumberEntity() const { return min_number_entity; };
 
 private:
+    SDL_Window* window = nullptr;
     SDL_Renderer* renderer;
     TTF_Font* font = nullptr;
-    Mix_Music* menuMusic = nullptr;
     bool musiqueOn = true;
     SDL_Texture* background = nullptr;
 
@@ -51,6 +51,7 @@ private:
     // Gestion du menu
     int optionsCount = 7;
     int selectedOption = 0;
+    bool* keep_playing = nullptr;
 };
 
 #endif // CLASH_OF_COLOSSEUM_CONFIG_H

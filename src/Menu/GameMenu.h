@@ -30,6 +30,8 @@ public:
 
     void displayEndSimulation(std::pair<std::string, int> pair, int generation);
 
+    void setSimulationStopped(bool cond){ stop_simulation = cond; }
+
 private:
     void createBackground();
     void displayTimeSpeed(bool is_game_paused);

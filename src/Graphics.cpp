@@ -137,6 +137,7 @@ void Graphics::update(bool* running, bool* keep_playing) {
     //Exit button have been clicked so we stop the simulation
     if (game_menu->isSimulationStopped()) {
         stopAllEntitiesThread();
+        deleteAllProjectiles();
         *running = false;
         return;
     }
@@ -258,7 +259,7 @@ void Graphics::handleEvent(bool* running, bool* keep_playing){
 
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
-            *running = false;
+            game_menu->setSimulationStopped(true);
             *keep_playing = false;
         }
 

@@ -1,7 +1,6 @@
 #include "Graphics.h"
 #include "Menu/Config.h"
 #include "Menu/GameMenu.h"
-#include "Weapons/Projectile.h"
 #include "Entities/Guerrier.h"
 #include "Entities/Archer.h"
 #include "Entities/Mage.h"
@@ -14,6 +13,8 @@
 #include <ctime>
 #include <array>
 #include <map>
+
+#include "Menu/MainMenu.h"
 
 
 bool init() {
@@ -30,29 +31,9 @@ bool init() {
 void start_game(bool* keep_playing, std::map<std::string, std::string>* parameters, SDL_Window* window, SDL_Renderer* renderer) {
     Graphics graphics(window, renderer);
 
-    Menu menu(graphics.getRenderer(), parameters);
+    MainMenu menu(window, renderer, &graphics, parameters, keep_playing);
 
-    menu.configureParameters();
-
-    Projectile::globalSpeedMultiplier = menu.getProjectileSpeedMultiplier();
-    graphics.setMutationTypeRate(menu.getMutationTypeRate());
-    graphics.setMutationStatsRate(menu.getMutationStatsRate());
-    graphics.setShowHealthBars(menu.getShowHealthBars());
-    graphics.setMinNumberEntity(menu.getMinNumberEntity());
-
-    // Transmission de la nouvelle option
-    graphics.setSameTypePeace(menu.getSameTypePeace());
-
-    int nbGuerriers = menu.getNbGuerriers();
-
-    (*parameters)["nb_guerriers"] = std::to_string(nbGuerriers);
-    (*parameters)["mutation_type_rate"] = std::to_string(menu.getMutationTypeRate());
-    (*parameters)["mutation_stats_rate"] = std::to_string(menu.getMutationStatsRate());
-    (*parameters)["show_healthbars"] = std::to_string(menu.getShowHealthBars());
-    (*parameters)["projectile_speed_multiplier_index"] = std::to_string(menu.getSpeedIndex());
-    (*parameters)["music"] = std::to_string(menu.getMusicOn());
-    (*parameters)["same_type_peace"] = std::to_string(menu.getSameTypePeace());
-    (*parameters)["min_number_entity"] = std::to_string(menu.getMinNumberEntity());
+    if (!(*keep_playing)) return;
 
     int winW, winH;
     SDL_GetWindowSize(graphics.getWindow(), &winW, &winH);
@@ -60,6 +41,8 @@ void start_game(bool* keep_playing, std::map<std::string, std::string>* paramete
     // --- NOUVEAU SPAWN ALEATOIRE ---
     std::vector<Entity*> entities;
     std::array<std::string, 4> types = {"Guerrier", "Archer", "Mage", "Golem"};
+
+    int nbGuerriers = std::stoi((*parameters)["nb_guerriers"]);
 
     for (int i = 0; i < nbGuerriers; i++) {
         // Spawn aléatoire sur toute la map (avec une petite marge de 30px pour pas être dans le mur)
@@ -79,7 +62,7 @@ void start_game(bool* keep_playing, std::map<std::string, std::string>* paramete
 
     graphics.setEntities(entities);
 
-    if (menu.getMusicOn()) {
+    if ((*parameters)["music"] == "1") {
         Mix_HaltMusic();
         Mix_PlayMusic(graphics.getGameMusic(), -1);
     }
