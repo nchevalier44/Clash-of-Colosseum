@@ -1,6 +1,8 @@
 #include "MainMenu.h"
 
-MainMenu::MainMenu(SDL_Window* window, SDL_Renderer* renderer, Graphics* graphics, std::map<std::string, std::string>* parameters, bool* keep_playing) : window(window), renderer(renderer), graphics(graphics), parameters(parameters), keep_playing(keep_playing) {
+#include "HistoryMenu.h"
+
+MainMenu::MainMenu(SDL_Window* window, SDL_Renderer* renderer, Graphics* graphics, std::map<std::string, std::string>* parameters, std::vector<SimulationStats*>* sim_stats, bool* keep_playing) : window(window), renderer(renderer), graphics(graphics), parameters(parameters), keep_playing(keep_playing) {
     font = TTF_OpenFont("../assets/arial.ttf", 24);
     title_font = TTF_OpenFont("../assets/arial.ttf", 48);
     int window_width, window_height;
@@ -9,13 +11,13 @@ MainMenu::MainMenu(SDL_Window* window, SDL_Renderer* renderer, Graphics* graphic
     play_button = new Button("Lancer la simulation", font, renderer, [this](Button* button) {
         *running = false;
     });
-   settings_button = new Button("Paramètres", font, renderer, [this, parameters, graphics, keep_playing](Button* button) {
-       this->drawBackground();
-       Menu menu(graphics->getRenderer(), parameters, keep_playing);
+   settings_button = new Button("Paramètres", font, renderer, [this, parameters, renderer, keep_playing](Button* button) {
+       SettingsMenu menu(renderer, parameters, keep_playing);
        menu.configureParameters(this->window, menuMusic, background);
        this->initGame(&menu);
-
-
+    });
+    history_button = new Button("Historique", font, renderer, [this, window, renderer, keep_playing, sim_stats](Button* button) {
+        HistoryMenu menu(window, renderer, sim_stats, background, keep_playing);
     });
     exit_button = new Button("Quitter", font, renderer, [](Button* button) {
         IMG_Quit();
@@ -32,11 +34,15 @@ MainMenu::MainMenu(SDL_Window* window, SDL_Renderer* renderer, Graphics* graphic
     settings_button->setX(window_width/2 - settings_button->getRect().w/2);
     settings_button->setY(4*window_height/6 - settings_button->getRect().h/2);
 
+    history_button->setX(window_width/2 - history_button->getRect().w/2);
+    history_button->setY(5*window_height/7 - history_button->getRect().h/2);
+
     exit_button->setX(window_width/2 - exit_button->getRect().w/2);
     exit_button->setY(5*window_height/6 - exit_button->getRect().h/2);
 
     buttons.push_back(play_button);
     buttons.push_back(settings_button);
+    buttons.push_back(history_button);
     buttons.push_back(exit_button);
 
     //Musique
@@ -58,10 +64,11 @@ MainMenu::MainMenu(SDL_Window* window, SDL_Renderer* renderer, Graphics* graphic
         if (!background) std::cerr << "Erreur SDL_CreateTextureFromSurface (fond): " << SDL_GetError() << std::endl;
     }
 
+    draw();
     handleEvent();
 }
 
-void MainMenu::initGame(Menu* menu) {
+void MainMenu::initGame(SettingsMenu* menu) {
     Projectile::globalSpeedMultiplier = menu->getProjectileSpeedMultiplier();
     graphics->setMutationTypeRate(menu->getMutationTypeRate());
     graphics->setMutationStatsRate(menu->getMutationStatsRate());
@@ -104,19 +111,22 @@ void MainMenu::draw() {
 
     SDL_Surface* titleSurface = TTF_RenderText_Solid(title_font, "Clash of Colosseum", {255, 255, 255});
     SDL_Texture* titleTex = SDL_CreateTextureFromSurface(renderer, titleSurface);
-    SDL_Rect titleRect = {int(window_width/2 - titleSurface->w/2), int(window_height/6 - titleSurface->h/2), titleSurface->w, titleSurface->h};
+    SDL_Rect titleRect = {int(window_width/2 - titleSurface->w/2), int(window_height/7 - titleSurface->h/2), titleSurface->w, titleSurface->h};
     SDL_RenderCopy(renderer, titleTex, NULL, &titleRect);
     SDL_FreeSurface(titleSurface);
     SDL_DestroyTexture(titleTex);
 
     play_button->setX(window_width/2 - play_button->getRect().w/2);
-    play_button->setY(3*window_height/6 - play_button->getRect().h/2);
+    play_button->setY(3*window_height/7 - play_button->getRect().h/2);
 
     settings_button->setX(window_width/2 - settings_button->getRect().w/2);
-    settings_button->setY(4*window_height/6 - settings_button->getRect().h/2);
+    settings_button->setY(4*window_height/7 - settings_button->getRect().h/2);
+
+    history_button->setX(window_width/2 - history_button->getRect().w/2);
+    history_button->setY(5*window_height/7 - history_button->getRect().h/2);
 
     exit_button->setX(window_width/2 - exit_button->getRect().w/2);
-    exit_button->setY(5*window_height/6 - exit_button->getRect().h/2);
+    exit_button->setY(6*window_height/7 - exit_button->getRect().h/2);
 
     for (Button* b : buttons) {
         b->draw(window, renderer);
@@ -138,7 +148,6 @@ void MainMenu::handleEvent() {
     running = new bool(true);
     SDL_Event event;
     while (*running && *keep_playing) {
-        draw();
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 *running = false;
@@ -177,6 +186,20 @@ void MainMenu::handleEvent() {
                     }
                 }
             }
+            // Détection du redimensionnement
+            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED) {
+                int w = event.window.data1;
+                int h = event.window.data2;
+
+                // Si la largeur ou la hauteur est trop petite
+                if (w < 490 || h < 450) {
+                    // On force la fenêtre à revenir à la taille minimale
+                    // std::max prend le plus grand des deux nombres
+                    SDL_SetWindowSize(window, std::max(w, 490), std::max(h, 450));
+                }
+            }
         }
+        draw();
+        SDL_Delay(16);
     }
 }

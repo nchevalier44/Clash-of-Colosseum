@@ -8,10 +8,10 @@
 #include <SDL_mixer.h>
 #include <vector>
 
-class Menu {
+class SettingsMenu {
 public:
-    Menu(SDL_Renderer* r, std::map<std::string, std::string>* parameters, bool* keep_playing);
-    ~Menu();
+    SettingsMenu(SDL_Renderer* r, std::map<std::string, std::string>* parameters, bool* keep_playing);
+    ~SettingsMenu();
 
     void render(SDL_Texture* background);
     void handleEvent(SDL_Event& event, Mix_Music* music);
@@ -31,7 +31,7 @@ public:
 
 private:
     SDL_Window* window = nullptr;
-    SDL_Renderer* renderer;
+    SDL_Renderer* renderer = nullptr;
     TTF_Font* font = nullptr;
     bool musiqueOn = true;
     SDL_Texture* background = nullptr;

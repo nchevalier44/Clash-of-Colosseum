@@ -14,7 +14,7 @@ Golem::Golem(float x, float y, SDL_Renderer* renderer) : Entity(x, y, renderer){
     this->move_speed *= 0.8f + randomRange(-15, 15) / 100.f - 0.01*size; //+-15%
     updateAttackCooldown();
     this->hp = this->max_hp = randomRange(280, 350);
-    type = "Tank";
+    type = "Golem";
     this->frame_to_attack = 6;
     frame_delay += (size - 1.5) * 15;
 

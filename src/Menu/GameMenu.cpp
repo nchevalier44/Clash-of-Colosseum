@@ -174,7 +174,7 @@ void GameMenu::drawStatsTable(const std::vector<Entity*>& entities, int generati
         if (t == "Guerrier") nbGuerrier++;
         else if (t == "Archer") nbArcher++;
         else if (t == "Mage") nbMage++;
-        else if (t == "Tank") nbGolem++;
+        else if (t == "Golem") nbGolem++;
         totalHp += e->getMaxHp();
         avgDamage += e->getWeapon()->getDamage();
         avgSpeed += e->getMoveSpeed();

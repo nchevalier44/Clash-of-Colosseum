@@ -11,6 +11,8 @@
 #include <SDL_mixer.h>
 #include <mutex>
 
+#include "SimulationStats.h"
+
 
 class Graphics {
 public:
@@ -18,7 +20,9 @@ public:
     ~Graphics();
     Mix_Music* getGameMusic() const { return gameMusic; }
     SDL_Renderer* getRenderer() { return renderer; }
-    SDL_Window* getWindow() { return window; } ;
+    SDL_Window* getWindow() { return window; }
+
+    void setSimulationsStats(SimulationStats* vector) {this->simulations_stats = vector;};
     void update(bool* running, bool* keep_playing);
 
     bool multipleTypesAreAlive();
@@ -66,9 +70,11 @@ private:
     bool showHealthBars = true;
     bool same_type_peace = false;
     bool end_of_game = false;
+    SimulationStats* simulations_stats = nullptr;
 
     int game_time_speed = 1;
     bool is_game_paused = false;
+    Uint32 start_gen_time = 0;
 
     int min_number_entity = 5;
     std::vector<Entity*> entities;

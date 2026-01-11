@@ -3,21 +3,22 @@
 #include "Button.h"
 #include <map>
 #include "../Graphics.h"
-#include "Config.h"
+#include "SettingsMenu.h"
 
 class MainMenu {
 public:
-    MainMenu(SDL_Window* window, SDL_Renderer* renderer, Graphics* graphics, std::map<std::string, std::string>* parameters, bool* keep_playing);
+    MainMenu(SDL_Window* window, SDL_Renderer* renderer, Graphics* graphics, std::map<std::string, std::string>* parameters, std::vector<SimulationStats*>* sim_stats, bool* keep_playing);
     ~MainMenu();
     void draw();
 
     void drawBackground();
 
     void handleEvent();
-    void initGame(Menu* menu);
+    void initGame(SettingsMenu* menu);
 private:
     Button* play_button = nullptr;
     Button* settings_button = nullptr;
+    Button* history_button = nullptr;
     Button* exit_button = nullptr;
 
     SDL_Texture* background = nullptr;

@@ -182,6 +182,7 @@ void Graphics::update(bool* running, bool* keep_playing) {
         //Reproduction
         if (entities.size() <= min_number_entity){
             std::lock_guard<std::mutex> lock(global_mutex);
+            simulations_stats->updateLastGeneration(entities.size(), SDL_GetTicks() - start_gen_time);
             pauseAllEntities(true);
             increaseAllEntitiesAge();
             deleteAllProjectiles();
@@ -213,6 +214,8 @@ void Graphics::update(bool* running, bool* keep_playing) {
                 parents_left.erase(parents_left.begin()); // p1
             }
             entities.insert(entities.end(), new_entities.begin(), new_entities.end());
+            simulations_stats->addNewGeneration(entities, generation);
+            start_gen_time = SDL_GetTicks();
             startAllEntitiesThread();
             pauseAllEntities(false);
         }
@@ -336,6 +339,19 @@ void Graphics::handleEvent(bool* running, bool* keep_playing){
                 }
             }
         }
+
+        // Détection du redimensionnement
+        if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED) {
+            int w = event.window.data1;
+            int h = event.window.data2;
+
+            // Si la largeur ou la hauteur est trop petite
+            if (w < 490 || h < 450) {
+                // On force la fenêtre à revenir à la taille minimale
+                // std::max prend le plus grand des deux nombres
+                SDL_SetWindowSize(window, std::max(w, 490), std::max(h, 450));
+            }
+        }
     }
 }
 
@@ -409,7 +425,7 @@ Entity* Graphics::instantiateChildByType(Entity* e1, Entity* e2){
 
     std::string entity_type = e_temp->getType();
 
-    std::vector<std::string> list_types = {"Guerrier", "Archer", "Mage", "Tank"};
+    std::vector<std::string> list_types = {"Guerrier", "Archer", "Mage", "Golem"};
 
     if ((std::rand() % 100) < mutationTypeRate) { // 15% de chance de muter
         //On enlève les deux types des parents pour que la mutation se fasse sur un type qui n'est pas celui des parents
@@ -426,7 +442,7 @@ Entity* Graphics::instantiateChildByType(Entity* e1, Entity* e2){
     if(entity_type == "Guerrier") new_entity = new Guerrier(0, 0, renderer);
     else if(entity_type == "Archer") new_entity = new Archer(0, 0, renderer);
     else if(entity_type == "Mage") new_entity = new Mage(0, 0, renderer);
-    else if(entity_type == "Tank") new_entity = new Golem(0, 0, renderer);
+    else if(entity_type == "Golem") new_entity = new Golem(0, 0, renderer);
     else new_entity = new Guerrier(0, 0, renderer);
 
     return new_entity;

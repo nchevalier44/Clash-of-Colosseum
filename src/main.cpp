@@ -1,5 +1,5 @@
 #include "Graphics.h"
-#include "Menu/Config.h"
+#include "Menu/SettingsMenu.h"
 #include "Menu/GameMenu.h"
 #include "Entities/Guerrier.h"
 #include "Entities/Archer.h"
@@ -14,6 +14,7 @@
 #include <array>
 #include <map>
 
+#include "SimulationStats.h"
 #include "Menu/MainMenu.h"
 
 
@@ -28,12 +29,17 @@ bool init() {
     return true;
 }
 
-void start_game(bool* keep_playing, std::map<std::string, std::string>* parameters, SDL_Window* window, SDL_Renderer* renderer) {
+void start_game(bool* keep_playing, std::map<std::string, std::string>* parameters, SDL_Window* window, SDL_Renderer* renderer, std::vector<SimulationStats*>* simulations_stats) {
     Graphics graphics(window, renderer);
 
-    MainMenu menu(window, renderer, &graphics, parameters, keep_playing);
+    MainMenu menu(window, renderer, &graphics, parameters, simulations_stats, keep_playing);
 
     if (!(*keep_playing)) return;
+
+    SimulationStats* simulation_stats = new SimulationStats();
+    simulations_stats->push_back(simulation_stats);
+    graphics.setSimulationsStats(simulation_stats);
+    simulation_stats->setStartTime(std::time(nullptr));
 
     int winW, winH;
     SDL_GetWindowSize(graphics.getWindow(), &winW, &winH);
@@ -68,11 +74,13 @@ void start_game(bool* keep_playing, std::map<std::string, std::string>* paramete
     }
 
     graphics.startAllEntitiesThread();
+    simulation_stats->addNewGeneration(entities, 1);
     bool running = true;
     while (running) {
         graphics.update(&running, keep_playing);
         SDL_Delay(16);
     }
+    simulation_stats->setEndTime(std::time(nullptr));
 }
 
 int main() {
@@ -88,15 +96,18 @@ int main() {
         {"same_type_peace", "0"},
         {"min_number_entity", "5"}
     };
+    std::vector<SimulationStats*> simulations_stats;
+
     SDL_Window* window;
     SDL_Renderer* renderer;
-    SDL_CreateWindowAndRenderer(640, 480, 0, &window, &renderer);
+    SDL_CreateWindowAndRenderer(640, 480, SDL_WINDOW_RESIZABLE, &window, &renderer);
     SDL_SetWindowTitle(window, "Clash of Colosseum");
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetWindowMinimumSize(window, 490, 450);
 
     bool keep_playing = true;
     while (keep_playing) {
-        start_game(&keep_playing, &parameters, window, renderer);
+        start_game(&keep_playing, &parameters, window, renderer, &simulations_stats);
     }
 
     SDL_DestroyRenderer(renderer);

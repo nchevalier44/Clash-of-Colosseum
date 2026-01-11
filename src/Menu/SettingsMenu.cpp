@@ -1,11 +1,11 @@
-#include "./Config.h"
+#include "./SettingsMenu.h"
 #include <SDL_ttf.h>
 #include <string>
 #include <iostream>
 #include <SDL_image.h>
 #include <vector>
 
-Menu::Menu(SDL_Renderer* r, std::map<std::string, std::string>* parameters, bool* keep_playing) : renderer(r), keep_playing(keep_playing) {
+SettingsMenu::SettingsMenu(SDL_Renderer* r, std::map<std::string, std::string>* parameters, bool* keep_playing) : renderer(r), keep_playing(keep_playing) {
     font = TTF_OpenFont("../assets/arial.ttf", 24);
     if (!font) {
         std::cerr << "Erreur chargement police: " << TTF_GetError() << std::endl;
@@ -23,16 +23,16 @@ Menu::Menu(SDL_Renderer* r, std::map<std::string, std::string>* parameters, bool
     optionsCount = 8;
 }
 
-float Menu::getProjectileSpeedMultiplier() const {
+float SettingsMenu::getProjectileSpeedMultiplier() const {
     if (speedIndex == 0) return 0.5f; // Lent
     if (speedIndex == 2) return 2.0f; // Rapide
     return 1.0f;                      // Normal
 }
 
-Menu::~Menu() {
+SettingsMenu::~SettingsMenu() {
 }
 
-void Menu::render(SDL_Texture* background) {
+void SettingsMenu::render(SDL_Texture* background) {
     //Background
     if (background) {
         SDL_RenderCopy(renderer, background, NULL, NULL);
@@ -60,10 +60,10 @@ void Menu::render(SDL_Texture* background) {
     // Calculs pour le centrage VERTICAL global
     int itemSpacing = 50;
     int totalMenuHeight = options.size() * itemSpacing;
-    int startY = (winH - totalMenuHeight) / 2; // (Hauteur Fenêtre - Hauteur Menu) / 2
+    int startY = (winH - totalMenuHeight) / 2; // (Hauteur Fenêtre - Hauteur SettingsMenu) / 2
 
     // Largeur de la barre de sélection (pour qu'elle soit uniforme)
-    int highlightWidth = 500;
+    int highlightWidth = 350;
 
     for (int i = 0; i < (int)options.size(); i++) {
         SDL_Color color = (i == selectedOption ? yellow : white);
@@ -77,15 +77,15 @@ void Menu::render(SDL_Texture* background) {
         int currentY = startY + (i * itemSpacing);
 
         // Dessin de la barre de sélection (centrée horizontalement)
-        if (i == selectedOption) {
-            SDL_SetRenderDrawColor(renderer, 80, 80, 80, 150);
-            SDL_Rect highlight;
-            highlight.w = highlightWidth;
-            highlight.h = surface->h + 10;
-            highlight.x = (winW - highlightWidth) / 2; // Centrage X de la barre
-            highlight.y = currentY - 5;
-            SDL_RenderFillRect(renderer, &highlight);
-        }
+        SDL_SetRenderDrawColor(renderer, 40, 40, 40, 200);
+        if (i == selectedOption) SDL_SetRenderDrawColor(renderer, 90, 90, 90, 200);
+
+        SDL_Rect highlight;
+        highlight.w = highlightWidth;
+        highlight.h = surface->h + 10;
+        highlight.x = (winW - highlightWidth) / 2; // Centrage X de la barre
+        highlight.y = currentY - 5;
+        SDL_RenderFillRect(renderer, &highlight);
 
         // Dessin du texte (centré horizontalement)
         SDL_Rect rect;
@@ -103,7 +103,8 @@ void Menu::render(SDL_Texture* background) {
     SDL_RenderPresent(renderer);
 }
 
-void Menu::handleEvent(SDL_Event& event, Mix_Music* music) {
+void SettingsMenu::handleEvent(SDL_Event& event, Mix_Music* music) {
+
     if (event.type == SDL_KEYDOWN) {
         switch (event.key.keysym.scancode) {
             case SDL_SCANCODE_UP:
@@ -137,16 +138,27 @@ void Menu::handleEvent(SDL_Event& event, Mix_Music* music) {
             default: break;
         }
     }
+    // Détection du redimensionnement
+    if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED) {
+        int w = event.window.data1;
+        int h = event.window.data2;
+
+        // Si la largeur ou la hauteur est trop petite
+        if (w < 490 || h < 450) {
+            // On force la fenêtre à revenir à la taille minimale
+            // std::max prend le plus grand des deux nombres
+            SDL_SetWindowSize(window, std::max(w, 490), std::max(h, 450));
+        }
+    }
 }
 
 
-void Menu::configureParameters(SDL_Window* window, Mix_Music* music, SDL_Texture* background) {
+void SettingsMenu::configureParameters(SDL_Window* window, Mix_Music* music, SDL_Texture* background) {
     bool running = true;
     this->window = window;
 
     SDL_Event event;
     while (running) {
-        render(background);
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 running = false;
@@ -158,4 +170,6 @@ void Menu::configureParameters(SDL_Window* window, Mix_Music* music, SDL_Texture
             }
         }
     }
+    render(background);
+    SDL_Delay(16);
 }
