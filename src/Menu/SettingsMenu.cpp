@@ -5,7 +5,7 @@
 #include <SDL_image.h>
 #include <vector>
 
-SettingsMenu::SettingsMenu(SDL_Renderer* r, std::map<std::string, std::string>* parameters, bool* keep_playing) : renderer(r), keep_playing(keep_playing) {
+SettingsMenu::SettingsMenu(SDL_Renderer* r, SDL_Window* window, std::map<std::string, std::string>* parameters, bool* keep_playing) : window(window), renderer(r), keep_playing(keep_playing) {
     font = TTF_OpenFont("../assets/arial.ttf", 24);
     if (!font) {
         std::cerr << "Erreur chargement police: " << TTF_GetError() << std::endl;
@@ -153,23 +153,21 @@ void SettingsMenu::handleEvent(SDL_Event& event, Mix_Music* music) {
 }
 
 
-void SettingsMenu::configureParameters(SDL_Window* window, Mix_Music* music, SDL_Texture* background) {
-    bool running = true;
-    this->window = window;
-
+void SettingsMenu::configureParameters(Mix_Music* music, SDL_Texture* background) {
+    running = new bool(true);
     SDL_Event event;
-    while (running) {
+    while (*running && *keep_playing) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
-                running = false;
+                *running = false;
                 *keep_playing = false;
             }
             handleEvent(event, music);
             if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_RETURN) {
-                running = false;
+                *running = false;
             }
         }
+        render(background);
+        SDL_Delay(16);
     }
-    render(background);
-    SDL_Delay(16);
 }

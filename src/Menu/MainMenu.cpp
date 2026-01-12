@@ -12,8 +12,8 @@ MainMenu::MainMenu(SDL_Window* window, SDL_Renderer* renderer, Graphics* graphic
         *running = false;
     });
    settings_button = new Button("Paramètres", font, renderer, [this, parameters, renderer, keep_playing](Button* button) {
-       SettingsMenu menu(renderer, parameters, keep_playing);
-       menu.configureParameters(this->window, menuMusic, background);
+       SettingsMenu menu(renderer, this->window, parameters, keep_playing);
+       menu.configureParameters(menuMusic, background);
        this->initGame(&menu);
     });
     history_button = new Button("Historique", font, renderer, [this, window, renderer, keep_playing, sim_stats](Button* button) {

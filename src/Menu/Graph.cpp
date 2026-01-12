@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <ostream>
+#include <sstream>
+#include <iomanip>
 
 Graph::Graph(int x, int y, int w, int h, SDL_Renderer* renderer) : renderer(renderer) {
     label_font = TTF_OpenFont("../assets/arial.ttf", 14);
@@ -36,16 +38,15 @@ void Graph::draw() {
     drawLabels();
     drawAxes();
     drawLegend();
-    SDL_RenderPresent(renderer);
 }
 
 void Graph::drawGraduations() {
     if (series.empty()) return;
 
-    SDL_Color textColor = {0, 0, 0, 255}; // Noir
-    SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255); // Gris foncé pour les traits
+    SDL_Color textColor = {0, 0, 0, 255};
+    SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
 
-    // --- 1. CALCUL DU MAX Y ---
+    // --- 1. CALCUL DU MAX Y et MAX POINTS ---
     float maxVal = 0;
     size_t maxPoints = 0;
     for (const auto& s : series) {
@@ -53,36 +54,45 @@ void Graph::drawGraduations() {
         if (s.data.size() > maxPoints) maxPoints = s.data.size();
     }
     if (maxVal == 0) maxVal = 1;
-    if (maxPoints < 2) maxPoints = 2;
+    if (maxPoints < 2) maxPoints = 2; // Évite division par zero
 
     // --- CONFIGURATION DES MARGES ---
     int originX = graph_rect.x + padding;
     int originY = graph_rect.y + graph_rect.h - padding;
-
-    // C'EST ICI QUE ÇA CHANGE : On réduit la zone utile
     int axisHeight = graph_rect.h - padding - (padding / 2) - arrow_size - 5;
     int axisWidth  = graph_rect.w - padding - (padding / 2) - arrow_size - 5;
 
     // --- 2. GRADUATIONS AXE Y (Vertical) ---
-    int nbStepsY = 5; // On veut 5 graduations (0%, 25%, 50%, 75%, 100%)
+    int nbStepsY = 5;
 
     for (int i = 0; i <= nbStepsY; i++) {
-        // Calcul de la valeur à afficher (ex: si Max=100, on affiche 0, 20, 40...)
         float value = maxVal * ((float)i / nbStepsY);
 
-        // Position en pixels
         int yPos = originY - (int)((value / maxVal) * axisHeight);
 
-        // A. Dessiner le petit trait (Tick)
         SDL_RenderDrawLine(renderer, originX - 5, yPos, originX, yPos);
 
-        // B. Dessiner le texte (seulement si ce n'est pas 0 pour ne pas surcharger l'angle)
         if (i > 0) {
-            std::string txt = std::to_string((int)value); // Cast en int pour éviter "12.000000"
+            // --- CORRECTION ICI ---
+            std::stringstream ss;
+
+            // Si la valeur max est petite (< 10), on met de la précision
+            if (maxVal < 2.0f) {
+                ss << std::fixed << std::setprecision(2) << value; // ex: 0.25
+            }
+            else if (maxVal < 10.0f) {
+                ss << std::fixed << std::setprecision(1) << value; // ex: 2.5
+            }
+            else {
+                ss << (int)value; // ex: 150
+            }
+
+            std::string txt = ss.str();
+            // ----------------------
+
             SDL_Surface* surf = TTF_RenderText_Blended(label_font, txt.c_str(), textColor);
             if (surf) {
                 SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
-                // On aligne le texte à gauche du trait
                 SDL_Rect r = { originX - 10 - surf->w, yPos - surf->h / 2, surf->w, surf->h };
                 SDL_RenderCopy(renderer, tex, NULL, &r);
                 SDL_FreeSurface(surf); SDL_DestroyTexture(tex);
@@ -90,29 +100,35 @@ void Graph::drawGraduations() {
         }
     }
 
-    // --- 3. GRADUATIONS AXE X (Horizontal) ---
-    int nbStepsX = 5; // On veut 5 repères temporels
+    // --- 3. GRADUATIONS AXE X (Horizontal) - CORRIGÉ ---
 
-    for (int i = 0; i <= nbStepsX; i++) {
-        // On calcule quel index du tableau correspond à cette étape
-        // Ex: si 100 points de données, i=0 -> index 0, i=5 -> index 100
-        float percentage = (float)i / nbStepsX;
+    // On veut afficher environ 5 à 10 graduations max pour ne pas surcharger
+    int targetSteps = 10;
 
-        // Position en pixels
+    // "step" est le pas d'index : 1 = chaque point, 2 = un point sur deux, etc.
+    int step = 1;
+    if (maxPoints > targetSteps) {
+        step = (maxPoints + targetSteps - 1) / targetSteps; // Division arrondie au supérieur
+    }
+
+    // On parcourt les indices réels (0, step, 2*step...)
+    for (size_t i = 0; i < maxPoints; i += step) {
+
+        // Calcul du pourcentage basé sur l'index exact
+        // maxPoints - 1 car l'index va de 0 à size-1
+        float percentage = (float)i / (float)(maxPoints - 1);
+
+        // Position exacte du point correspondant à cet index
         int xPos = originX + (int)(percentage * axisWidth);
 
-        // A. Dessiner le petit trait
+        // A. Dessiner le petit trait aligné
         SDL_RenderDrawLine(renderer, xPos, originY, xPos, originY + 5);
 
-        // B. Dessiner le texte (Numéro de l'échantillon ou Temps)
-        // On affiche l'index approximatif (ex: tour 0, tour 20, tour 40...)
-        int valueDisplay = (int)(percentage * (maxPoints - 1));
-
-        std::string txt = std::to_string(valueDisplay);
+        // B. Dessiner le texte (Numéro de génération exacte)
+        std::string txt = std::to_string(i);
         SDL_Surface* surf = TTF_RenderText_Blended(label_font, txt.c_str(), textColor);
         if (surf) {
             SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
-            // On centre le texte sous le trait
             SDL_Rect r = { xPos - surf->w / 2, originY + 8, surf->w, surf->h };
             SDL_RenderCopy(renderer, tex, NULL, &r);
             SDL_FreeSurface(surf); SDL_DestroyTexture(tex);
@@ -188,11 +204,12 @@ void Graph::drawLabels() {
     int end_x = graph_rect.x + graph_rect.w - padding;
     int end_y = graph_rect.y + padding;
 
+    //Axe X
     SDL_Surface* surface = TTF_RenderUTF8_Blended(label_font, x_label.c_str(), {0, 0, 0});
     if (surface) {
         SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
         SDL_Rect rect = {
-            end_x -arrow_size,
+            end_x -arrow_size - surface->w/2,
             origin_y - surface->h - arrow_size,
             surface->w,
             surface->h
@@ -201,6 +218,8 @@ void Graph::drawLabels() {
         SDL_FreeSurface(surface);
         SDL_DestroyTexture(texture);
     }
+
+    //Axe Y
     surface = TTF_RenderUTF8_Blended(label_font, y_label.c_str(), {0, 0, 0});
     if (surface) {
         SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -249,4 +268,8 @@ void Graph::drawLegend() {
             startY += surface->h + 5;
         }
     }
+}
+
+void Graph::clearSeries() {
+    series.clear();
 }

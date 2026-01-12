@@ -10,12 +10,12 @@
 
 class SettingsMenu {
 public:
-    SettingsMenu(SDL_Renderer* r, std::map<std::string, std::string>* parameters, bool* keep_playing);
+    SettingsMenu(SDL_Renderer* r, SDL_Window* window, std::map<std::string, std::string>* parameters, bool* keep_playing);
     ~SettingsMenu();
 
     void render(SDL_Texture* background);
     void handleEvent(SDL_Event& event, Mix_Music* music);
-    void configureParameters(SDL_Window* window, Mix_Music* music, SDL_Texture* background);
+    void configureParameters(Mix_Music* music, SDL_Texture* background);
 
     // Getters
     int getNbGuerriers() const { return nbGuerriers; }
@@ -52,6 +52,7 @@ private:
     int optionsCount = 7;
     int selectedOption = 0;
     bool* keep_playing = nullptr;
+    bool * running = nullptr;
 };
 
 #endif // CLASH_OF_COLOSSEUM_CONFIG_H

@@ -1,20 +1,20 @@
 #include "HistoryMenu.h"
 #include <iomanip>
 #include "Graph.h"
-#include "../StatsView.h"
+#include "../StatsMenu.h"
 
 HistoryMenu::HistoryMenu(SDL_Window* window, SDL_Renderer* renderer, std::vector<SimulationStats*>* sim_stats, SDL_Texture* background, bool* keep_playing) : window(window), renderer(renderer), keep_playing(keep_playing), background(background) {
     font = TTF_OpenFont("../assets/arial.ttf", 20);
 
     int sim_size = sim_stats->size();
     for (int i=0; i<sim_size; i++) {
-        Button* button = new Button("Voir Stats", font, renderer, [this, window, renderer, sim_stats](Button* button) {
+        Button* button = new Button("Voir Stats", font, renderer, [this, keep_playing, background, window, renderer, sim_stats](Button* button) {
             int id = searchIdFromButton(button);
             if (id == -1) return;
             int w, h;
             SDL_GetWindowSize(window, &w, &h);
             SimulationStats* sim = (*sim_stats)[id];
-            StatsView view(renderer, w, h);
+            StatsMenu view(renderer, window, background, keep_playing);
             view.showStats(*sim);
         });
 

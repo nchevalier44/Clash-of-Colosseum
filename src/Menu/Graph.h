@@ -21,9 +21,14 @@ public:
 
     void setXLabel(std::string label){ x_label = label;}
     void setYLabel(std::string label){ y_label = label;}
+    void setWidth(int w){ graph_rect.w = w;}
+    void setHeight(int h){ graph_rect.h = h;}
 
     void drawGraduations();
     void drawLegend();
+
+    void clearSeries();
+
     void draw();
     void drawCurves();
     void drawAxes();

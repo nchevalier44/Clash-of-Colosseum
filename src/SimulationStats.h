@@ -36,10 +36,22 @@ public:
     std::time_t getStartTime() { return start_sim_time; };
     std::time_t getEndTime() { return end_sim_time; };
     std::vector<GenerationStats*> getGenerations(){ return generations; };
+
+    void setMutationTypeRate(int rate) { mutation_type_rate = rate; }
+    int getMutationTypeRate() const { return mutation_type_rate; }
+
+    void setMutationStatsRate(int rate) { mutation_stats_rate = rate; }
+    int getMutationStatsRate() const { return mutation_stats_rate; }
+
+    void setSameTypePeace(bool peace) { same_type_peace = peace; }
+    bool getSameTypePeace() const { return same_type_peace; }
 private:
     std::vector<GenerationStats*> generations;
     std::time_t start_sim_time;
     std::time_t end_sim_time;
+    bool same_type_peace = false;
+    int mutation_type_rate = 0;
+    int mutation_stats_rate = 0;
 };
 
 #endif //CLASH_OF_COLOSSEUM_SIMULATIONSTATS_H
