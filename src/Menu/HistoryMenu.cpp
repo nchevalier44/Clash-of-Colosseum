@@ -1,7 +1,7 @@
 #include "HistoryMenu.h"
 #include <iomanip>
 #include "Graph.h"
-#include "../StatsMenu.h"
+#include "StatsMenu.h"
 
 HistoryMenu::HistoryMenu(SDL_Window* window, SDL_Renderer* renderer, std::vector<SimulationStats*>* sim_stats, SDL_Texture* background, bool* keep_playing) : window(window), renderer(renderer), keep_playing(keep_playing), background(background) {
     font = TTF_OpenFont("../assets/arial.ttf", 20);

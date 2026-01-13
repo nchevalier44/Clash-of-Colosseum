@@ -1,6 +1,8 @@
 #include "SimulationStats.h"
 
 void SimulationStats::addNewGeneration(std::vector<Entity*> entities, int id_generation) {
+    if (entities.size() == 0) return;
+
     GenerationStats* generation_stats = new GenerationStats();
     generations.push_back(generation_stats);
 
@@ -11,6 +13,13 @@ void SimulationStats::addNewGeneration(std::vector<Entity*> entities, int id_gen
     AttributStats hp_stats;
     AttributStats speed_stats;
     AttributStats age_stats;
+
+    //Set minimum to first value
+    damage_stats.minimum = entities[0]->getWeapon()->getDamage();
+    hp_stats.minimum = entities[0]->getMaxHp();
+    speed_stats.minimum = entities[0]->getMoveSpeed();
+    age_stats.minimum = entities[0]->getAge();
+
     float sum_damage = 0;
     float sum_hp = 0;
     float sum_speed = 0;

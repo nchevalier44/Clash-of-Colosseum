@@ -41,10 +41,14 @@ void start_game(bool* keep_playing, std::map<std::string, std::string>* paramete
     graphics.setSimulationsStats(simulation_stats);
     simulation_stats->setStartTime(std::time(nullptr));
 
+    simulation_stats->setSameTypePeace((*parameters)["same_type_peace"] == "1");
+    simulation_stats->setMutationStatsRate(std::stoi((*parameters)["mutation_stats_rate"]));
+    simulation_stats->setMutationTypeRate(std::stoi((*parameters)["mutation_type_rate"]));
+
     int winW, winH;
     SDL_GetWindowSize(graphics.getWindow(), &winW, &winH);
 
-    // --- NOUVEAU SPAWN ALEATOIRE ---
+    //Spawn pour la première génération
     std::vector<Entity*> entities;
     std::array<std::string, 4> types = {"Guerrier", "Archer", "Mage", "Golem"};
 

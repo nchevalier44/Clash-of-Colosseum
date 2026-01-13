@@ -5,9 +5,9 @@
 #include <vector>
 #include <string>
 #include <ctime>
-#include "SimulationStats.h"
-#include "Menu/Graph.h"
-#include "Menu/Button.h" // Nécessaire pour les boutons
+#include "../SimulationStats.h"
+#include "Graph.h"
+#include "Button.h" // Nécessaire pour les boutons
 
 class StatsMenu {
 public:
