@@ -12,6 +12,7 @@
 #include <mutex>
 #include <chrono>
 #include <map>
+#include <atomic>
 
 using namespace std;
 
@@ -22,6 +23,9 @@ inline int randomRange(int min, int max) {
     return distrib(gen);
 }
 
+//Avoid circular import
+class Graphics;
+
 class Entity {
 public:
     Entity(float x, float y, SDL_Renderer* renderer);
@@ -29,7 +33,7 @@ public:
 
     void deleteAllFrames();
 
-    void startThread(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, int* game_time_speed, bool* same_type_peace, std::mutex* global_mutex);
+    void startThread(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, bool* same_type_peace, std::mutex* global_mutex);
     void stopThread();
 
     void setX(float new_x){ x = new_x; }
@@ -78,14 +82,14 @@ public:
 
 
 protected:
-    int hp;
+    std::atomic<int> hp;
     int max_hp;
     float base_sprite_size = 1.0f;
     float ratio_hitbox_width;
     float ratio_hitbox_height;
     float size;
-    float x;
-    float y;
+    std::atomic<float> x;
+    std::atomic<float> y;
     Weapon* weapon;
 
     float attack_timer = 0.0f; // Compteur interne
@@ -107,17 +111,24 @@ protected:
     // (for example thank to this variable, the arrow from the archer will be launch
     // at the end of his animation instead of the beginning)
     int frame_to_attack = 0;
-    bool ready_to_attack = false; //This variable will be set to true when the animation is at the 'frame_to_attack' position
+    std::atomic<bool> ready_to_attack = false; //This variable will be set to true when the animation is at the 'frame_to_attack' position
 
     string type = "Entity";
 
     std::thread entity_thread;
     std::atomic<bool> thread_is_running = false;
-    bool is_attacking = false;
+    std::atomic<bool> is_attacking = false;
     bool pause = false;
 
+    int find_entity_timer = 0;
+    int find_entity_delay = 10;
+
+    float last_target_x = 0;
+    float last_target_y = 0;
+    bool has_active_target = false;
+
 private:
-    void threadLoop(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, int* game_time_speed, bool* same_type_peace, std::mutex* global_mutex);
+    void threadLoop(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, bool* same_type_peace, std::mutex* global_mutex);
     void threadUpdate(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, bool* same_type_peace, std::mutex* global_mutex);
 };
 

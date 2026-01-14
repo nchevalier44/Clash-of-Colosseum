@@ -16,6 +16,8 @@
 
 class Graphics {
 public:
+    static std::atomic<int> game_time_speed;
+
     Graphics(SDL_Window* window, SDL_Renderer* renderer);
     ~Graphics();
     Mix_Music* getGameMusic() const { return gameMusic; }
@@ -72,7 +74,6 @@ private:
     bool end_of_game = false;
     SimulationStats* simulations_stats = nullptr;
 
-    int game_time_speed = 1;
     bool is_game_paused = false;
     Uint32 start_gen_time = 0;
 

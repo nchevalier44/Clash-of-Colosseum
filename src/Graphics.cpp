@@ -7,6 +7,8 @@
 #include "Entities/Golem.h"
 #include <iostream>
 
+std::atomic<int> Graphics::game_time_speed(1);
+
 Graphics::Graphics(SDL_Window* window, SDL_Renderer* renderer) : window(window), renderer(renderer) {
     gameMusic = Mix_LoadMUS("../assets/gamemusic.mp3");
     if (!gameMusic) {
@@ -41,7 +43,7 @@ void Graphics::setEntities(const std::vector<Entity*>& ents) {
 
 void Graphics::startAllEntitiesThread(){
     for(Entity* e : entities){
-        e->startThread(&entities, &projectiles, &game_time_speed, &same_type_peace, &global_mutex);
+        e->startThread(&entities, &projectiles, &same_type_peace, &global_mutex);
     }
 }
 
@@ -58,8 +60,6 @@ void Graphics::pauseAllEntities(bool pause) {
 }
 
 void Graphics::updateEntities(bool draw){
-
-    std::lock_guard<std::mutex> lock(global_mutex);
 
     for (Entity* e : entities) {
         if(e->getHp() <= 0){
@@ -93,39 +93,78 @@ void Graphics::updateEntities(bool draw){
 
 void Graphics::updateProjectiles(bool draw){
 
-    std::lock_guard<std::mutex> lock(global_mutex);
+    // On copie les pointeurs pour pouvoir travailler dessus sans bloquer les autres
+    global_mutex.unlock();
+    std::vector<Projectile*> projectiles_snapshot;
+    global_mutex.lock();
+    // ICI LE VERROU EST RELACHÉ ! Les entités peuvent jouer !
 
-    for (auto p = projectiles.begin(); p != projectiles.end(); ) {
-        Projectile* proj = *p;
+    // --- ETAPE 2 : CALCULS PHYSIQUES (Déverrouillé) ---
+    // On note qui est mort dans une liste locale pour ne pas modifier le vecteur global sans lock
+    std::vector<Projectile*> dead_projectiles;
+
+    for (Projectile* proj : projectiles_snapshot) {
+
+        // Si le projectile a déjà été supprimé ailleurs (rare mais possible), on saute
+        if (!proj) continue;
+
+        // Fin de vie (Temps)
         if(SDL_GetTicks() >= proj->getEndTime()){
-            delete proj;
-            p = projectiles.erase(p);
+            dead_projectiles.push_back(proj);
             continue;
         }
-        proj->move();
-        if(draw) proj->draw(renderer, game_time_speed);
 
+        proj->move(); // Calcul de position (Safe si x/y projectile ne sont touchés que par ici)
+
+        if(draw) proj->draw(renderer);
+
+        // Collisions
+        // Optimisation : variables locales pour éviter les accès mémoire lents
+        float projX = proj->getX();
+        float projY = proj->getY();
+        float projDmg = proj->getDamage();
+        Entity* owner = proj->getOwner();
+        float ownerSize = (owner) ? owner->getSize() : 1.0f;
+        float damage = projDmg * 1.3f * ownerSize;
+
+        // On parcourt les entités.
+        // Comme entities n'est modifié (ajout/suppression) que par le MainThread,
+        // et qu'on EST le MainThread, on peut lire le vecteur sans lock.
+        // La lecture des positions des entités (x, y) est safe car elles sont std::atomic.
         bool hit = false;
-
         for (Entity* e : entities) {
-            if(proj->getOwner() != nullptr && e != proj->getOwner()){
-                //Collision
-                float dx = e->getX() - proj->getX();
-                float dy = e->getY() - proj->getY();
-                float distance = std::sqrt(dx * dx + dy * dy);
+            if(owner != nullptr && e != owner && e->getHp() > 0){
+                float dx = e->getX() - projX;
+                float dy = e->getY() - projY;
                 float sumRadius = e->getSize() + 10;
 
-                if (distance <= sumRadius) {
-                    e->setHp(e->getHp() - proj->getDamage() * 1.3 * proj->getOwner()->getSize()); // inflige les dégâts
+                // Distance au carré pour éviter sqrt (très coûteux)
+                if ((dx*dx + dy*dy) <= (sumRadius * sumRadius)) {
+                    // setHp est thread-safe (atomic)
+                    e->setHp(e->getHp() - (int)damage);
                     hit = true;
-                    delete proj;
-                    p = projectiles.erase(p);
                     break;
                 }
             }
         }
-        if(!hit){
-            p++;
+
+        if(hit){
+            dead_projectiles.push_back(proj);
+        }
+    }
+
+    // --- ETAPE 3 : NETTOYAGE (Verrouillé) ---
+    // On reprend le verrou pour supprimer réellement les morts du vecteur global
+    if (!dead_projectiles.empty()) {
+        std::lock_guard<std::mutex> lock(global_mutex);
+
+        for (Projectile* dead : dead_projectiles) {
+            // On cherche et supprime le projectile du vrai vecteur
+            auto it = std::find(projectiles.begin(), projectiles.end(), dead);
+            if (it != projectiles.end()) {
+                delete *it; // On libère la mémoire
+                projectiles.erase(it); // On réduit le vecteur
+            }
         }
     }
 }
@@ -154,13 +193,11 @@ void Graphics::update(bool* running, bool* keep_playing) {
         SDL_RenderClear(renderer);
     }
 
-    game_time_speed = game_menu->getTimeSpeed();
     for(int i = 0; i<game_time_speed; i++) { // On répète l'action plusieurs fois si le temps est plus rapide
 
         bool draw = i == game_time_speed-1; //On dessine que si c'est la dernière update de la boucle (
         updateEntities(draw);
         updateProjectiles(draw);
-
 
         if (!entities_to_delete.empty()) {
             deleteDeadEntities();
@@ -221,8 +258,9 @@ void Graphics::update(bool* running, bool* keep_playing) {
         }
     }
 
-    std::lock_guard<std::mutex> lock(global_mutex);
+    global_mutex.lock();
     if(game_menu) game_menu->draw(entities, generation, is_game_paused);
+    global_mutex.unlock();
     SDL_RenderPresent(renderer);
 }
 
@@ -477,7 +515,6 @@ void Graphics::deleteEntity(Entity* entity){
 void Graphics::deleteAllProjectiles(){
     for (Projectile* p : projectiles) {
         delete p;
-        p = nullptr;
     }
 
     projectiles.clear();

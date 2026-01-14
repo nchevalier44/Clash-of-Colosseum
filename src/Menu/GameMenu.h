@@ -15,6 +15,9 @@ inline std::string roundingFloatToString(float value, int n = 2) {
     return stream.str();
 }
 
+//Avoid circular import
+class Graphics;
+
 class GameMenu {
 public:
     GameMenu(SDL_Renderer* renderer, SDL_Window* window);
@@ -22,7 +25,6 @@ public:
     void draw(const std::vector<Entity*>& entities, int generation, bool is_game_paused);
     void faster();
     void lower();
-    int getTimeSpeed() const { return time_options[time_index]; }
     void setSelectedEntity(Entity* e) {selected_entity = e;}
     Entity* getSelectedEntity(){return selected_entity;}
     std::vector<Button*> getButtons(){ return buttons; }

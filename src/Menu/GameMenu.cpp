@@ -1,5 +1,7 @@
 #include "./GameMenu.h"
 
+#include "../Graphics.h"
+
 
 GameMenu::GameMenu(SDL_Renderer* renderer, SDL_Window* window) : window(window), renderer(renderer){
     font = TTF_OpenFont("../assets/arial.ttf", 16);
@@ -261,10 +263,12 @@ void GameMenu::faster(){
     if(time_index < time_options.size()-1){
         time_index += 1;
     }
+    Graphics::game_time_speed = time_options[time_index];
 }
 
 void GameMenu::lower(){
     if(time_index > 0){
         time_index -= 1;
     }
+    Graphics::game_time_speed = time_options[time_index];
 }

@@ -1,10 +1,11 @@
 #include "Entity.h"
 #include "../Weapons/Bow.h"
+#include "../Graphics.h"
 
-void Entity::startThread(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, int* game_time_speed, bool* same_type_peace, std::mutex* global_mutex) {
+void Entity::startThread(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, bool* same_type_peace, std::mutex* global_mutex) {
     if (thread_is_running) return;
     this->thread_is_running = true;
-    this->entity_thread = std::thread(&Entity::threadLoop, this, all_entities, all_projectiles, game_time_speed, same_type_peace, global_mutex);
+    this->entity_thread = std::thread(&Entity::threadLoop, this, all_entities, all_projectiles, same_type_peace, global_mutex);
 }
 
 void Entity::stopThread() {
@@ -17,50 +18,81 @@ void Entity::stopThread() {
 }
 
 void Entity::threadUpdate(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, bool* same_type_peace,  std::mutex* global_mutex){
-    //On verrouille l'accès aux données partagées (le vecteur all_entities)
-    std::lock_guard<std::mutex> lock(*global_mutex);
+    bool should_find_entity = false;
 
-    Entity* closest = findClosestEntity(*all_entities, *same_type_peace);
+    if (find_entity_timer <= 0) {
+        should_find_entity = true;
+        find_entity_timer = find_entity_delay + (std::rand() % 5);
+        //Délais aléatoire pour pas que toutes les entités utilisent findClosestEntity en meme temps
+    } else {
+        find_entity_timer--;
+    }
 
-    if(closest){
-        if(this->canAttackDistance(closest)){
-            //On force l'entité à regarder sa cible (orientation automatique)
-            if (closest->getX() < this->getX()) {
-                this->setDirection("left");
-            } else {
-                this->setDirection("right");
-            }
+    if (should_find_entity) {
+        std::lock_guard<std::mutex> lock(*global_mutex);
 
-            if (this->canAttackTime()) {
-                this->setState("attack");
-                if (ready_to_attack) {
-                    if (this->getWeapon()->type() == "Bow" || this->getWeapon()->type() == "Fireball") {
-                        this->getWeapon()->attack(closest, this, all_projectiles, this->getX(), this->getY());
-                    } else {
-                        this->getWeapon()->attack(closest);
+        Entity* closest = findClosestEntity(*all_entities, *same_type_peace);
+
+        if(closest && closest->getHp() > 0){
+            has_active_target = true;
+            last_target_x = closest->getX();
+            last_target_y = closest->getY();
+
+            // Gestion de l'attaque (nécessite le lock pour les projectiles)
+            if(this->canAttackDistance(closest)){
+                // Orientation
+                if (last_target_x < this->getX()) this->setDirection("left");
+                else this->setDirection("right");
+
+                if (this->canAttackTime()) {
+                    this->setState("attack");
+                    if (ready_to_attack) {
+                        if (this->getWeapon()->type() == "Bow" || this->getWeapon()->type() == "Fireball") {
+                            this->getWeapon()->attack(closest, this, all_projectiles, this->getX(), this->getY());
+                        } else {
+                            this->getWeapon()->attack(closest);
+                        }
+                        ready_to_attack = false;
+                        is_attacking = true;
+                        this->resetAttackTimer();
                     }
-                    ready_to_attack = false;
-                    is_attacking = true;
-                    //current cooldown
-                    this->resetAttackTimer();
                 }
             } else {
+                // Trop loin pour attaquer
                 ready_to_attack = false;
             }
-        } else if (!is_attacking){
-            this->setState("run");
-            this->moveInDirection(closest->getX(), closest->getY());
+        } else {
+            // Pas de cible
+            has_active_target = false;
             ready_to_attack = false;
         }
     }
+    // Fin du lock automatique ici
+
+    // --- PHASE 2 : JAMBES (Léger, Sans Lock, Fréquent) ---
+    // On bouge vers la dernière position connue de la cible
+    if (has_active_target && !is_attacking) {
+        // On recalcule la distance ici sans lock pour savoir si on doit bouger
+        float dx = last_target_x - x;
+        float dy = last_target_y - y;
+        float distSq = dx*dx + dy*dy;
+        float range = this->getWeapon()->getRange();
+
+        // Si on est encore loin (selon la mémoire cache), on avance
+        if (distSq > range * range) {
+            this->setState("run");
+            this->moveInDirection(last_target_x, last_target_y);
+        }
+    }
+
     this->addAttackTimer();
 }
 
-void Entity::threadLoop(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, int* game_time_speed, bool* same_type_peace, std::mutex* global_mutex) {
+void Entity::threadLoop(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, bool* same_type_peace, std::mutex* global_mutex) {
     while(thread_is_running && hp > 0){
 
         if (!pause) {
-            for(int i = 0; i < *game_time_speed; i++){
+            for(int i = 0; i < Graphics::game_time_speed; i++){
                 if(hp <= 0) break; //On arrête si on est mort
                 this->threadUpdate(all_entities, all_projectiles, same_type_peace, global_mutex);
             }
@@ -215,8 +247,12 @@ void Entity::setHp(int new_hp){
 
 void Entity::moveInDirection(float target_x, float target_y){
     setState("run");
-    float dx = target_x - x;
-    float dy = target_y - y;
+    float current_x = x;
+    float current_y = y;
+    //x et y atomic donc on les charge pour les "prendre" qu'une fois
+
+    float dx = target_x - current_x;
+    float dy = target_y - current_y;
     float length = std::sqrt(dx * dx + dy * dy);
 
     if (length != 0) {
@@ -230,7 +266,7 @@ void Entity::moveInDirection(float target_x, float target_y){
     }
 
     // Mise à jour de la direction pour les sprites
-    target_x > x ? setDirection("right"): setDirection("left");
+    target_x > current_x ? setDirection("right"): setDirection("left");
 }
 
 void Entity::setState(const string& new_state) {
@@ -251,20 +287,31 @@ void Entity::setDirection(const string& new_dir) {
 void Entity::updateAnimation(){
     if (frames[state][direction].empty()) return;
 
-    anim_timer += 16; // On simule qu'une frame de jeu (16ms) vient de passer
+    anim_timer += 16 * Graphics::game_time_speed; // On simule qu'une frame de jeu (16ms) vient de passer
+    if (anim_timer < frame_delay) return;
 
-    if (anim_timer >= frame_delay) {
-        if (state == "attack" && current_frame == frames[state][direction].size() - 1) {
+    int frames_to_skip = anim_timer / frame_delay;
+    anim_timer = int(anim_timer) % frame_delay;
+
+    int total_frames = frames[state][direction].size();
+    int next_theoritical_frame = current_frame + frames_to_skip;
+
+    if (state == "attack"){
+        if (current_frame < frame_to_attack && next_theoritical_frame >= frame_to_attack) {
+            ready_to_attack = true;
+            current_frame = frame_to_attack;
+            return;
+        }
+
+        if (next_theoritical_frame >= total_frames) {
             is_attacking = false;
-            setState("idle"); // We set the entity to idle because he has to wait before another attack (cooldown)
+            // We set the entity to idle because he has to wait before another attack (cooldown)
+            setState("idle");
+            return;
         }
-
-        anim_timer -= frame_delay;
-        current_frame = (current_frame + 1) % frames[state][direction].size();
-
-        if (state == "attack" && current_frame == frame_to_attack) {
-            ready_to_attack = true; //He can attack according to the animation
-        }
+        current_frame = next_theoritical_frame;
+    } else {
+        current_frame = (current_frame + frames_to_skip) % total_frames;
     }
 }
 

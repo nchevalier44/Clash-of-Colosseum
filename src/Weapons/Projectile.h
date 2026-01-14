@@ -5,6 +5,9 @@
 #include <SDL2/SDL.h>
 #include <vector>
 
+//Avoid circular import
+class Graphics;
+
 class Projectile {
 public:
     Projectile(Entity* owner, int damage, float speed, int size,
@@ -13,7 +16,7 @@ public:
                std::vector<SDL_Texture*> frames = {});
     ~Projectile();
     void move();
-    void draw(SDL_Renderer* renderer, int time_speed);
+    void draw(SDL_Renderer* renderer);
     int getX() const { return x; };
     int getY() const { return y; };
     int getDamage() const { return damage; };

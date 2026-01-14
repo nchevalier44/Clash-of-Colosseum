@@ -1,5 +1,6 @@
 #include "Projectile.h"
 #include <cmath>
+#include "../Graphics.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -39,10 +40,10 @@ void Projectile::move(){
     y += dy * globalSpeedMultiplier;
 }
 
-void Projectile::draw(SDL_Renderer* renderer, int time_speed) {
+void Projectile::draw(SDL_Renderer* renderer) {
     if (!frames.empty()) {
         Uint32 now = SDL_GetTicks();
-        if (now - last_frame_time > frame_delay / time_speed) {
+        if (now - last_frame_time > frame_delay / Graphics::game_time_speed) {
             current_frame = (current_frame + 1) % frames.size();
             last_frame_time = now;
         }

@@ -17,7 +17,6 @@
 #include "SimulationStats.h"
 #include "Menu/MainMenu.h"
 
-
 bool init() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) return false;
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) std::cerr << Mix_GetError() << std::endl;
