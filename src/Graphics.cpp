@@ -94,9 +94,9 @@ void Graphics::updateEntities(bool draw){
 void Graphics::updateProjectiles(bool draw){
 
     // On copie les pointeurs pour pouvoir travailler dessus sans bloquer les autres
-    global_mutex.unlock();
-    std::vector<Projectile*> projectiles_snapshot;
     global_mutex.lock();
+    std::vector<Projectile*> projectiles_snapshot;
+    global_mutex.unlock();
     // ICI LE VERROU EST RELACHÉ ! Les entités peuvent jouer !
 
     // --- ETAPE 2 : CALCULS PHYSIQUES (Déverrouillé) ---
@@ -262,6 +262,8 @@ void Graphics::update(bool* running, bool* keep_playing) {
     if(game_menu) game_menu->draw(entities, generation, is_game_paused);
     global_mutex.unlock();
     SDL_RenderPresent(renderer);
+    std::cout << "GGGG" << std::endl;
+
 }
 
 bool Graphics::multipleTypesAreAlive() {
