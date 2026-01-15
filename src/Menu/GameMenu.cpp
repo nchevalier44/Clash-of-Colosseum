@@ -23,15 +23,15 @@ GameMenu::GameMenu(SDL_Renderer* renderer, SDL_Window* window) : window(window),
     int width_window, height_window;
     SDL_GetWindowSize(window, &width_window, &height_window);
 
-    Button* stats_visible_button = new Button("Hide Stats", font, renderer,  [this](Button* button) {
+    Button* stats_visible_button = new Button("Cacher les stats", font, renderer,  [this](Button* button) {
         hide_stats = !hide_stats;
         if (hide_stats) {
-            button->setText("Show Stats");
+            button->setText("Montrer les stats");
         } else {
-            button->setText("Hide Stats");
+            button->setText("Cacher les stats");
         }
     });
-    Button* exit_button = new Button("Exit", font, renderer, [this](Button* button) {
+    Button* exit_button = new Button("Quitter", font, renderer, [this](Button* button) {
         stop_simulation = true; //ensuite dans Graphics::update(), ça arrête tout
     });
     stats_visible_button->setX(4*width_window/9 - stats_visible_button->getRect().w);

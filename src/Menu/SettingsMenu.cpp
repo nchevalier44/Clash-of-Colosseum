@@ -49,13 +49,13 @@ void SettingsMenu::render(SDL_Texture* background) {
 
     std::vector<std::string> options;
     options.push_back("Nb Guerriers: " + std::to_string(nbGuerriers));
-    options.push_back("Min number entity: " + std::to_string(min_number_entity));
+    options.push_back("Nb minimum entités: " + std::to_string(min_number_entity));
     options.push_back("Mut. Type (Classe): " + std::to_string(mutationTypeRate) + "%");
     options.push_back("Mut. Stats (Force): " + std::to_string(mutationStatsRate) + "%");
     options.push_back("Barres de Vie: " + std::string(showHealthBars ? "OUI" : "NON"));
     options.push_back("Vitesse Tirs: " + speedLabels[speedIndex]);
-    options.push_back("Musique: " + std::string(musiqueOn ? "ON" : "OFF"));
-    options.push_back("Paix meme type: " + std::string(sameTypePeace ? "ON" : "OFF"));
+    options.push_back("Musique: " + std::string(musiqueOn ? "OUI" : "NON"));
+    options.push_back("Paix même type: " + std::string(sameTypePeace ? "OUI" : "NON"));
 
     // Calculs pour le centrage VERTICAL global
     int itemSpacing = 50;
