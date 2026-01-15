@@ -32,7 +32,7 @@ GameMenu::GameMenu(SDL_Renderer* renderer, SDL_Window* window) : window(window),
         }
     });
     Button* exit_button = new Button("Quitter", font, renderer, [this](Button* button) {
-        stop_simulation = true; //ensuite dans Graphics::update(), ça arrête tout
+        stop_simulation = true; //ensuite dans Graphics::update(), ça ex warrête tout
     });
     stats_visible_button->setX(4*width_window/9 - stats_visible_button->getRect().w);
     exit_button->setX(5*width_window/9);
