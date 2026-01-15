@@ -114,7 +114,7 @@ void Graphics::updateProjectiles(bool draw){
 
     // On copie les pointeurs pour pouvoir travailler dessus sans bloquer les autres
     global_mutex.lock();
-    std::vector<Projectile*> projectiles_snapshot;
+    std::vector<Projectile*> projectiles_snapshot = projectiles;
     global_mutex.unlock();
     // ICI LE VERROU EST RELACHÉ ! Les entités peuvent jouer !
 
