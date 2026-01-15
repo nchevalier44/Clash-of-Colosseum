@@ -52,7 +52,7 @@ sudo apt-get install libsdl2-dev libsdl2-gfx-dev libsdl2-mixer-dev libsdl2-image
 
 1. **Cloner le dépôt**
 ```bash
-git clone [https://github.com/votre-username/Clash-of-Colosseum.git](https://github.com/votre-username/Clash-of-Colosseum.git)
+git clone https://github.com/nchevalier44/Clash-of-Colosseum
 cd Clash-of-Colosseum
 ```
 
