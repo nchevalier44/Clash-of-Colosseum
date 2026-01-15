@@ -66,6 +66,7 @@ public:
     void setMinNumberEntity(int number){ min_number_entity = number; };
 
     std::mutex global_mutex;
+    pair<std::string, int> winner = {"", 0};
 
 private:
     SDL_Window* window = nullptr;

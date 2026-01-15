@@ -192,6 +192,8 @@ void Graphics::update(bool* running, bool* keep_playing) {
 
     handleEvent(running, keep_playing);
 
+    if (end_of_game) game_menu->displayEndSimulation(winner, generation);
+
     //Exit button have been clicked so we stop the simulation
     if (game_menu->isSimulationStopped()) {
         stopAllEntitiesThread();
@@ -226,9 +228,12 @@ void Graphics::update(bool* running, bool* keep_playing) {
                 end_of_game = true;
                 stopAllEntitiesThread();
                 std::map<std::string, int> dico = getNumberEntitiesPerTypes();
-                for (auto pair : dico) {
-                    if (pair.second != 0) game_menu->displayEndSimulation(pair, generation);
-                    break;
+
+                for (const auto& pair : dico) {
+                    if (pair.second != 0) {
+                        winner = pair;
+                        break;
+                    }
                 }
                 return;
             }
@@ -309,7 +314,7 @@ std::map<std::string, int> Graphics::getNumberEntitiesPerTypes() {
     std::lock_guard<std::mutex> lock(global_mutex);
     std::map<std::string, int> result = {{"Guerrier", 0}, {"Archer", 0}, {"Mage", 0}, {"Golem", 0}};
     for (Entity* e : entities) {
-        result[e->getType()] += 1;
+        result[e->getType()] = result[e->getType()] + 1;
     }
     return result;
 }
