@@ -14,7 +14,7 @@ struct AttributStats {
 };
 
 struct GenerationStats {
-    Uint32 duration_milliseconds = 0;
+    std::chrono::duration<float, std::milli> duration_milliseconds = std::chrono::duration<float, std::milli>::zero();
     int generation_id = 0;
     int nb_initial_entities = 0;
     int nb_remaining_entities = 0;
@@ -30,10 +30,12 @@ public:
     SimulationStats(){};
     ~SimulationStats();
     void addNewGeneration(std::vector<Entity*> entities, int id_generation);
-    void updateLastGeneration(int nb_entities, Uint32 duration);
+    void updateLastGeneration(int nb_entities);
     void setStartTime(std::time_t start_time) { start_sim_time = start_time; };
+    void setDuration(std::chrono::duration<float, std::milli> duration) { theoretical_sim_duration = duration; };
     void setEndTime(std::time_t end_time) { end_sim_time = end_time; };
     std::time_t getStartTime() { return start_sim_time; };
+    std::chrono::duration<float, std::milli> getDuration(){ return theoretical_sim_duration; }
     std::time_t getEndTime() { return end_sim_time; };
     std::vector<GenerationStats*> getGenerations(){ return generations; };
 
@@ -48,6 +50,7 @@ public:
 private:
     std::vector<GenerationStats*> generations;
     std::time_t start_sim_time;
+    std::chrono::duration<float, std::milli> theoretical_sim_duration = std::chrono::duration<float, std::milli>::zero();
     std::time_t end_sim_time;
     bool same_type_peace = false;
     int mutation_type_rate = 0;

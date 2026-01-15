@@ -37,7 +37,7 @@ void start_game(bool* keep_playing, std::map<std::string, std::string>* paramete
 
     SimulationStats* simulation_stats = new SimulationStats();
     simulations_stats->push_back(simulation_stats);
-    graphics.setSimulationsStats(simulation_stats);
+    Graphics::simulations_stats = simulation_stats;
     simulation_stats->setStartTime(std::time(nullptr));
 
     simulation_stats->setSameTypePeace((*parameters)["same_type_peace"] == "1");
@@ -78,12 +78,14 @@ void start_game(bool* keep_playing, std::map<std::string, std::string>* paramete
 
     graphics.startAllEntitiesThread();
     simulation_stats->addNewGeneration(entities, 1);
+    Graphics::last_change_speed = std::chrono::high_resolution_clock::now();
     bool running = true;
     while (running) {
         graphics.update(&running, keep_playing);
         SDL_Delay(16);
     }
     simulation_stats->setEndTime(std::time(nullptr));
+    Graphics::game_time_speed = 1;
 }
 
 int main() {

@@ -1,5 +1,7 @@
 #include "SimulationStats.h"
 
+#include "Graphics.h"
+
 void SimulationStats::addNewGeneration(std::vector<Entity*> entities, int id_generation) {
     if (entities.size() == 0) return;
 
@@ -60,10 +62,12 @@ void SimulationStats::addNewGeneration(std::vector<Entity*> entities, int id_gen
     generation_stats->speed = speed_stats;
 }
 
-void SimulationStats::updateLastGeneration(int nb_entities, Uint32 duration) {
+void SimulationStats::updateLastGeneration(int nb_entities) {
+    Graphics::changeGameSpeed(); //Update theoretical_sim_duration
     GenerationStats* gen = generations[generations.size()-1];
     gen->nb_remaining_entities = nb_entities;
-    gen->duration_milliseconds = duration;
+    gen->duration_milliseconds = theoretical_sim_duration;
+    theoretical_sim_duration = std::chrono::duration<float, std::milli>::zero();
 }
 
 SimulationStats::~SimulationStats() {

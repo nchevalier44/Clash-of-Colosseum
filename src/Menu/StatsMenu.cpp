@@ -132,7 +132,7 @@ void StatsMenu::updateGraphData(SimulationStats& stats, std::string mode) {
         currentGraph->setYLabel("Durée (s)");
         std::vector<float> duration;
         for(auto* gen : stats.getGenerations()) {
-            duration.push_back((int)gen->duration_milliseconds/1000);
+            duration.push_back(gen->duration_milliseconds.count() / 1000);
         }
         currentGraph->addSerie(Serie(duration, {128, 0, 128, 255}, "Durée"));
     }

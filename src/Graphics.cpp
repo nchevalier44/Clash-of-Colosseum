@@ -8,6 +8,25 @@
 #include <iostream>
 
 std::atomic<int> Graphics::game_time_speed(1);
+std::chrono::high_resolution_clock::time_point Graphics::last_change_speed(std::chrono::high_resolution_clock::now());
+SimulationStats* Graphics::simulations_stats(nullptr);
+
+void Graphics::changeGameSpeed() {
+    // Pour que le graphique de statistiques durée soient bons
+    // A chaque changement de vitesse, on calcul la durée que l'utilisateur est restée à cette vitesse
+    // Puis on la multiplie par la vitesse (2, 20, 50, ...) pour avoir la durée réel qu'il aurait mis
+    // s'il était resté en x1 pour obtenir ce résultat
+
+    auto now = std::chrono::high_resolution_clock::now();
+
+    if (simulations_stats) {
+        auto elapsed_real_time = now - last_change_speed;
+        auto duration = elapsed_real_time * game_time_speed.load(); //load car c'est un atomic
+        std::chrono::duration<float, std::milli> duration_from_start = simulations_stats->getDuration();
+        simulations_stats->setDuration(duration_from_start + duration);
+    }
+    last_change_speed = now;
+}
 
 Graphics::Graphics(SDL_Window* window, SDL_Renderer* renderer) : window(window), renderer(renderer) {
     gameMusic = Mix_LoadMUS("../assets/gamemusic.mp3");
@@ -219,11 +238,11 @@ void Graphics::update(bool* running, bool* keep_playing) {
         //Reproduction
         if (entities.size() <= min_number_entity){
             std::lock_guard<std::mutex> lock(global_mutex);
-            simulations_stats->updateLastGeneration(entities.size(), SDL_GetTicks() - start_gen_time);
             pauseAllEntities(true);
             increaseAllEntitiesAge();
             deleteAllProjectiles();
             generation++;
+            simulations_stats->updateLastGeneration(entities.size());
             std::vector<Entity*> new_entities; //Temporary vector
             std::vector<Entity*> parents_left = entities;
 
@@ -252,9 +271,9 @@ void Graphics::update(bool* running, bool* keep_playing) {
             }
             entities.insert(entities.end(), new_entities.begin(), new_entities.end());
             simulations_stats->addNewGeneration(entities, generation);
-            start_gen_time = SDL_GetTicks();
             startAllEntitiesThread();
             pauseAllEntities(false);
+            last_change_speed = std::chrono::high_resolution_clock::now();
         }
     }
 
@@ -262,8 +281,6 @@ void Graphics::update(bool* running, bool* keep_playing) {
     if(game_menu) game_menu->draw(entities, generation, is_game_paused);
     global_mutex.unlock();
     SDL_RenderPresent(renderer);
-    std::cout << "GGGG" << std::endl;
-
 }
 
 bool Graphics::multipleTypesAreAlive() {
@@ -309,9 +326,11 @@ void Graphics::handleEvent(bool* running, bool* keep_playing){
         if (event.type == SDL_KEYDOWN) {
             switch (event.key.keysym.scancode) {
                 case SDL_SCANCODE_RIGHT:
+                    if (!is_game_paused) changeGameSpeed();
                     game_menu->faster();
                     break;
                 case SDL_SCANCODE_LEFT:
+                    if (!is_game_paused) changeGameSpeed();
                     game_menu->lower();
                     break;
 
@@ -326,12 +345,14 @@ void Graphics::handleEvent(bool* running, bool* keep_playing){
                 case SDL_SCANCODE_SPACE:
                     is_game_paused = !is_game_paused;
                     if (is_game_paused) {
+                        changeGameSpeed();
                         stopAllEntitiesThread();
                         std::lock_guard<std::mutex> lock(global_mutex);
                         if(game_menu) game_menu->draw(entities, generation, is_game_paused);
                         SDL_RenderPresent(renderer);
                     } else {
                         startAllEntitiesThread();
+                        last_change_speed = std::chrono::high_resolution_clock::now();
                     }
                     break;
                 default: break;

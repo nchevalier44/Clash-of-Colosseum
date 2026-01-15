@@ -125,7 +125,7 @@ void Graph::drawGraduations() {
         SDL_RenderDrawLine(renderer, xPos, originY, xPos, originY + 5);
 
         // B. Dessiner le texte (Numéro de génération exacte)
-        std::string txt = std::to_string(i);
+        std::string txt = std::to_string(i+1);
         SDL_Surface* surf = TTF_RenderText_Blended(label_font, txt.c_str(), textColor);
         if (surf) {
             SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);

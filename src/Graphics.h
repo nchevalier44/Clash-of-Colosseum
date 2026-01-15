@@ -17,6 +17,10 @@
 class Graphics {
 public:
     static std::atomic<int> game_time_speed;
+    static std::chrono::high_resolution_clock::time_point last_change_speed;
+    static SimulationStats* simulations_stats;
+
+    static void changeGameSpeed();
 
     Graphics(SDL_Window* window, SDL_Renderer* renderer);
     ~Graphics();
@@ -24,7 +28,6 @@ public:
     SDL_Renderer* getRenderer() { return renderer; }
     SDL_Window* getWindow() { return window; }
 
-    void setSimulationsStats(SimulationStats* vector) {this->simulations_stats = vector;};
     void update(bool* running, bool* keep_playing);
 
     bool multipleTypesAreAlive();
@@ -72,7 +75,6 @@ private:
     bool showHealthBars = true;
     bool same_type_peace = false;
     bool end_of_game = false;
-    SimulationStats* simulations_stats = nullptr;
 
     bool is_game_paused = false;
     Uint32 start_gen_time = 0;
@@ -85,6 +87,7 @@ private:
     int generation = 1;
     Mix_Music* gameMusic = nullptr;
     GameMenu* game_menu = nullptr;
+
 
     Entity *instantiateChildByType(Entity *e1, Entity *e2);
     float calculateNewAttribute(float value1, float value2);
