@@ -3,10 +3,18 @@
 #include "Graph.h"
 #include "StatsMenu.h"
 
-HistoryMenu::HistoryMenu(SDL_Window* window, SDL_Renderer* renderer, std::vector<SimulationStats*>* sim_stats, SDL_Texture* background, bool* keep_playing) : window(window), renderer(renderer), keep_playing(keep_playing), background(background) {
+HistoryMenu::HistoryMenu(SDL_Window* window, SDL_Renderer* renderer, std::vector<SimulationStats*>* sim_stats, SDL_Texture* background, bool* keep_playing) : sim_stats(sim_stats), window(window), renderer(renderer), keep_playing(keep_playing), background(background) {
     font = TTF_OpenFont("../assets/arial.ttf", 20);
 
     int sim_size = sim_stats->size();
+
+    previous_button = new Button("Précédent", font, renderer, [this](Button* button) {
+        this->previousPage();
+    });
+    next_button = new Button("Suivant", font, renderer, [this](Button* button) {
+        this->nextPage();
+    });
+
     for (int i=0; i<sim_size; i++) {
         Button* button = new Button("Voir Stats", font, renderer, [this, keep_playing, background, window, renderer, sim_stats](Button* button) {
             int id = searchIdFromButton(button);
@@ -25,6 +33,18 @@ HistoryMenu::HistoryMenu(SDL_Window* window, SDL_Renderer* renderer, std::vector
 
     draw();
     handleEvent();
+}
+
+void HistoryMenu::previousPage() {
+    if (current_page > 0) {
+        current_page--;
+    }
+}
+
+void HistoryMenu::nextPage() {
+    if ((current_page+1) * items_per_page < sim_stats->size()) {
+        current_page++;
+    }
 }
 
 int HistoryMenu::searchIdFromButton(Button* button) {
@@ -73,9 +93,17 @@ void HistoryMenu::draw() {
         SDL_RenderCopy(renderer, texte_texture, NULL, &texte_rect);
         SDL_FreeSurface(texte_surface);
         SDL_DestroyTexture(texte_texture);
+        SDL_RenderPresent(renderer);
+        return;
     }
 
-    for (int i = 0; i < sim_size; i++) {
+    int start_index = current_page * items_per_page;
+    int end_index = start_index + items_per_page;
+    if (end_index > sim_size) {
+        end_index = sim_size;
+    }
+
+    for (int i = start_index; i < end_index; i++) {
         std::pair<std::string, Button*> pair = list_sim[i];
         std::string text = pair.first;
         Button* button = pair.second;
@@ -83,7 +111,7 @@ void HistoryMenu::draw() {
         SDL_SetRenderDrawColor(renderer, 80, 80, 80, 150);
         SDL_Surface* texte_surface = TTF_RenderUTF8_Solid(font, text.c_str(), {255, 255, 255});
         SDL_Texture* texte_texture = SDL_CreateTextureFromSurface(renderer, texte_surface);
-        SDL_Rect texte_rect = {int(window_width / 2 - 2*texte_surface->w/3), spacing*i+offset, texte_surface->w, texte_surface->h};
+        SDL_Rect texte_rect = {int(window_width / 2 - 2*texte_surface->w/3), spacing*(i-start_index)+offset, texte_surface->w, texte_surface->h};
         //background of the text
         SDL_Rect highlight;
         highlight.w = texte_rect.w + 10;
@@ -100,6 +128,14 @@ void HistoryMenu::draw() {
         button->setY(texte_rect.y);
         button->draw(window, renderer);
     }
+    previous_button->setX(20);
+    previous_button->setY(window_height - 20 - previous_button->getRect().h);
+
+    next_button->setX(window_width - 20 - next_button->getRect().w);;
+    next_button->setY(window_height - 20 - next_button->getRect().h);
+
+    previous_button->draw(window, renderer);
+    next_button->draw(window, renderer);
     SDL_RenderPresent(renderer);
 }
 
@@ -121,7 +157,11 @@ void HistoryMenu::handleEvent() {
 
                 if (event.button.button == SDL_BUTTON_LEFT) {
                     //Click on a button
-                    for (auto pair : list_sim) {
+                    std::vector<std::pair<std::string, Button*>> copy_list_sim(list_sim);
+                    //Add previous and next button to the copy
+                    copy_list_sim.push_back({"", previous_button});
+                    copy_list_sim.push_back({"", next_button});
+                    for (auto pair : copy_list_sim) {
                         Button* b = pair.second;
                         SDL_Rect rect = b->getRect();
                         if ((rect.x <= x && x <= rect.x + rect.w) && (rect.y <= y && y <= rect.y + rect.h)) {
@@ -136,7 +176,11 @@ void HistoryMenu::handleEvent() {
                 int y = event.motion.y;
 
                 //Hover a button = change color
-                for (auto pair : list_sim) {
+                std::vector<std::pair<std::string, Button*>> copy_list_sim(list_sim);
+                //Add previous and next button to the copy
+                copy_list_sim.push_back({"", previous_button});
+                copy_list_sim.push_back({"", next_button});
+                for (auto pair : copy_list_sim) {
                     Button* b = pair.second;
                     SDL_Rect rect = b->getRect();
                     if ((rect.x <= x && x <= rect.x + rect.w) && (rect.y <= y && y <= rect.y + rect.h)) {

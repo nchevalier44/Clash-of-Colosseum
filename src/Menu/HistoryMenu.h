@@ -21,6 +21,9 @@ class HistoryMenu {
         void handleEvent();
         void draw();
 
+        void previousPage();
+        void nextPage();
+
         std::string formatDate(std::time_t time);
 
     private:
@@ -33,6 +36,11 @@ class HistoryMenu {
 
         bool* keep_playing = nullptr;
         bool* running = nullptr;
+
+        int current_page = 0;
+        int items_per_page = 7;
+        Button* previous_button = nullptr;
+        Button* next_button = nullptr;
 
 };
 
