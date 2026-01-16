@@ -162,7 +162,7 @@ void MainMenu::handleEvent() {
 
                 if (event.button.button == SDL_BUTTON_LEFT) {
 
-                    //Click on a button ?
+                    //On vérifie si le clique est sur un bouton
                     for (Button* b : buttons) {
                         SDL_Rect rect = b->getRect();
                         if ((rect.x <= x && x <= rect.x + rect.w) && (rect.y <= y && y <= rect.y + rect.h)) {
@@ -176,7 +176,7 @@ void MainMenu::handleEvent() {
                 int x = event.motion.x;
                 int y = event.motion.y;
 
-                //Hover a button = change color ?
+                //Survol d'un bouton = changement de couleur
                 for (Button* b : buttons) {
                     SDL_Rect rect = b->getRect();
                     if ((rect.x <= x && x <= rect.x + rect.w) && (rect.y <= y && y <= rect.y + rect.h)) {

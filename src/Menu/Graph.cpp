@@ -1,4 +1,5 @@
 #include "Graph.h"
+#include "GameMenu.h"
 
 #include <iostream>
 #include <ostream>
@@ -7,6 +8,7 @@
 
 Graph::Graph(int x, int y, int w, int h, SDL_Renderer* renderer) : renderer(renderer) {
     label_font = TTF_OpenFont("../assets/arial.ttf", 14);
+    // Empêche de créer un graphique trop petit
     if (w < 100) w = 100;
     if (h < 100) h = 100;
     graph_rect.x = x;
@@ -29,10 +31,15 @@ void Graph::addSerie(Serie serie) {
 }
 
 void Graph::draw() {
+    // Fond blanc
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderFillRect(renderer, &graph_rect);
+
+    // Contour noir
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderDrawRect(renderer, &graph_rect);
+
+    // Ordre d'affichage (calques)
     drawGraduations();
     drawCurves();
     drawLabels();
@@ -44,9 +51,9 @@ void Graph::drawGraduations() {
     if (series.empty()) return;
 
     SDL_Color textColor = {0, 0, 0, 255};
-    SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
+    SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255); // Gris pour les traits de grille
 
-    // --- 1. CALCUL DU MAX Y et MAX POINTS ---
+    // Recherche du Maximum Global pour l'échelle verticale
     float maxVal = 0;
     size_t maxPoints = 0;
     for (const auto& s : series) {
@@ -54,42 +61,37 @@ void Graph::drawGraduations() {
         if (s.data.size() > maxPoints) maxPoints = s.data.size();
     }
     if (maxVal == 0) maxVal = 1;
-    if (maxPoints < 2) maxPoints = 2; // Évite division par zero
+    if (maxPoints < 2) maxPoints = 2; // Évite division par zero si une seule génération
 
-    // --- CONFIGURATION DES MARGES ---
+    // On définit la zone utile de dessin (pour ne pas écrire sur les bords ou les flèches)
     int originX = graph_rect.x + padding;
     int originY = graph_rect.y + graph_rect.h - padding;
     int axisHeight = graph_rect.h - padding - (padding / 2) - arrow_size - 5;
     int axisWidth  = graph_rect.w - padding - (padding / 2) - arrow_size - 5;
 
-    // --- 2. GRADUATIONS AXE Y (Vertical) ---
-    int nbStepsY = 5;
+    //Graduations Y
+    int nbStepsY = 5; // On veut 5 lignes horizontales
 
     for (int i = 0; i <= nbStepsY; i++) {
         float value = maxVal * ((float)i / nbStepsY);
-
         int yPos = originY - (int)((value / maxVal) * axisHeight);
-
         SDL_RenderDrawLine(renderer, originX - 5, yPos, originX, yPos);
 
         if (i > 0) {
-            // --- CORRECTION ICI ---
-            std::stringstream ss;
+            // Utilisation de stringstream pour afficher proprement les nombres à virgule
+            std::string txt;
 
-            // Si la valeur max est petite (< 10), on met de la précision
             if (maxVal < 2.0f) {
-                ss << std::fixed << std::setprecision(2) << value; // ex: 0.25
+                txt = roundingFloatToString(value, 2); // ex: 0.25 (Précis)
             }
             else if (maxVal < 10.0f) {
-                ss << std::fixed << std::setprecision(1) << value; // ex: 2.5
+                txt = roundingFloatToString(value, 1); // ex: 2.5 (Moyen)
             }
             else {
-                ss << (int)value; // ex: 150
+                txt = roundingFloatToString(value, 0); // ex: 150 (Entier)
             }
 
-            std::string txt = ss.str();
-            // ----------------------
-
+            // Rendu du texte à gauche de l'axe
             SDL_Surface* surf = TTF_RenderText_Blended(label_font, txt.c_str(), textColor);
             if (surf) {
                 SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
@@ -100,35 +102,33 @@ void Graph::drawGraduations() {
         }
     }
 
-    // --- 3. GRADUATIONS AXE X (Horizontal) - CORRIGÉ ---
 
+    //Graduations axe X
     // On veut afficher environ 5 à 10 graduations max pour ne pas surcharger
     int targetSteps = 10;
 
-    // "step" est le pas d'index : 1 = chaque point, 2 = un point sur deux, etc.
+    // Calcul du "step" (saut) : si on a 100 points et qu'on veut 10 labels, on affiche 1 point sur 10.
     int step = 1;
     if (maxPoints > targetSteps) {
-        step = (maxPoints + targetSteps - 1) / targetSteps; // Division arrondie au supérieur
+        step = (maxPoints + targetSteps - 1) / targetSteps; // Division entière arrondie au supérieur
     }
 
-    // On parcourt les indices réels (0, step, 2*step...)
+    // On parcourt les générations par bonds de 'step'
     for (size_t i = 0; i < maxPoints; i += step) {
 
-        // Calcul du pourcentage basé sur l'index exact
-        // maxPoints - 1 car l'index va de 0 à size-1
+        // Position relative (0.0 à 1.0) sur l'axe X
         float percentage = (float)i / (float)(maxPoints - 1);
-
-        // Position exacte du point correspondant à cet index
+        // Position absolue en pixels
         int xPos = originX + (int)(percentage * axisWidth);
 
-        // A. Dessiner le petit trait aligné
+        // Dessiner le petit trait vertical
         SDL_RenderDrawLine(renderer, xPos, originY, xPos, originY + 5);
-
-        // B. Dessiner le texte (Numéro de génération exacte)
-        std::string txt = std::to_string(i+1);
+        // Dessiner le texte (Numéro de génération)
+        std::string txt = std::to_string(i+1); // +1 car on commence la génération à 1
         SDL_Surface* surf = TTF_RenderText_Blended(label_font, txt.c_str(), textColor);
         if (surf) {
             SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
+            // Centré sous le trait
             SDL_Rect r = { xPos - surf->w / 2, originY + 8, surf->w, surf->h };
             SDL_RenderCopy(renderer, tex, NULL, &r);
             SDL_FreeSurface(surf); SDL_DestroyTexture(tex);
@@ -137,10 +137,8 @@ void Graph::drawGraduations() {
 }
 
 void Graph::drawCurves() {
-    // Sécurité : s'il n'y a pas de données, on ne fait rien
     if (series.empty()) return;
 
-    // 1. TROUVER L'ÉCHELLE (MAX Y)
     // On cherche la valeur maximale parmi toutes les séries pour caler l'échelle
     float maxVal = 0;
     for (const auto& s : series) {
@@ -151,28 +149,30 @@ void Graph::drawCurves() {
     // Évite la division par zéro si toutes les valeurs sont à 0
     if (maxVal == 0) maxVal = 1.0f;
 
+    // Coordonnées de l'origine du graphe (Bas-Gauche)
     int startX = graph_rect.x + padding;
     int startY = graph_rect.y + graph_rect.h - padding;
 
-    // On réduit la zone de dessin
+    // Dimensions utiles pour le tracé
     int usefulWidth  = graph_rect.w - padding - (padding / 2) - arrow_size - 5;
     int usefulHeight = graph_rect.h - padding - (padding / 2) - arrow_size - 5;
 
-    // 3. DESSINER CHAQUE SÉRIE
+    //On dessine chaque série/courbe
     for (const auto& s : series) {
-        if (s.data.size() < 2) continue;
+        if (s.data.size() < 2) continue; // Pas de ligne avec 1 seul point
 
         SDL_SetRenderDrawColor(renderer, s.color.r, s.color.g, s.color.b, s.color.a);
 
-        // Le pas horizontal est calculé sur la largeur RÉDUITE
+        // Ecart horizontal entre deux points consécutifs
         float stepX = (float)usefulWidth / (float)(s.data.size() - 1);
 
+        // On relie chaque point i au point i+1
         for (size_t i = 0; i < s.data.size() - 1; i++) {
             int x1 = startX + (int)(i * stepX);
-            int y1 = startY - (int)((s.data[i] / maxVal) * usefulHeight); // Hauteur RÉDUITE
+            int y1 = startY - (int)((s.data[i] / maxVal) * usefulHeight);
 
             int x2 = startX + (int)((i + 1) * stepX);
-            int y2 = startY - (int)((s.data[i+1] / maxVal) * usefulHeight); // Hauteur RÉDUITE
+            int y2 = startY - (int)((s.data[i+1] / maxVal) * usefulHeight);
 
             SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
         }
@@ -238,20 +238,17 @@ void Graph::drawLabels() {
 void Graph::drawLegend() {
     if (series.empty()) return;
 
-    // Position de départ : Coin Haut-Droit (moins le padding)
+    // Position de départ : Coin Haut-Droit du graphique
     int startX = graph_rect.x + graph_rect.w - 5;
     int startY = graph_rect.y + 5;
 
-    // On parcourt chaque série pour afficher son nom
+    // On liste toutes les courbes présentes
     for (const auto& s : series) {
-        // 1. Créer le texte avec LA COULEUR de la série
+        // Rendu du texte avec la couleur spécifique de la série
         SDL_Surface* surface = TTF_RenderUTF8_Blended(label_font, s.name.c_str(), s.color);
 
         if (surface) {
             SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-
-            // 2. Calculer la position
-            // On aligne à DROITE : donc x = point_depart - largeur_texte
             SDL_Rect rect = {
                 startX - surface->w,
                 startY,
@@ -259,12 +256,11 @@ void Graph::drawLegend() {
                 surface->h
             };
 
-            // 3. Afficher et nettoyer
             SDL_RenderCopy(renderer, texture, nullptr, &rect);
             SDL_FreeSurface(surface);
             SDL_DestroyTexture(texture);
 
-            // 4. Descendre pour le prochain texte (hauteur du texte + 5px de marge)
+            // On décale vers le bas pour le prochain élément de la légende
             startY += surface->h + 5;
         }
     }

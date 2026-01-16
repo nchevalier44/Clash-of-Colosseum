@@ -5,6 +5,7 @@
 void Entity::startThread(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, bool* same_type_peace, std::mutex* global_mutex) {
     if (thread_is_running) return;
     this->thread_is_running = true;
+    // Lance "l'IA" de l'entité dans un thread séparé pour qu'elle "réfléchisse" en parallèle du rendu graphique
     this->entity_thread = std::thread(&Entity::threadLoop, this, all_entities, all_projectiles, same_type_peace, global_mutex);
 }
 
@@ -12,23 +13,28 @@ void Entity::stopThread() {
     if(!thread_is_running) return;
 
     this->thread_is_running = false;
+    // Attend proprement la fin du thread avant de continuer (évite les crashs à la destruction)
     if(this->entity_thread.joinable()){
         this->entity_thread.join();
     }
 }
 
+// C'est le "cerveau" de l'entité, exécuté à chaque itération de la boucle de jeu
 void Entity::threadUpdate(std::vector<Entity*>* all_entities, std::vector<Projectile*>* all_projectiles, bool* same_type_peace,  std::mutex* global_mutex){
     bool should_find_entity = false;
 
     if (find_entity_timer <= 0) {
         should_find_entity = true;
+        // Optimisation : On étale la recherche de cible sur plusieurs frames avec un délai aléatoire
+        // pour pas que toutes les entités utilisent findClosestEntity en meme temps et tout le temps
         find_entity_timer = find_entity_delay + (std::rand() % 5);
-        //Délais aléatoire pour pas que toutes les entités utilisent findClosestEntity en meme temps
     } else {
         find_entity_timer--;
     }
 
     if (should_find_entity) {
+        // On verrouille l'accès aux données partagées (liste des entités)
+        // pour éviter qu'une entité ne soit supprimée pendant qu'on la lit.
         std::lock_guard<std::mutex> lock(*global_mutex);
 
         Entity* closest = findClosestEntity(*all_entities, *same_type_peace);
@@ -38,14 +44,18 @@ void Entity::threadUpdate(std::vector<Entity*>* all_entities, std::vector<Projec
             last_target_x = closest->getX();
             last_target_y = closest->getY();
 
-            // Gestion de l'attaque (nécessite le lock pour les projectiles)
+            // Logique de combat
             if(this->canAttackDistance(closest)){
-                // Orientation
+                // Orientation vers la cible
                 if (last_target_x < this->getX()) this->setDirection("left");
                 else this->setDirection("right");
 
                 if (this->canAttackTime()) {
                     this->setState("attack");
+
+                    // 'ready_to_attack' est mis à true par le système d'animation (voir updateAnimation plus bas)
+                    // quand le sprite atteint la frame précise de l'impact / du tir (ex: quand l'arc est tendu).
+                    // C'est pour éviter des dégâts décalés par rapport à l'animation
                     if (ready_to_attack) {
                         if (this->getWeapon()->type() == "Bow" || this->getWeapon()->type() == "Fireball") {
                             this->getWeapon()->attack(closest, this, all_projectiles, this->getX(), this->getY());
@@ -67,18 +77,17 @@ void Entity::threadUpdate(std::vector<Entity*>* all_entities, std::vector<Projec
             ready_to_attack = false;
         }
     }
-    // Fin du lock automatique ici
 
-    // --- PHASE 2 : JAMBES (Léger, Sans Lock, Fréquent) ---
-    // On bouge vers la dernière position connue de la cible
+    // Optimisation : Cette phase se fait locker le mutex.
+    // On utilise les dernières coordonnées connues (last_target_x/y) pour bouger.
+    // Cela permet aux threads de tourner en parallèle sans s'attendre les uns les autres.
     if (has_active_target && !is_attacking) {
-        // On recalcule la distance ici sans lock pour savoir si on doit bouger
         float dx = last_target_x - x;
         float dy = last_target_y - y;
         float distSq = dx*dx + dy*dy;
         float range = this->getWeapon()->getRange();
 
-        // Si on est encore loin (selon la mémoire cache), on avance
+        // Si on est trop loin pour attaquer, on court vers la cible
         if (distSq > range * range) {
             this->setState("run");
             this->moveInDirection(last_target_x, last_target_y);
@@ -92,13 +101,15 @@ void Entity::threadLoop(std::vector<Entity*>* all_entities, std::vector<Projecti
     while(thread_is_running && hp > 0){
 
         if (!pause) {
+            // Gestion de l'accélération du temps (x1, x2, x5...)
+            // Si la vitesse est x5, on exécute la logique 5 fois
             for(int i = 0; i < Graphics::game_time_speed; i++){
-                if(hp <= 0) break; //On arrête si on est mort
+                if(hp <= 0) break;
                 this->threadUpdate(all_entities, all_projectiles, same_type_peace, global_mutex);
             }
         }
 
-        //Pour 60 fps = 16ms de pause
+        // Pause de 16ms pour simuler ~60 mises à jour par seconde et ne pas surcharger le CPU.
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }
 }
@@ -115,12 +126,16 @@ Entity::Entity(float x, float y, SDL_Renderer* renderer) {
     this->current_renderer = renderer;
     loadSprites(renderer);
 }
+
+// Découpe la feuille de sprites (spritesheet) en textures individuelles
 void Entity::loadSprites(SDL_Renderer* renderer) {
     deleteAllFrames();
 
     std::vector<std::string> paths = {sprites_file_left, sprites_file_right};
     std::vector<std::string> orientations = {"left", "right"};
+    // L'ordre est important : ligne 0 = idle, ligne 1 = run, ligne 2 = attack
     std::vector<std::string> states = {"idle", "run", "attack"};
+
     for (int i=0; i<2; i++) {
         std::string file_path = paths[i];
         std::string orientation = orientations[i];
@@ -155,14 +170,13 @@ void Entity::loadSprites(SDL_Renderer* renderer) {
 bool Entity::isFrameEmpty(SDL_Surface *surface) {
     if (!surface) return true;
 
-    // 1. Verrouiller la surface pour lire les pixels en sécurité
+    // Verrouille la surface pour lire les pixels en sécurité
     if (SDL_LockSurface(surface) != 0) {
-        return true; // En cas d'erreur, on considère vide par sécurité
+        return true;
     }
 
     bool is_empty = true;
     int pixel_count = surface->w * surface->h;
-
     Uint32* pixels = (Uint32*)surface->pixels;
 
     // Format des pixels pour extraire les couleurs
@@ -179,9 +193,7 @@ bool Entity::isFrameEmpty(SDL_Surface *surface) {
         }
     }
 
-    // 2. Déverrouiller la surface
     SDL_UnlockSurface(surface);
-
     return is_empty;
 }
 
@@ -202,7 +214,9 @@ Entity* Entity::findClosestEntity(vector<Entity*> entities, bool ignoreSameType)
     if (entities.empty()) return nullptr;
 
     Entity* closest_entity = nullptr;
-    double min_dist = 100000000.0; // Valeur très grande
+
+    // Valeur très grande de base pour que la première entité soit la plus proche au début
+    double min_dist = 100000000.0;
 
     for(Entity* e : entities){
         // On ne se cible pas soi-même
@@ -260,7 +274,7 @@ void Entity::moveInDirection(float target_x, float target_y){
         dx /= length;
         dy /= length;
 
-        // Application de la vitesse en fonction de la taille
+        // Les entités plus grosses sont plus lentes (divisé par size)
         x += dx * move_speed / size;
         y += dy * move_speed / size;
     }
@@ -287,9 +301,11 @@ void Entity::setDirection(const string& new_dir) {
 void Entity::updateAnimation(){
     if (frames[state][direction].empty()) return;
 
-    anim_timer += 16 * Graphics::game_time_speed; // On simule qu'une frame de jeu (16ms) vient de passer
+    // On simule qu'une frame de jeu (16ms) multiplié par la vitesse de jeu vient de passer
+    anim_timer += 16 * Graphics::game_time_speed;
     if (anim_timer < frame_delay) return;
 
+    // Calcul du nombre de frames à passer (si le jeu va très vite)
     int frames_to_skip = anim_timer / frame_delay;
     anim_timer = int(anim_timer) % frame_delay;
 
@@ -297,6 +313,8 @@ void Entity::updateAnimation(){
     int next_theoritical_frame = current_frame + frames_to_skip;
 
     if (state == "attack"){
+
+        // Si on atteint la "frame d'attaque", on signale à l'entité qu'elle a le droit d'attaquer
         if (current_frame < frame_to_attack && next_theoritical_frame >= frame_to_attack) {
             ready_to_attack = true;
             current_frame = frame_to_attack;

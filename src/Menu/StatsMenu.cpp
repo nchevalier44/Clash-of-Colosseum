@@ -78,7 +78,7 @@ void StatsMenu::updateGraphData(SimulationStats& stats, std::string mode) {
     SDL_GetWindowSize(window, &width, &height);
 
     // Définition de la zone du graphique
-    int graphX = 300; // Plus large à gauche pour afficher les infos
+    int graphX = 300;
     int graphY = 80;
     int graphW = width - graphX - 20;
     int graphH = height - 150;
@@ -86,14 +86,13 @@ void StatsMenu::updateGraphData(SimulationStats& stats, std::string mode) {
     if (currentGraph) {
         currentGraph->setWidth(graphW);
         currentGraph->setHeight(graphH);
-        if (mode == currentMode) return; //Mode doesn't change
+        if (mode == currentMode) return; // Mode ne change pas
     }
 
 
     currentGraph = new Graph(graphX, graphY, graphW, graphH, renderer);
     currentGraph->setXLabel("Générations");
 
-    // Logique basée sur les strings au lieu des enums
     if (mode == "age") {
         currentGraph->setYLabel("Âge");
         currentGraph->addSerie(Serie(extractAttribute(stats, "age", "max"), {255, 0, 0, 255}, "Max"));
@@ -169,7 +168,7 @@ void StatsMenu::drawText(std::string text, int x, int y, int lineHeight) {
         SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
         SDL_Rect r = {x, y, surf->w, surf->h};
 
-        //highlight
+        //Fond derrière le texte pour mieux voir
         SDL_SetRenderDrawColor(renderer, 80, 80, 80, 150);
         SDL_Rect highlight;
         highlight.w = r.w + 10;
@@ -204,7 +203,7 @@ void StatsMenu::showStats(SimulationStats& stats) {
                 int y = event.button.y;
 
                 if (event.button.button == SDL_BUTTON_LEFT) {
-                    //Click on a button
+                    // On vérifie si le clique est sur un bouton
                     for (Button* b : buttons) {
                         SDL_Rect rect = b->getRect();
                         if ((rect.x <= x && x <= rect.x + rect.w) && (rect.y <= y && y <= rect.y + rect.h)) {
@@ -218,7 +217,7 @@ void StatsMenu::showStats(SimulationStats& stats) {
                 int x = event.motion.x;
                 int y = event.motion.y;
 
-                //Hover a button = change color
+                //Survol d'un bouton = changement de couleur
                 for (Button* b : buttons) {
                     SDL_Rect rect = b->getRect();
                     if ((rect.x <= x && x <= rect.x + rect.w) && (rect.y <= y && y <= rect.y + rect.h)) {

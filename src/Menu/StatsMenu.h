@@ -7,7 +7,7 @@
 #include <ctime>
 #include "../SimulationStats.h"
 #include "Graph.h"
-#include "Button.h" // Nécessaire pour les boutons
+#include "Button.h"
 
 class StatsMenu {
 public:

@@ -9,6 +9,9 @@ GameMenu::GameMenu(SDL_Renderer* renderer, SDL_Window* window) : window(window),
     if (!statFont) {
         std::cerr << "Erreur chargement police stats: " << TTF_GetError() << std::endl;
     }
+    
+    // Pré-génération des textures pour l'affichage de la vitesse (x1, x2, x5...)
+    // On ne recrée pas la texture à chaque frame, on les stocke en mémoire (time_textures)
     time_options = {1, 2, 5, 10, 20, 50, 100};
     for(int value : time_options) {
         std::string string_time = "x" + std::to_string(value);
@@ -23,6 +26,8 @@ GameMenu::GameMenu(SDL_Renderer* renderer, SDL_Window* window) : window(window),
     int width_window, height_window;
     SDL_GetWindowSize(window, &width_window, &height_window);
 
+    // Création des boutons avec des fonctions anonymes
+    // Cela permet de définir le code à exécuter lors du clic directement ici.
     Button* stats_visible_button = new Button("Cacher les stats", font, renderer,  [this](Button* button) {
         hide_stats = !hide_stats;
         if (hide_stats) {
@@ -31,9 +36,12 @@ GameMenu::GameMenu(SDL_Renderer* renderer, SDL_Window* window) : window(window),
             button->setText("Cacher les stats");
         }
     });
+    
     Button* exit_button = new Button("Quitter", font, renderer, [this](Button* button) {
-        stop_simulation = true; //ensuite dans Graphics::update(), ça ex warrête tout
+        stop_simulation = true; // variable lu par Graphics::update() pour arrêter la boucle de jeu
     });
+    
+    // Positionnement relatif à la largeur de la fenêtre pour que ce soit centré/aligné
     stats_visible_button->setX(4*width_window/9 - stats_visible_button->getRect().w);
     exit_button->setX(5*width_window/9);
 
@@ -57,7 +65,7 @@ GameMenu::~GameMenu(){
 
 void GameMenu::displayEndSimulation(std::pair<std::string, int> pair, int generation) {
 
-    //Background
+    //Rectangle foncé
     int window_width, window_height;
     SDL_GetWindowSize(window, &window_width, &window_height);
     int rect_width = 450;
@@ -66,8 +74,7 @@ void GameMenu::displayEndSimulation(std::pair<std::string, int> pair, int genera
     SDL_SetRenderDrawColor(renderer, 40, 40, 40, 230);
     SDL_RenderFillRect(renderer, &back_rect);
 
-    //Title
-
+    //Titre
     TTF_Font* title_font = TTF_OpenFont("../assets/arial.ttf", 24);
     SDL_Surface* title_surface = TTF_RenderUTF8_Solid(title_font, "Fin de la simulation", {255, 255, 255});
     SDL_Texture* title_texture = SDL_CreateTextureFromSurface(renderer, title_surface);
@@ -79,7 +86,7 @@ void GameMenu::displayEndSimulation(std::pair<std::string, int> pair, int genera
     TTF_CloseFont(title_font);
     SDL_DestroyTexture(title_texture);
 
-    //Text
+    //Texte
     std::vector<std::string> lines;
     lines.push_back("Le type " + pair.first + " à gagné avec " + std::to_string(pair.second) + " entitées restantes.");
     lines.push_back("Ils leur aura fallu " + std::to_string(generation) + " générations pour gagner.");
@@ -102,8 +109,10 @@ void GameMenu::displayEndSimulation(std::pair<std::string, int> pair, int genera
 }
 
 void GameMenu::draw(const std::vector<Entity*>& entities, int generation, bool is_game_paused){
-    createBackground();
+    createBackground(); // Bandeau du haut
     displayTimeSpeed(is_game_paused);
+    
+    // Recalcule la position des boutons si la fenêtre a été redimensionnée
     int window_width, window_height;
     SDL_GetWindowSize(window, &window_width, &window_height);
     buttons[0]->setX(4*window_width/9 - buttons[0]->getRect().w);
@@ -115,13 +124,17 @@ void GameMenu::draw(const std::vector<Entity*>& entities, int generation, bool i
     for (Button* b : buttons) {
         b->draw(window, renderer);
     }
+    
+    // Affiche les panneaux d'information
     drawStatsTable(entities, generation);
     drawEntityStats();
 }
 
+// Affiche les stats détaillées d'une entité spécifique (cliquée par l'utilisateur)
 void GameMenu::drawEntityStats() {
     if (!statFont) return;
-    if (!selected_entity) return;
+    if (!selected_entity) return; // Si aucune entité sélectionnée, on n'affiche rien
+
     std::vector<std::string> lines;
     lines.push_back("Type : " + selected_entity->getType());
     lines.push_back("Age : " + std::to_string(selected_entity->getAge()));
@@ -131,13 +144,13 @@ void GameMenu::drawEntityStats() {
     lines.push_back("Damage : " + std::to_string(selected_entity->getWeapon()->getDamage()));
     lines.push_back("Speed : " + roundingFloatToString(selected_entity->getMoveSpeed()));
 
+    // Positionnement : En bas à droite, juste au-dessus du tableau général
     int winW, winH;
     SDL_GetWindowSize(window, &winW, &winH);
 
     int rectW = 140;
     int rectH = 140;
     int margin = 10;
-
     SDL_Rect bgRect = {winW - rectW - margin, winH - 3 * rectH + 4*margin, rectW, rectH};
 
     SDL_SetRenderDrawColor(renderer, 40, 40, 40, 230);
@@ -165,6 +178,7 @@ void GameMenu::drawEntityStats() {
 void GameMenu::drawStatsTable(const std::vector<Entity*>& entities, int generation) {
     if (!statFont || hide_stats) return;
 
+    // Calcul des statistiques en temps réel sur toute la population
     int nbGuerrier = 0, nbArcher = 0, nbMage = 0, nbGolem = 0;
     float totalHp = 0;
     float avgDamage = 0;
@@ -177,11 +191,15 @@ void GameMenu::drawStatsTable(const std::vector<Entity*>& entities, int generati
         else if (t == "Archer") nbArcher++;
         else if (t == "Mage") nbMage++;
         else if (t == "Golem") nbGolem++;
+        
+        // Cumul pour les moyennes
         totalHp += e->getMaxHp();
         avgDamage += e->getWeapon()->getDamage();
         avgSpeed += e->getMoveSpeed();
         avgAge += e->getAge();
     }
+    
+    // Calcul des moyennes (attention à la division par zéro si entities est vide)
     float avgHp = entities.empty() ? 0 : totalHp / entities.size();
     avgDamage = entities.empty() ? 0 : avgDamage / entities.size();
     avgSpeed = entities.empty() ? 0 : avgSpeed / entities.size();
@@ -231,6 +249,7 @@ void GameMenu::drawStatsTable(const std::vector<Entity*>& entities, int generati
 }
 
 void GameMenu::createBackground(){
+    // Crée le bandeau gris foncé en haut de l'écran
     int width, height;
     SDL_GetWindowSize(window, &width, &height);
 
@@ -243,14 +262,16 @@ void GameMenu::createBackground(){
 void GameMenu::displayTimeSpeed(bool is_game_paused){
     SDL_Texture* texture;
     if (!is_game_paused) {
+        // Utilise la texture pré-calculée correspondant à la vitesse actuelle
         texture = time_textures[time_index];
     } else {
+        // Si pause, on génère "Pause" à la volée (pas mis en cache car rien ne demande de ressource quand on est en pause)
         SDL_Surface* surface = TTF_RenderUTF8_Solid(font, "Pause", {255, 255, 255});
         texture = SDL_CreateTextureFromSurface(renderer, surface);
         SDL_FreeSurface(surface);
     }
 
-
+    // Affichage en haut à droite
     int width_text, height_text, width_window, height_window;
     SDL_GetWindowSize(window, &width_window, &height_window);
     SDL_QueryTexture(texture, nullptr, nullptr, &width_text, &height_text);
@@ -259,10 +280,12 @@ void GameMenu::displayTimeSpeed(bool is_game_paused){
     SDL_RenderCopy(renderer, texture, nullptr, &text_rect);
 }
 
+// Augmente la vitesse de simulation en parcourant le tableau time_options
 void GameMenu::faster(){
     if(time_index < time_options.size()-1){
         time_index += 1;
     }
+    // Modifie la variable statique globale qui contrôle la boucle de jeu
     Graphics::game_time_speed = time_options[time_index];
 }
 

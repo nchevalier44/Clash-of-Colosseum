@@ -38,9 +38,9 @@ private:
 
     // Options du jeu
     int nbGuerriers = 10;
-    int mutationTypeRate = 15;      // 0 à 100
+    int mutationTypeRate = 15; //15%
     int mutationStatsRate = 15;
-    bool showHealthBars = true; // Vrai/Faux
+    bool showHealthBars = true;
     bool sameTypePeace = false;
     int speedIndex = 1;         // 0: Lent, 1: Normal, 2: Rapide
     int min_number_entity = 5;

@@ -33,7 +33,7 @@ SettingsMenu::~SettingsMenu() {
 }
 
 void SettingsMenu::render(SDL_Texture* background) {
-    //Background
+    //Image de fond
     if (background) {
         SDL_RenderCopy(renderer, background, NULL, NULL);
     } else {
@@ -57,10 +57,9 @@ void SettingsMenu::render(SDL_Texture* background) {
     options.push_back("Musique: " + std::string(musiqueOn ? "OUI" : "NON"));
     options.push_back("Paix même type: " + std::string(sameTypePeace ? "OUI" : "NON"));
 
-    // Calculs pour le centrage VERTICAL global
     int itemSpacing = 50;
     int totalMenuHeight = options.size() * itemSpacing;
-    int startY = (winH - totalMenuHeight) / 2; // (Hauteur Fenêtre - Hauteur SettingsMenu) / 2
+    int startY = (winH - totalMenuHeight) / 2;
 
     // Largeur de la barre de sélection (pour qu'elle soit uniforme)
     int highlightWidth = 350;
@@ -118,7 +117,7 @@ void SettingsMenu::handleEvent(SDL_Event& event, Mix_Music* music) {
                 if (selectedOption == 0) nbGuerriers++;
                 else if (selectedOption == 1) { min_number_entity++; }
                 else if (selectedOption == 2) { if (mutationTypeRate < 100) mutationTypeRate += 5; }
-                else if (selectedOption == 3) { if (mutationStatsRate < 100) mutationStatsRate += 5; } // Nouveau
+                else if (selectedOption == 3) { if (mutationStatsRate < 100) mutationStatsRate += 5; }
                 else if (selectedOption == 4) showHealthBars = !showHealthBars;
                 else if (selectedOption == 5) speedIndex = (speedIndex + 1) % 3;
                 else if (selectedOption == 6) { musiqueOn = !musiqueOn; if(musiqueOn) Mix_PlayMusic(music,-1); else Mix_HaltMusic(); }
@@ -129,7 +128,7 @@ void SettingsMenu::handleEvent(SDL_Event& event, Mix_Music* music) {
                 if (selectedOption == 0 && nbGuerriers > 2) nbGuerriers--;
                 else if (selectedOption == 1) { if (min_number_entity > 2) min_number_entity--; }
                 else if (selectedOption == 2) { if (mutationTypeRate > 0) mutationTypeRate -= 5; }
-                else if (selectedOption == 3) { if (mutationStatsRate > 0) mutationStatsRate -= 5; } // Nouveau
+                else if (selectedOption == 3) { if (mutationStatsRate > 0) mutationStatsRate -= 5; }
                 else if (selectedOption == 4) showHealthBars = !showHealthBars;
                 else if (selectedOption == 5) speedIndex = (speedIndex + 2) % 3;
                 else if (selectedOption == 6) { musiqueOn = !musiqueOn; if(musiqueOn) Mix_PlayMusic(music,-1); else Mix_HaltMusic(); }

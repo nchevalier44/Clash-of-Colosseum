@@ -9,13 +9,15 @@
 
 #include "Button.h"
 
+// Elle permet de convertir un float en string avec un nombre précis de décimales (n=2 par défaut).
+// C'est indispensable pour afficher proprement "Vitesse: 1.25" au lieu de "1.250000".
 inline std::string roundingFloatToString(float value, int n = 2) {
     std::stringstream stream;
     stream << std::fixed << std::setprecision(n) << value;
     return stream.str();
 }
 
-//Avoid circular import
+// Eviter l'import circulaire
 class Graphics;
 
 class GameMenu {
@@ -46,7 +48,7 @@ private:
     SDL_Renderer* renderer = nullptr;
     SDL_Window* window = nullptr;
     int time_index = 0;
-    std::vector<int> time_options;
+    std::vector<int> time_options; // Liste des vitesses disponibles (1, 2, 5, 10...)
     std::vector<SDL_Texture*> time_textures;
     std::vector<Button*> buttons;
     bool hide_stats = false;

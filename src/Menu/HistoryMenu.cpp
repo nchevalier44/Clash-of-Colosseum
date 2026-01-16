@@ -112,7 +112,7 @@ void HistoryMenu::draw() {
         SDL_Surface* texte_surface = TTF_RenderUTF8_Solid(font, text.c_str(), {255, 255, 255});
         SDL_Texture* texte_texture = SDL_CreateTextureFromSurface(renderer, texte_surface);
         SDL_Rect texte_rect = {int(window_width / 2 - 2*texte_surface->w/3), spacing*(i-start_index)+offset, texte_surface->w, texte_surface->h};
-        //background of the text
+        //Fond derrière le texte pour mieux le voir
         SDL_Rect highlight;
         highlight.w = texte_rect.w + 10;
         highlight.h = texte_rect.h + 10;
@@ -156,9 +156,9 @@ void HistoryMenu::handleEvent() {
                 int y = event.button.y;
 
                 if (event.button.button == SDL_BUTTON_LEFT) {
-                    //Click on a button
+                    //On vérifie si le clique est sur un bouton
                     std::vector<std::pair<std::string, Button*>> copy_list_sim(list_sim);
-                    //Add previous and next button to the copy
+                    //On ajoute previous_button et next_button à la copie pour qu'ils passent dans la boucle for aussi
                     copy_list_sim.push_back({"", previous_button});
                     copy_list_sim.push_back({"", next_button});
                     for (auto pair : copy_list_sim) {
@@ -175,9 +175,9 @@ void HistoryMenu::handleEvent() {
                 int x = event.motion.x;
                 int y = event.motion.y;
 
-                //Hover a button = change color
+                //Survol d'un bouton = changement de couleur
                 std::vector<std::pair<std::string, Button*>> copy_list_sim(list_sim);
-                //Add previous and next button to the copy
+                //On ajoute previous_button et next_button à la copie pour qu'ils passent dans la boucle for aussi
                 copy_list_sim.push_back({"", previous_button});
                 copy_list_sim.push_back({"", next_button});
                 for (auto pair : copy_list_sim) {

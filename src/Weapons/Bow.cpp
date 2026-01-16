@@ -4,8 +4,9 @@
 #include <SDL_image.h>
 #include <iostream>
 
-// Constructeur : C'est ici qu'on charge l'image de la flèche !
 Bow::Bow(SDL_Renderer* renderer, int damage, int range) : Weapon(damage, range) {
+    // Chargement de la texture "unique" de la flèche.
+    // On la stocke dans 'frames' pour que tous les projectiles créés par cet arc partagent la même image en mémoire
     std::string path = "../assets/Archer/arrow.png";
     SDL_Surface* surf = IMG_Load(path.c_str());
     min_range = 180;
@@ -21,7 +22,6 @@ Bow::Bow(SDL_Renderer* renderer, int damage, int range) : Weapon(damage, range) 
     }
 }
 
-// Destructeur : On nettoie la mémoire
 Bow::~Bow() {
     for (auto tex : frames) {
         SDL_DestroyTexture(tex);
@@ -29,12 +29,14 @@ Bow::~Bow() {
     frames.clear();
 }
 
+// On instancie un objet "Projectile" qui aura sa propre vitesse et trajectoire.
 void Bow::attack(Entity* entity, Entity* owner, std::vector<Projectile*>* projectiles, int origin_x, int origin_y) {
-    //launch a projectile in direction of the entity
     float speed = 2.0f;
-    int size = owner->getSize() * 25; // Taille ajustée
 
-    // Création du projectile avec les frames (la flèche)
+    // La taille du projectile est proportionnelle à celle du tireur
+    int size = owner->getSize() * 25;
+
+    // '15000' est la durée de vie (lifetime) en ms avant que la flèche disparaisse si elle ne touche rien.
     Projectile* projectile = new Projectile(
         owner,
         this->damage,
@@ -45,8 +47,9 @@ void Bow::attack(Entity* entity, Entity* owner, std::vector<Projectile*>* projec
         entity->getX(),
         entity->getY(),
         15000,
-        this->frames
+        this->frames // On passe la texture chargée dans le constructeur
     );
 
+    // Ajout au vecteur global géré par "Graphics" pour que la flèche soit mise à jour et dessinée à la frame suivante
     projectiles->push_back(projectile);
 }

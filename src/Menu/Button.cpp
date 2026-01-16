@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+// Le constructeur prend une "std::function" pour le onClick :
+// cela permet de passer n'importe quelle fonction à exécuter quand on clique sur ce bouton précis.
 Button::Button(std::string text, TTF_Font* font, SDL_Renderer* renderer, std::function<void(Button*)> onClick) : font(font), text(text), onClick(onClick) {
     initRect();
 }
@@ -19,10 +21,12 @@ void Button::setHovering(bool hovering) {
 
 void Button::setText(std::string text) {
     this->text = text;
+    // Si le texte change, on doit recalculer la taille de la zone cliquable (hitbox)
     initRect();
 }
 
 void Button::initRect() {
+    // On génère une surface temporaire uniquement pour récupérer la largeur/hauteur du texte
     SDL_Surface* surface = TTF_RenderUTF8_Blended(font, text.c_str(), color);
     rect.w = surface->w;
     rect.h = surface->h;
